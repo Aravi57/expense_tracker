@@ -628,7 +628,9 @@
                 </div>
                 <div class="card">
                     <h3>Budget vs Actual</h3>
-                    <canvas id="budget-chart" width="400" height="200"></canvas>
+                    <div class="chart-container">
+                        <canvas id="budget-chart"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="card" style="margin-top: 20px;">
@@ -656,15 +658,21 @@
                 </div>
                 <div class="card">
                     <h3>Monthly Trend</h3>
-                    <canvas id="monthly-trend-chart" width="400" height="200"></canvas>
+                    <div class="chart-container">
+                        <canvas id="monthly-trend-chart"></canvas>
+                    </div>
                 </div>
                 <div class="card">
                     <h3>Income vs Expenses</h3>
-                    <canvas id="income-expense-chart" width="400" height="200"></canvas>
+                    <div class="chart-container">
+                        <canvas id="income-expense-chart"></canvas>
+                    </div>
                 </div>
                 <div class="card">
                     <h3>Expenses by Category</h3>
-                    <canvas id="category-pie-chart" width="400" height="200"></canvas>
+                    <div class="chart-container">
+                        <canvas id="category-pie-chart"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="card" style="margin-top: 20px;">
@@ -1185,44 +1193,33 @@
                             data: budgetData,
                             backgroundColor: 'rgba(102, 126, 234, 0.5)',
                             borderColor: 'rgba(102, 126, 234, 1)',
-                            borderWidth: 1
+                            borderWidth: 2
                         },
                         {
                             label: 'Spent',
                             data: spentData,
                             backgroundColor: 'rgba(231, 76, 60, 0.5)',
                             borderColor: 'rgba(231, 76, 60, 1)',
-                            borderWidth: 1
+                            borderWidth: 2
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.7)'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.7)'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    },
                     plugins: {
                         legend: {
-                            labels: {
-                                color: 'rgba(255, 255, 255, 0.9)'
-                            }
+                            labels: { color: 'white' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
                         }
                     }
                 }
@@ -1417,27 +1414,17 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.7)'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
                         },
                         x: {
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.7)'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
                         }
                     },
                     plugins: {
                         legend: {
-                            labels: {
-                                color: 'rgba(255, 255, 255, 0.9)'
-                            }
+                            labels: { color: 'rgba(255, 255, 255, 0.9)' }
                         }
                     }
                 }
