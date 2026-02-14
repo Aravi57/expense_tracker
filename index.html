@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <style>
         * {
             margin: 0;
@@ -509,12 +512,14 @@
                 min-width: 150px;
             }
         }
-    </style>
+    </link>
 </head>
 <body>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <div class="app-container">
         <!-- Top Bar -->
@@ -522,6 +527,7 @@
             <nav class="nav-tabs">
                 <button class="nav-tab active" data-section="dashboard">Dashboard</button>
                 <button class="nav-tab" data-section="history">History</button>
+                <button class="nav-tab" data-section="budget">Budget</button>
                 <button class="nav-tab" data-section="analysis">Analysis</button>
             </nav>
             <button class="add-transaction-btn" onclick="openTransactionModal()">
@@ -568,10 +574,67 @@
         <!-- History Section -->
         <div id="history-section" class="section">
             <div class="card">
-                <h3>All Transactions</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>All Transactions</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 0.9rem;" onclick="exportToCSV()">Export CSV</button>
+                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 0.9rem;" onclick="exportToPDF()">Export PDF</button>
+                    </div>
+                </div>
+                
+                <!-- Search and Filter Controls -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="form-group" style="margin: 0;">
+                        <input type="text" id="search-input" placeholder="Search transactions..." onkeyup="filterTransactions()">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <select id="type-filter" onchange="filterTransactions()">
+                            <option value="">All Types</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <select id="category-filter" onchange="filterTransactions()">
+                            <option value="">All Categories</option>
+                            <option value="food">Food & Dining</option>
+                            <option value="transport">Transportation</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="health">Health</option>
+                            <option value="salary">Salary</option>
+                            <option value="freelance">Freelance</option>
+                            <option value="investment">Investment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
                 <ul class="transaction-list" id="transaction-list">
                     <li class="empty-state">No transactions yet</li>
                 </ul>
+            </div>
+        </div>
+
+        <!-- Budget Section -->
+        <div id="budget-section" class="section">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3>Budget Overview</h3>
+                    <div id="budget-overview">
+                        <p class="empty-state">No budget set yet</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Budget vs Actual</h3>
+                    <canvas id="budget-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 20px;">
+                <h3>Manage Budgets</h3>
+                <button class="btn" style="width: auto; margin-bottom: 20px;" onclick="openBudgetModal()">Set Budget</button>
+                <div id="budget-list"></div>
             </div>
         </div>
 
@@ -592,10 +655,22 @@
                     </div>
                 </div>
                 <div class="card">
+                    <h3>Monthly Trend</h3>
+                    <canvas id="monthly-trend-chart" width="400" height="200"></canvas>
+                </div>
+                <div class="card">
+                    <h3>Income vs Expenses</h3>
+                    <canvas id="income-expense-chart" width="400" height="200"></canvas>
+                </div>
+                <div class="card">
                     <h3>Expenses by Category</h3>
-                    <div id="category-chart">
-                        <p class="empty-state">No expense data yet</p>
-                    </div>
+                    <canvas id="category-pie-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 20px;">
+                <h3>Category Breakdown</h3>
+                <div id="category-chart">
+                    <p class="empty-state">No expense data yet</p>
                 </div>
             </div>
         </div>
@@ -640,6 +715,20 @@
                     <label for="date">Date</label>
                     <input type="date" id="date" required>
                 </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="is-recurring"> Recurring Transaction
+                    </label>
+                </div>
+                <div class="form-group" id="recurring-options" style="display: none;">
+                    <label for="recurring-frequency">Frequency</label>
+                    <select id="recurring-frequency">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
                 <button type="submit" class="btn">Add Transaction</button>
             </form>
         </div>
@@ -677,6 +766,43 @@
         </div>
     </div>
 
+    <!-- Budget Modal -->
+    <div class="modal" id="budget-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Set Budget</h2>
+                <button class="modal-close" onclick="closeBudgetModal()">×</button>
+            </div>
+            <form id="budget-form">
+                <div class="form-group">
+                    <label for="budget-category">Category</label>
+                    <select id="budget-category">
+                        <option value="food">Food & Dining</option>
+                        <option value="transport">Transportation</option>
+                        <option value="utilities">Utilities</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="health">Health</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="budget-amount">Monthly Budget (₹)</label>
+                    <input type="number" id="budget-amount" placeholder="0.00" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="budget-period">Period</label>
+                    <select id="budget-period">
+                        <option value="monthly">Monthly</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Set Budget</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -692,11 +818,16 @@
         const db = firebase.firestore();
         const transactionsRef = db.collection('transactions');
         const accountsRef = db.collection('accounts');
+        const budgetsRef = db.collection('budgets');
+        const recurringRef = db.collection('recurring');
 
         // State
         let transactions = [];
         let accounts = [];
+        let budgets = [];
+        let recurringTransactions = [];
         let currentType = 'expense';
+        let charts = {};
 
         // Account colors
         const accountColors = [
@@ -714,6 +845,12 @@
         const form = document.getElementById('transaction-form');
         const dateInput = document.getElementById('date');
         dateInput.valueAsDate = new Date();
+
+        // Recurring transaction checkbox handler
+        document.getElementById('is-recurring').addEventListener('change', function() {
+            const recurringOptions = document.getElementById('recurring-options');
+            recurringOptions.style.display = this.checked ? 'block' : 'none';
+        });
 
         // Type toggle
         document.querySelectorAll('.type-btn').forEach(btn => {
@@ -734,6 +871,7 @@
                 document.getElementById(tab.dataset.section + '-section').classList.add('active');
 
                 if (tab.dataset.section === 'analysis') renderAnalysis();
+                if (tab.dataset.section === 'budget') renderBudget();
             });
         });
 
@@ -752,6 +890,14 @@
 
         function closeAccountModal() {
             document.getElementById('account-modal').classList.remove('active');
+        }
+
+        function openBudgetModal() {
+            document.getElementById('budget-modal').classList.add('active');
+        }
+
+        function closeBudgetModal() {
+            document.getElementById('budget-modal').classList.remove('active');
         }
 
         // Close modals on outside click
@@ -774,19 +920,45 @@
             renderAccounts();
         });
 
+        budgetsRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            budgets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderBudget();
+        });
+
+        recurringRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            recurringTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            checkAndCreateRecurringTransactions();
+        });
+
         // Add transaction
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            await transactionsRef.add({
+            
+            const isRecurring = document.getElementById('is-recurring').checked;
+            const transactionData = {
                 type: currentType,
                 description: document.getElementById('description').value,
                 amount: parseFloat(document.getElementById('amount').value),
                 category: document.getElementById('category').value,
                 date: document.getElementById('date').value,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            };
+
+            if (isRecurring) {
+                // Add recurring transaction
+                await recurringRef.add({
+                    ...transactionData,
+                    frequency: document.getElementById('recurring-frequency').value,
+                    nextDate: document.getElementById('date').value
+                });
+            } else {
+                // Add regular transaction
+                await transactionsRef.add(transactionData);
+            }
+
             form.reset();
             dateInput.valueAsDate = new Date();
+            document.getElementById('recurring-options').style.display = 'none';
             closeTransactionModal();
         });
 
@@ -803,6 +975,19 @@
             closeAccountModal();
         });
 
+        // Add budget
+        document.getElementById('budget-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await budgetsRef.add({
+                category: document.getElementById('budget-category').value,
+                amount: parseFloat(document.getElementById('budget-amount').value),
+                period: document.getElementById('budget-period').value,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            e.target.reset();
+            closeBudgetModal();
+        });
+
         // Delete functions
         async function deleteTransaction(id) {
             await transactionsRef.doc(id).delete();
@@ -810,6 +995,59 @@
 
         async function deleteAccount(id) {
             await accountsRef.doc(id).delete();
+        }
+
+        async function deleteBudget(id) {
+            await budgetsRef.doc(id).delete();
+        }
+
+        // Check and create recurring transactions
+        async function checkAndCreateRecurringTransactions() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            for (const recurring of recurringTransactions) {
+                if (recurring.nextDate <= today) {
+                    // Create the transaction
+                    await transactionsRef.add({
+                        type: recurring.type,
+                        description: recurring.description,
+                        amount: recurring.amount,
+                        category: recurring.category,
+                        date: recurring.nextDate,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    // Calculate next date
+                    const nextDate = calculateNextDate(recurring.nextDate, recurring.frequency);
+                    
+                    // Update the recurring transaction
+                    await recurringRef.doc(recurring.id).update({
+                        nextDate: nextDate
+                    });
+                }
+            }
+        }
+
+        // Calculate next date based on frequency
+        function calculateNextDate(currentDate, frequency) {
+            const date = new Date(currentDate);
+            
+            switch (frequency) {
+                case 'daily':
+                    date.setDate(date.getDate() + 1);
+                    break;
+                case 'weekly':
+                    date.setDate(date.getDate() + 7);
+                    break;
+                case 'monthly':
+                    date.setMonth(date.getMonth() + 1);
+                    break;
+                case 'yearly':
+                    date.setFullYear(date.getFullYear() + 1);
+                    break;
+            }
+            
+            return date.toISOString().split('T')[0];
         }
 
         // Render accounts
@@ -837,6 +1075,158 @@
             `;
 
             row.innerHTML = html;
+        }
+
+        // Render budget
+        function renderBudget() {
+            const overview = document.getElementById('budget-overview');
+            const budgetList = document.getElementById('budget-list');
+            
+            if (budgets.length === 0) {
+                overview.innerHTML = '<p class="empty-state">No budget set yet</p>';
+                budgetList.innerHTML = '<p class="empty-state">No budgets set</p>';
+                return;
+            }
+
+            // Calculate current month spending by category
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const currentMonthExpenses = transactions.filter(t => 
+                t.type === 'expense' && t.date.startsWith(currentMonth)
+            );
+            
+            const categorySpending = {};
+            currentMonthExpenses.forEach(t => {
+                categorySpending[t.category] = (categorySpending[t.category] || 0) + t.amount;
+            });
+
+            // Render overview
+            let totalBudget = 0;
+            let totalSpent = 0;
+            
+            budgets.forEach(budget => {
+                totalBudget += budget.amount;
+                totalSpent += categorySpending[budget.category] || 0;
+            });
+
+            const remaining = totalBudget - totalSpent;
+            const percentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+
+            overview.innerHTML = `
+                <div class="summary-row">
+                    <div class="summary-item">
+                        <div class="label">Total Budget</div>
+                        <div class="value">₹${totalBudget.toFixed(2)}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">Spent</div>
+                        <div class="value expense">₹${totalSpent.toFixed(2)}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">Remaining</div>
+                        <div class="value ${remaining >= 0 ? 'income' : 'expense'}">₹${remaining.toFixed(2)}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <div class="bar-bg">
+                        <div class="bar-fill" style="width: ${Math.min(percentage, 100)}%; background: ${percentage > 80 ? '#e74c3c' : percentage > 60 ? '#f39c12' : '#2ecc71'}"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 5px; font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+                        ${percentage.toFixed(1)}% of budget used
+                    </div>
+                </div>
+            `;
+
+            // Render budget list
+            budgetList.innerHTML = budgets.map(budget => {
+                const spent = categorySpending[budget.category] || 0;
+                const remaining = budget.amount - spent;
+                const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
+                
+                return `
+                    <div class="category-bar" style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span class="category-name">${formatCategory(budget.category)}</span>
+                            <button class="delete-btn" onclick="deleteBudget('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem;">×</button>
+                        </div>
+                        <div class="category-label">
+                            <span>Budget: ₹${budget.amount.toFixed(2)}</span>
+                            <span class="${remaining >= 0 ? 'income' : 'expense'}">Spent: ₹${spent.toFixed(2)}</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="width: ${Math.min(percentage, 100)}%; background: ${percentage > 80 ? '#e74c3c' : percentage > 60 ? '#f39c12' : '#2ecc71'}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Render budget chart
+            renderBudgetChart(categorySpending);
+        }
+
+        // Render budget chart
+        function renderBudgetChart(categorySpending) {
+            const ctx = document.getElementById('budget-chart').getContext('2d');
+            
+            if (charts.budget) {
+                charts.budget.destroy();
+            }
+
+            const labels = budgets.map(b => formatCategory(b.category));
+            const budgetData = budgets.map(b => b.amount);
+            const spentData = budgets.map(b => categorySpending[b.category] || 0);
+
+            charts.budget = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Budget',
+                            data: budgetData,
+                            backgroundColor: 'rgba(102, 126, 234, 0.5)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Spent',
+                            data: spentData,
+                            backgroundColor: 'rgba(231, 76, 60, 0.5)',
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.9)'
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         // Render transactions
@@ -873,17 +1263,68 @@
             `;
 
             recentList.innerHTML = transactions.slice(0, 5).map(renderTransaction).join('');
-            fullList.innerHTML = transactions.map(renderTransaction).join('');
+            filterTransactions(); // Apply filters to full list
+        }
+
+        // Filter transactions
+        function filterTransactions() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const typeFilter = document.getElementById('type-filter').value;
+            const categoryFilter = document.getElementById('category-filter').value;
+            
+            let filteredTransactions = transactions.filter(t => {
+                const matchesSearch = !searchTerm || 
+                    t.description.toLowerCase().includes(searchTerm) ||
+                    formatCategory(t.category).toLowerCase().includes(searchTerm);
+                    
+                const matchesType = !typeFilter || t.type === typeFilter;
+                const matchesCategory = !categoryFilter || t.category === categoryFilter;
+                
+                return matchesSearch && matchesType && matchesCategory;
+            });
+
+            const fullList = document.getElementById('transaction-list');
+            
+            if (filteredTransactions.length === 0) {
+                fullList.innerHTML = '<li class="empty-state">No transactions match your filters</li>';
+                return;
+            }
+
+            const renderTransaction = t => `
+                <li class="transaction-item ${t.type}">
+                    <div class="transaction-info">
+                        <div class="description">${escapeHtml(t.description)}</div>
+                        <div class="meta">${formatCategory(t.category)} • ${formatDate(t.date)}</div>
+                    </div>
+                    <span class="transaction-amount ${t.type}">
+                        ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
+                    </span>
+                    <button class="delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
+                </li>
+            `;
+
+            fullList.innerHTML = filteredTransactions.map(renderTransaction).join('');
         }
 
         // Render Analysis
         function renderAnalysis() {
             const expenses = transactions.filter(t => t.type === 'expense');
+            const income = transactions.filter(t => t.type === 'income');
             
             document.getElementById('stat-transactions').textContent = transactions.length;
             const avg = expenses.length > 0 ? expenses.reduce((sum, t) => sum + t.amount, 0) / expenses.length : 0;
             document.getElementById('stat-avg').textContent = formatCurrency(avg);
 
+            // Render monthly trend chart
+            renderMonthlyTrendChart();
+            
+            // Render income vs expense chart
+            renderIncomeExpenseChart();
+            
+            // Render category pie chart
+            renderCategoryPieChart();
+
+            // Render category breakdown (existing functionality)
             const categoryTotals = {};
             expenses.forEach(t => {
                 categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
@@ -916,6 +1357,177 @@
                 `).join('');
         }
 
+        // Render monthly trend chart
+        function renderMonthlyTrendChart() {
+            const ctx = document.getElementById('monthly-trend-chart').getContext('2d');
+            
+            if (charts.monthlyTrend) {
+                charts.monthlyTrend.destroy();
+            }
+
+            // Get last 6 months of data
+            const months = [];
+            const incomeData = [];
+            const expenseData = [];
+            
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                const monthStr = date.toISOString().slice(0, 7);
+                const monthLabel = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                
+                months.push(monthLabel);
+                
+                const monthIncome = transactions
+                    .filter(t => t.type === 'income' && t.date.startsWith(monthStr))
+                    .reduce((sum, t) => sum + t.amount, 0);
+                    
+                const monthExpense = transactions
+                    .filter(t => t.type === 'expense' && t.date.startsWith(monthStr))
+                    .reduce((sum, t) => sum + t.amount, 0);
+                    
+                incomeData.push(monthIncome);
+                expenseData.push(monthExpense);
+            }
+
+            charts.monthlyTrend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: incomeData,
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Expenses',
+                            data: expenseData,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.9)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render income vs expense chart
+        function renderIncomeExpenseChart() {
+            const ctx = document.getElementById('income-expense-chart').getContext('2d');
+            
+            if (charts.incomeExpense) {
+                charts.incomeExpense.destroy();
+            }
+
+            const totalIncome = transactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const totalExpense = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            charts.incomeExpense = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Income', 'Expenses'],
+                    datasets: [{
+                        data: [totalIncome, totalExpense],
+                        backgroundColor: ['#2ecc71', '#e74c3c'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.9)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render category pie chart
+        function renderCategoryPieChart() {
+            const ctx = document.getElementById('category-pie-chart').getContext('2d');
+            
+            if (charts.categoryPie) {
+                charts.categoryPie.destroy();
+            }
+
+            const expenses = transactions.filter(t => t.type === 'expense');
+            const categoryTotals = {};
+            
+            expenses.forEach(t => {
+                categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+            });
+
+            const colors = {
+                food: '#e74c3c', transport: '#3498db', utilities: '#9b59b6',
+                entertainment: '#e67e22', shopping: '#1abc9c', health: '#2ecc71', other: '#95a5a6'
+            };
+
+            charts.categoryPie = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(categoryTotals).map(cat => formatCategory(cat)),
+                    datasets: [{
+                        data: Object.values(categoryTotals),
+                        backgroundColor: Object.keys(categoryTotals).map(cat => colors[cat] || '#667eea'),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.9)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         // Helper functions
         function formatCurrency(amt) { return '₹' + Math.abs(amt).toFixed(2); }
         
@@ -936,6 +1548,86 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // Export functions
+        function exportToCSV() {
+            if (transactions.length === 0) {
+                alert('No transactions to export');
+                return;
+            }
+
+            const headers = ['Date', 'Type', 'Description', 'Category', 'Amount'];
+            const csvContent = [
+                headers.join(','),
+                ...transactions.map(t => [
+                    t.date,
+                    t.type,
+                    `"${t.description.replace(/"/g, '""')}"`,
+                    formatCategory(t.category),
+                    t.amount.toFixed(2)
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `transactions_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function exportToPDF() {
+            if (transactions.length === 0) {
+                alert('No transactions to export');
+                return;
+            }
+
+            // Simple text-based PDF export (for full PDF functionality, you'd need a library like jsPDF)
+            let content = 'Expense Tracker - Transaction Report\n';
+            content += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+            
+            const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const balance = income - expense;
+            
+            content += `Summary:\n`;
+            content += `Total Income: ₹${income.toFixed(2)}\n`;
+            content += `Total Expenses: ₹${expense.toFixed(2)}\n`;
+            content += `Balance: ₹${balance.toFixed(2)}\n\n`;
+            
+            content += `Transactions:\n`;
+            content += `${'='.repeat(80)}\n`;
+            content += `${'Date'.padEnd(12)} ${'Type'.padEnd(10)} ${'Description'.padEnd(25)} ${'Category'.padEnd(15)} ${'Amount'.padEnd(10)}\n`;
+            content += `${'='.repeat(80)}\n`;
+            
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
+                const type = t.type.charAt(0).toUpperCase() + t.type.slice(1);
+                const amount = t.type === 'income' ? `+₹${t.amount.toFixed(2)}` : `-₹${t.amount.toFixed(2)}`;
+                content += `${t.date.padEnd(12)} ${type.padEnd(10)} ${(t.description.substring(0, 24)).padEnd(25)} ${formatCategory(t.category).padEnd(15)} ${amount.padEnd(10)}\n`;
+            });
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `transactions_${new Date().toISOString().slice(0, 10)}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
         }
     </script>
 </body>
