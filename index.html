@@ -241,6 +241,111 @@
             background: #e74c3c;
             color: white;
         }
+
+        /* Navigation Header */
+        .nav-header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Analysis Section */
+        .chart-container {
+            margin-top: 20px;
+        }
+
+        .category-bar {
+            margin-bottom: 15px;
+        }
+
+        .category-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .category-name {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .category-amount {
+            color: #666;
+        }
+
+        .bar-bg {
+            background: #eee;
+            border-radius: 5px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -250,7 +355,16 @@
     <div class="container">
         <h1>Expense Tracker</h1>
 
-        <div class="card balance">
+        <!-- Navigation Header -->
+        <nav class="nav-header">
+            <button class="nav-btn active" data-section="accounts">Accounts</button>
+            <button class="nav-btn" data-section="history">History</button>
+            <button class="nav-btn" data-section="analysis">Analysis</button>
+        </nav>
+
+        <!-- Accounts Section -->
+        <div id="accounts-section" class="section active">
+            <div class="card balance">
             <h2>Total Balance</h2>
             <div class="amount" id="balance">$0.00</div>
             <div class="summary">
@@ -306,12 +420,39 @@
                 <button type="submit" class="btn">Add Transaction</button>
             </form>
         </div>
+        </div>
 
-        <div class="card transactions">
-            <h3>Transaction History</h3>
-            <ul class="transaction-list" id="transaction-list">
-                <li class="empty-state">No transactions yet</li>
-            </ul>
+        <!-- History Section -->
+        <div id="history-section" class="section">
+            <div class="card transactions">
+                <h3>Transaction History</h3>
+                <ul class="transaction-list" id="transaction-list">
+                    <li class="empty-state">No transactions yet</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Analysis Section -->
+        <div id="analysis-section" class="section">
+            <div class="card">
+                <h3>Spending Overview</h3>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-transactions">0</div>
+                        <div class="stat-label">Transactions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-avg">₹0</div>
+                        <div class="stat-label">Avg. Expense</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Expenses by Category</h3>
+                <div class="chart-container" id="category-chart">
+                    <p class="empty-state">No expense data yet</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -468,6 +609,74 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // Navigation
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const sections = document.querySelectorAll('.section');
+
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                navButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const sectionId = btn.dataset.section + '-section';
+                sections.forEach(s => s.classList.remove('active'));
+                document.getElementById(sectionId).classList.add('active');
+
+                if (btn.dataset.section === 'analysis') {
+                    renderAnalysis();
+                }
+            });
+        });
+
+        // Render Analysis
+        function renderAnalysis() {
+            const expenses = transactions.filter(t => t.type === 'expense');
+            
+            // Stats
+            document.getElementById('stat-transactions').textContent = transactions.length;
+            const avgExpense = expenses.length > 0 
+                ? expenses.reduce((sum, t) => sum + t.amount, 0) / expenses.length 
+                : 0;
+            document.getElementById('stat-avg').textContent = formatCurrency(avgExpense);
+
+            // Category breakdown
+            const categoryTotals = {};
+            expenses.forEach(t => {
+                categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+            });
+
+            const chartContainer = document.getElementById('category-chart');
+            if (Object.keys(categoryTotals).length === 0) {
+                chartContainer.innerHTML = '<p class="empty-state">No expense data yet</p>';
+                return;
+            }
+
+            const maxAmount = Math.max(...Object.values(categoryTotals));
+            const colors = {
+                food: '#e74c3c',
+                transport: '#3498db',
+                utilities: '#9b59b6',
+                entertainment: '#e67e22',
+                shopping: '#1abc9c',
+                health: '#2ecc71',
+                other: '#95a5a6'
+            };
+
+            chartContainer.innerHTML = Object.entries(categoryTotals)
+                .sort((a, b) => b[1] - a[1])
+                .map(([category, amount]) => `
+                    <div class="category-bar">
+                        <div class="category-label">
+                            <span class="category-name">${formatCategory(category)}</span>
+                            <span class="category-amount">${formatCurrency(amount)}</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="width: ${(amount / maxAmount) * 100}%; background: ${colors[category] || '#667eea'}"></div>
+                        </div>
+                    </div>
+                `).join('');
         }
 
         // Initial render
