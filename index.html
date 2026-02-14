@@ -23,6 +23,66 @@
             margin: 0 auto;
         }
 
+        /* Desktop Layout */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 1200px;
+            }
+
+            .nav-header {
+                max-width: 400px;
+                margin: 0 auto 20px auto;
+            }
+
+            .section-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+
+            .section-grid .card {
+                margin-bottom: 0;
+            }
+
+            .card.full-width {
+                grid-column: 1 / -1;
+            }
+
+            .history-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 20px;
+            }
+
+            .history-grid .card {
+                margin-bottom: 0;
+            }
+
+            .analysis-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+
+            .analysis-grid .card {
+                margin-bottom: 0;
+            }
+
+            .accounts-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+
+            .accounts-grid .card {
+                margin-bottom: 0;
+            }
+
+            .accounts-grid .total-balance-card {
+                grid-column: 1 / -1;
+            }
+        }
+
         h1 {
             text-align: center;
             color: white;
@@ -429,6 +489,7 @@
 
         <!-- Home Section -->
         <div id="home-section" class="section active">
+            <div class="section-grid">
             <div class="card balance">
             <h2>Total Balance</h2>
             <div class="amount" id="balance">$0.00</div>
@@ -489,6 +550,7 @@
 
         <!-- Accounts Section -->
         <div id="accounts-section" class="section">
+            <div class="accounts-grid">
             <div class="card total-balance-card">
                 <h3>Total Balance</h3>
                 <div class="total" id="accounts-total">₹0.00</div>
@@ -523,20 +585,24 @@
                     </form>
                 </div>
             </div>
+            </div>
         </div>
 
         <!-- History Section -->
         <div id="history-section" class="section">
+            <div class="history-grid">
             <div class="card transactions">
                 <h3>Transaction History</h3>
                 <ul class="transaction-list" id="transaction-list">
                     <li class="empty-state">No transactions yet</li>
                 </ul>
             </div>
+            </div>
         </div>
 
         <!-- Analysis Section -->
         <div id="analysis-section" class="section">
+            <div class="analysis-grid">
             <div class="card">
                 <h3>Spending Overview</h3>
                 <div class="stat-grid">
@@ -555,6 +621,7 @@
                 <div class="chart-container" id="category-chart">
                     <p class="empty-state">No expense data yet</p>
                 </div>
+            </div>
             </div>
         </div>
     </div>
