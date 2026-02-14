@@ -346,6 +346,70 @@
             color: #888;
             margin-top: 5px;
         }
+
+        /* Accounts Section */
+        .account-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .account-info {
+            flex: 1;
+        }
+
+        .account-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .account-type {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .account-balance {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-right: 10px;
+        }
+
+        .account-balance.positive {
+            color: #2ecc71;
+        }
+
+        .account-balance.negative {
+            color: #e74c3c;
+        }
+
+        .add-account-form {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .total-balance-card {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .total-balance-card h3 {
+            font-size: 0.85rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .total-balance-card .total {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -357,13 +421,14 @@
 
         <!-- Navigation Header -->
         <nav class="nav-header">
-            <button class="nav-btn active" data-section="accounts">Accounts</button>
+            <button class="nav-btn active" data-section="home">Home</button>
+            <button class="nav-btn" data-section="accounts">Accounts</button>
             <button class="nav-btn" data-section="history">History</button>
             <button class="nav-btn" data-section="analysis">Analysis</button>
         </nav>
 
-        <!-- Accounts Section -->
-        <div id="accounts-section" class="section active">
+        <!-- Home Section -->
+        <div id="home-section" class="section active">
             <div class="card balance">
             <h2>Total Balance</h2>
             <div class="amount" id="balance">$0.00</div>
@@ -422,6 +487,44 @@
         </div>
         </div>
 
+        <!-- Accounts Section -->
+        <div id="accounts-section" class="section">
+            <div class="card total-balance-card">
+                <h3>Total Balance</h3>
+                <div class="total" id="accounts-total">₹0.00</div>
+            </div>
+            <div class="card">
+                <h3>Your Accounts</h3>
+                <div id="accounts-list">
+                    <p class="empty-state">No accounts added yet</p>
+                </div>
+                <div class="add-account-form">
+                    <form id="account-form">
+                        <div class="form-group">
+                            <label for="account-name">Account Name</label>
+                            <input type="text" id="account-name" placeholder="e.g., HDFC Savings" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="account-type">Account Type</label>
+                            <select id="account-type">
+                                <option value="bank">Bank Account</option>
+                                <option value="cash">Cash</option>
+                                <option value="credit">Credit Card</option>
+                                <option value="wallet">Digital Wallet</option>
+                                <option value="investment">Investment</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="account-balance">Current Balance (₹)</label>
+                            <input type="number" id="account-balance" placeholder="0.00" step="0.01" required>
+                        </div>
+                        <button type="submit" class="btn">Add Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- History Section -->
         <div id="history-section" class="section">
             <div class="card transactions">
@@ -471,9 +574,11 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const transactionsRef = db.collection('transactions');
+        const accountsRef = db.collection('accounts');
 
         // State
         let transactions = [];
+        let accounts = [];
         let currentType = 'expense';
 
         // DOM Elements
@@ -509,6 +614,15 @@
             render();
         });
 
+        // Load accounts from Firebase
+        accountsRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            accounts = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            renderAccounts();
+        });
+
         // Add transaction
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -533,6 +647,70 @@
         // Delete transaction
         async function deleteTransaction(id) {
             await transactionsRef.doc(id).delete();
+        }
+
+        // Account form
+        const accountForm = document.getElementById('account-form');
+        const accountNameInput = document.getElementById('account-name');
+        const accountTypeSelect = document.getElementById('account-type');
+        const accountBalanceInput = document.getElementById('account-balance');
+
+        accountForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const account = {
+                name: accountNameInput.value,
+                type: accountTypeSelect.value,
+                balance: parseFloat(accountBalanceInput.value),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            await accountsRef.add(account);
+
+            accountNameInput.value = '';
+            accountBalanceInput.value = '';
+        });
+
+        // Delete account
+        async function deleteAccount(id) {
+            await accountsRef.doc(id).delete();
+        }
+
+        // Render accounts
+        function renderAccounts() {
+            const accountsList = document.getElementById('accounts-list');
+            const accountsTotal = document.getElementById('accounts-total');
+
+            const total = accounts.reduce((sum, a) => sum + a.balance, 0);
+            accountsTotal.textContent = formatCurrency(total);
+            accountsTotal.style.color = total >= 0 ? '#2ecc71' : '#e74c3c';
+
+            if (accounts.length === 0) {
+                accountsList.innerHTML = '<p class="empty-state">No accounts added yet</p>';
+                return;
+            }
+
+            const typeLabels = {
+                bank: 'Bank Account',
+                cash: 'Cash',
+                credit: 'Credit Card',
+                wallet: 'Digital Wallet',
+                investment: 'Investment',
+                other: 'Other'
+            };
+
+            accountsList.innerHTML = accounts.map(a => `
+                <div class="account-item">
+                    <div class="account-info">
+                        <div class="account-name">${escapeHtml(a.name)}</div>
+                        <div class="account-type">${typeLabels[a.type] || a.type}</div>
+                    </div>
+                    <span class="account-balance ${a.balance >= 0 ? 'positive' : 'negative'}">
+                        ${formatCurrency(a.balance)}
+                    </span>
+                    <button class="delete-btn" onclick="deleteAccount('${a.id}')">×</button>
+                </div>
+            `).join('');
         }
 
         // Render UI
