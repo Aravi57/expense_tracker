@@ -2328,6 +2328,7 @@
                                 <option value="all">All Types</option>
                                 <option value="stocks">Stocks</option>
                                 <option value="mutual-fund">Mutual Fund</option>
+                                <option value="ppf">PPF</option>
                                 <option value="bonds">Bonds</option>
                                 <option value="real-estate">Real Estate</option>
                                 <option value="crypto">Cryptocurrency</option>
@@ -2381,6 +2382,7 @@
                                         <option value="">Select Type</option>
                                         <option value="stocks">📈 Stocks</option>
                                         <option value="mutual-fund">💼 Mutual Fund</option>
+                                        <option value="ppf">🏦 PPF</option>
                                         <option value="bonds">🏦 Bonds</option>
                                         <option value="real-estate">🏠 Real Estate</option>
                                         <option value="crypto">₿ Cryptocurrency</option>
@@ -3372,13 +3374,13 @@
                                 </div>
                             </div>
                             <div class="investment-amounts">
-                                <div class="invested-amount">₹${investment.amount.toFixed(2)}</div>
-                                ${investment.currentValue ? `<div class="current-amount">₹${investment.currentValue.toFixed(2)}</div>` : ''}
+                                <div class="invested-amount">${formatCurrency(investment.amount)}</div>
+                                ${investment.currentValue ? `<div class="current-amount">${formatCurrency(investment.currentValue)}</div>` : ''}
                             </div>
                         </div>
                         ${investment.currentValue ? `
                             <div class="investment-returns ${isPositive ? 'positive-return' : 'negative-return'}">
-                                ${isPositive ? '+' : ''}₹${Math.abs(returns).toFixed(2)} (${isPositive ? '+' : ''}${returnsPercentage.toFixed(2)}%)
+                                ${isPositive ? '+' : ''}${formatCurrency(Math.abs(returns))} (${isPositive ? '+' : ''}${returnsPercentage.toFixed(2)}%)
                             </div>
                         ` : ''}
                         ${investment.description ? `<div class="investment-description-enhanced">${escapeHtml(investment.description)}</div>` : ''}
@@ -3417,9 +3419,9 @@
             });
             
             // Update overview cards
-            document.getElementById('overview-total-invested').textContent = `₹${totalInvested.toFixed(2)}`;
-            document.getElementById('overview-current-value').textContent = `₹${totalCurrentValue.toFixed(2)}`;
-            document.getElementById('overview-total-returns').textContent = `${totalReturns >= 0 ? '+' : ''}₹${Math.abs(totalReturns).toFixed(2)}`;
+            document.getElementById('overview-total-invested').textContent = formatCurrency(totalInvested);
+            document.getElementById('overview-current-value').textContent = formatCurrency(totalCurrentValue);
+            document.getElementById('overview-total-returns').textContent = `${totalReturns >= 0 ? '+' : ''}${formatCurrency(Math.abs(totalReturns))}`;
             
             // Update change indicators
             const totalInvestedChange = document.getElementById('total-invested-change');
@@ -3449,7 +3451,7 @@
             // Update portfolio stats
             document.getElementById('portfolio-count').textContent = investments.length;
             const averageInvestment = investments.length > 0 ? totalInvested / investments.length : 0;
-            document.getElementById('portfolio-average').textContent = `₹${averageInvestment.toFixed(2)}`;
+            document.getElementById('portfolio-average').textContent = formatCurrency(averageInvestment);
         }
 
         // Render investment charts
@@ -3554,9 +3556,10 @@
             const colors = {
                 stocks: '#e74c3c',
                 'mutual-fund': '#3498db',
-                bonds: '#9b59b6',
+                ppf: '#9b59b6',
+                bonds: '#f39c12',
                 'real-estate': '#e67e22',
-                crypto: '#f39c12',
+                crypto: '#f1c40f',
                 'fixed-deposit': '#2ecc71',
                 other: '#95a5a6'
             };
@@ -4064,8 +4067,11 @@
             });
         }
 
-        // Helper functions
-        function formatCurrency(amt) { return '₹' + Math.abs(amt).toFixed(2); }
+        // Format currency with separators
+        function formatCurrency(amount) {
+            const formatted = Math.round(amount).toLocaleString('en-IN');
+            return `₹${formatted}`;
+        }
         
         // Subcategory management
         const subcategories = {
