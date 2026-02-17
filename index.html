@@ -1539,7 +1539,7 @@
                         <span class="nav-text">History</span>
                     </button>
                     <button class="nav-tab" data-section="budget">
-                        <span class="nav-icon">💳</span>
+                        <span class="nav-icon">💸</span>
                         <span class="nav-text">Budget</span>
                     </button>
                     <button class="nav-tab" data-section="analysis">
@@ -1611,6 +1611,55 @@
                     <ul class="transaction-list" id="recent-transactions">
                         <li class="empty-state">No transactions yet</li>
                     </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investments Section -->
+        <div id="investments-section" class="section">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3>Investment Portfolio</h3>
+                    <div class="investment-list" id="investment-list">
+                        <p class="empty-state">No investments recorded yet</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Record Investment</h3>
+                    <div class="investment-form">
+                        <form id="investment-form">
+                            <div class="form-group">
+                                <label for="investment-name">Investment Name</label>
+                                <input type="text" id="investment-name" placeholder="e.g., Stock Purchase, Mutual Fund" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="investment-type">Investment Type</label>
+                                <select id="investment-type" required>
+                                    <option value="">Select Type</option>
+                                    <option value="stocks">Stocks</option>
+                                    <option value="mutual-fund">Mutual Fund</option>
+                                    <option value="bonds">Bonds</option>
+                                    <option value="real-estate">Real Estate</option>
+                                    <option value="crypto">Cryptocurrency</option>
+                                    <option value="fixed-deposit">Fixed Deposit</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="investment-amount">Invested Amount (₹)</label>
+                                <input type="number" id="investment-amount" placeholder="0.00" step="0.01" min="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="investment-date">Investment Date</label>
+                                <input type="date" id="investment-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="investment-description">Description</label>
+                                <textarea id="investment-description" placeholder="Enter investment details..." rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn">Record Investment</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
