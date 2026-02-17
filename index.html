@@ -1711,7 +1711,7 @@
                 <div class="card">
                     <h3>Recent Transactions</h3>
                     <ul class="transaction-list" id="recent-transactions">
-                        <li class="empty-state">No transactions yet</li>
+                        <li class="empty-state">No Transactions Yet</li>
                     </ul>
                 </div>
             </div>
@@ -1723,7 +1723,7 @@
                 <div class="card">
                     <h3>Investment Portfolio</h3>
                     <div class="investment-list" id="investment-list">
-                        <p class="empty-state">No investments recorded yet</p>
+                        <p class="empty-state">No Investments Recorded Yet</p>
                     </div>
                 </div>
                 <div class="card">
@@ -1732,7 +1732,7 @@
                         <form id="investment-form">
                             <div class="form-group">
                                 <label for="investment-name">Investment Name</label>
-                                <input type="text" id="investment-name" placeholder="e.g., Stock Purchase, Mutual Fund" required>
+                                <input type="text" id="investment-name" placeholder="E.g., Stock Purchase, Mutual Fund" required>
                             </div>
                             <div class="form-group">
                                 <label for="investment-type">Investment Type</label>
@@ -1757,7 +1757,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="investment-description">Description</label>
-                                <textarea id="investment-description" placeholder="Enter investment details..." rows="3"></textarea>
+                                <textarea id="investment-description" placeholder="Enter Investment Details..." rows="3"></textarea>
                             </div>
                             <button type="submit" class="btn">Record Investment</button>
                         </form>
@@ -1780,7 +1780,7 @@
                 <!-- Search and Filter Controls -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                     <div class="form-group" style="margin: 0;">
-                        <input type="text" id="search-input" placeholder="Search transactions..." onkeyup="filterTransactions()">
+                        <input type="text" id="search-input" placeholder="Search Transactions..." onkeyup="filterTransactions()">
                     </div>
                     <div class="form-group" style="margin: 0;">
                         <select id="type-filter" onchange="filterTransactions()">
@@ -1814,7 +1814,7 @@
                 </div>
                 
                 <ul class="transaction-list" id="transaction-list">
-                    <li class="empty-state">No transactions yet</li>
+                    <li class="empty-state">No Transactions Yet</li>
                 </ul>
             </div>
         </div>
@@ -1825,7 +1825,7 @@
                 <div class="card">
                     <h3>Budget Overview</h3>
                     <div id="budget-overview">
-                        <p class="empty-state">No budget set yet</p>
+                        <p class="empty-state">No Budget Set Yet</p>
                     </div>
                 </div>
                 <div class="card">
@@ -1880,7 +1880,7 @@
             <div class="card" style="margin-top: 20px;">
                 <h3>Category Breakdown</h3>
                 <div id="category-chart">
-                    <p class="empty-state">No expense data yet</p>
+                    <p class="empty-state">No Expense Data Yet</p>
                 </div>
             </div>
         </div>
@@ -1900,7 +1900,7 @@
                 </div>
                 <div class="form-group">
                     <label for="description">Description</label>
-                    <input type="text" id="description" placeholder="e.g., Groceries" required>
+                    <input type="text" id="description" placeholder="E.g., Groceries" required>
                 </div>
                 <div class="form-group">
                     <label for="amount">Amount (₹)</label>
@@ -1999,7 +1999,7 @@
             <form id="account-form">
                 <div class="form-group">
                     <label for="account-name">Account Name</label>
-                    <input type="text" id="account-name" placeholder="e.g., HDFC Savings" required>
+                    <input type="text" id="account-name" placeholder="E.g., HDFC Savings" required>
                 </div>
                 <div class="form-group">
                     <label for="account-type">Account Type</label>
@@ -2528,8 +2528,8 @@
             const budgetList = document.getElementById('budget-list');
             
             if (budgets.length === 0) {
-                overview.innerHTML = '<p class="empty-state">No budget set yet</p>';
-                budgetList.innerHTML = '<p class="empty-state">No budgets set</p>';
+                overview.innerHTML = '<p class="empty-state">No Budget Set Yet</p>';
+                budgetList.innerHTML = '<p class="empty-state">No Budgets Set</p>';
                 return;
             }
 
@@ -2616,7 +2616,7 @@
             const investmentList = document.getElementById('investment-list');
             
             if (investments.length === 0) {
-                investmentList.innerHTML = '<p class="empty-state">No investments recorded yet</p>';
+                investmentList.innerHTML = '<p class="empty-state">No Investments Recorded Yet</p>';
                 return;
             }
             
@@ -2818,8 +2818,8 @@
             const fullList = document.getElementById('transaction-list');
 
             if (transactions.length === 0) {
-                recentList.innerHTML = '<li class="empty-state">No transactions yet</li>';
-                fullList.innerHTML = '<li class="empty-state">No transactions yet</li>';
+                recentList.innerHTML = '<li class="empty-state">No Transactions Yet</li>';
+                fullList.innerHTML = '<li class="empty-state">No Transactions Yet</li>';
                 return;
             }
 
@@ -2865,7 +2865,7 @@
             const fullList = document.getElementById('transaction-list');
             
             if (filteredTransactions.length === 0) {
-                fullList.innerHTML = '<li class="empty-state">No transactions match your filters</li>';
+                fullList.innerHTML = '<li class="empty-state">No Transactions Match Your Filters</li>';
                 return;
             }
 
@@ -2914,7 +2914,7 @@
 
             const chart = document.getElementById('category-chart');
             if (Object.keys(categoryTotals).length === 0) {
-                chart.innerHTML = '<p class="empty-state">No expense data yet</p>';
+                chart.innerHTML = '<p class="empty-state">No Expense Data Yet</p>';
                 return;
             }
 
