@@ -919,6 +919,19 @@
                 font-size: 0.95rem;
             }
 
+            /* Budget Section Mobile */
+            #budget-section .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                max-width: 100%;
+                margin: 0 auto;
+            }
+
+            #budget-section .card {
+                max-width: 100%;
+                width: 100%;
+            }
+
             .account-card, .add-account-card {
                 min-width: 140px;
                 padding: 15px;
@@ -1063,6 +1076,19 @@
                 font-size: 0.95rem;
             }
 
+            /* Budget Section Tablet */
+            #budget-section .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                max-width: 100%;
+                margin: 0 auto;
+            }
+
+            #budget-section .card {
+                max-width: 100%;
+                width: 100%;
+            }
+
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
@@ -1138,6 +1164,25 @@
             .account-card, .add-account-card {
                 min-width: 170px;
             }
+
+            /* Budget Section Desktop */
+            #budget-section .dashboard-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 25px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            #budget-section .card {
+                max-width: 400px;
+                width: 100%;
+            }
+
+            #budget-section .card:last-child {
+                grid-column: 1 / -1;
+                max-width: 100%;
+                width: 100%;
+            }
         }
 
         @media (min-width: 1025px) {
@@ -1163,6 +1208,25 @@
             .accounts-row::-webkit-scrollbar-thumb {
                 background: rgba(255, 255, 255, 0.3);
                 border-radius: 3px;
+            }
+
+            /* Budget Section Large Desktop */
+            #budget-section .dashboard-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 30px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            #budget-section .card {
+                max-width: 400px;
+                width: 100%;
+            }
+
+            #budget-section .card:last-child {
+                grid-column: 1 / -1;
+                max-width: 100%;
+                width: 100%;
             }
         }
 
@@ -1388,6 +1452,28 @@
 
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Budget Section Centering */
+        #budget-section .dashboard-grid {
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #budget-section .card {
+            max-width: 400px;
+            width: 100%;
+        }
+
+        #budget-section .card:first-child,
+        #budget-section .card:nth-child(2) {
+            max-width: 500px;
+        }
+
+        #budget-section .card:last-child {
+            max-width: 100%;
+            width: 100%;
         }
 
         /* Enhanced Loading States */
