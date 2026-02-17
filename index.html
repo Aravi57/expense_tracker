@@ -2458,8 +2458,11 @@
                                 <option value="stocks">Stocks</option>
                                 <option value="mutual-fund">Mutual Fund</option>
                                 <option value="ppf">PPF</option>
-                                <option value="bonds">Bonds</option>
+                                <option value="epf">EPF</option>
+                                <option value="silver">Silver</option>
+                                <option value="gold">Gold</option>
                                 <option value="real-estate">Real Estate</option>
+                                <option value="bonds">Bonds</option>
                                 <option value="crypto">Cryptocurrency</option>
                                 <option value="fixed-deposit">Fixed Deposit</option>
                                 <option value="other">Other</option>
@@ -2512,8 +2515,11 @@
                                         <option value="stocks">📈 Stocks</option>
                                         <option value="mutual-fund">💼 Mutual Fund</option>
                                         <option value="ppf">🏦 PPF</option>
-                                        <option value="bonds">🏦 Bonds</option>
+                                        <option value="epf">🏦 EPF</option>
+                                        <option value="silver">🥈 Silver</option>
+                                        <option value="gold">🥇 Gold</option>
                                         <option value="real-estate">🏠 Real Estate</option>
+                                        <option value="bonds">🏦 Bonds</option>
                                         <option value="crypto">₿ Cryptocurrency</option>
                                         <option value="fixed-deposit">🏦 Fixed Deposit</option>
                                         <option value="other">📦 Other</option>
@@ -3518,9 +3524,10 @@
                 const returnsPercentage = investment.amount > 0 ? (returns / investment.amount) * 100 : 0;
                 const isPositive = returns >= 0;
                 
-                // Format investment type with special handling for PPF and Mutual Fund
+                // Format investment type with special handling for PPF, Mutual Fund, and new categories
                 const formattedType = investment.type === 'ppf' ? 'PPF' : 
                                      investment.type === 'mutual-fund' ? 'Mutual Fund' : 
+                                     investment.type === 'epf' ? 'EPF' :
                                      investment.type.charAt(0).toUpperCase() + investment.type.slice(1).replace('-', ' ');
                 
                 return `
@@ -3534,7 +3541,6 @@
                                     <div class="investment-name-enhanced">${escapeHtml(investment.name)}</div>
                                     <div class="investment-meta">
                                         <span class="investment-type-enhanced">${formattedType}</span>
-                                        <span class="investment-date-enhanced">${formatDate(investment.date)}</span>
                                     </div>
                                 </div>
                                 <div class="investment-amounts">
@@ -3717,6 +3723,9 @@
             
             const labels = Object.keys(typeData).map(type => {
                 if (type === 'ppf') return 'PPF';
+                if (type === 'epf') return 'EPF';
+                if (type === 'silver') return 'Silver';
+                if (type === 'gold') return 'Gold';
                 return type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ');
             });
             const data = Object.values(typeData);
@@ -3724,7 +3733,10 @@
             const colors = {
                 stocks: '#e74c3c',
                 'mutual-fund': '#3498db',
-                'ppf': '#9b59b6',
+                ppf: '#9b59b6',
+                epf: '#8e44ad',
+                silver: '#95a5a6',
+                gold: '#f39c12',
                 bonds: '#f39c12',
                 'real-estate': '#e67e22',
                 crypto: '#f1c40f',
