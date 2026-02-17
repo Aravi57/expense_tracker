@@ -278,30 +278,49 @@
             margin-right: 10px;
         }
 
-        .transaction-amount.income { color: #2ecc71; }
-        .transaction-amount.expense { color: #e74c3c; }
+.transaction-actions {
+    display: flex;
+    align-items: center;
+}
 
-        .delete-btn {
-            background: rgba(231, 76, 60, 0.2);
-            color: #e74c3c;
-            border: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.3s;
-        }
+.delete-btn {
+    background: #e74c3c;
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+}
 
-        .delete-btn:hover {
-            background: rgba(231, 76, 60, 0.4);
-        }
+.delete-btn:hover {
+    background: #c0392b;
+}
 
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: rgba(255, 255, 255, 0.4);
-        }
+.edit-btn {
+    background: #3498db;
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-right: 5px;
+    transition: background 0.2s;
+}
+
+.edit-btn:hover {
+    background: #2980b9;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: rgba(255, 255, 255, 0.4);
+}
 
         /* Modal */
         .modal {
@@ -719,7 +738,7 @@
     <div class="modal" id="transaction-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Add Transaction</h2>
+                <h2 id="transaction-modal-title">Add Transaction</h2>
                 <button class="modal-close" onclick="closeTransactionModal()">×</button>
             </div>
             <form id="transaction-form">
@@ -763,21 +782,57 @@
                     <label for="date">Date</label>
                     <input type="date" id="date" required>
                 </div>
+                <button type="submit" class="btn" id="transaction-submit-btn">Add Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Transaction Modal -->
+    <div class="modal" id="edit-transaction-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Transaction</h2>
+                <button class="modal-close" onclick="closeEditTransactionModal()">×</button>
+            </div>
+            <form id="edit-transaction-form">
+                <input type="hidden" id="edit-transaction-id">
                 <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="is-recurring"> Recurring Transaction
-                    </label>
+                    <label for="edit-description">Description</label>
+                    <input type="text" id="edit-description" required>
                 </div>
-                <div class="form-group" id="recurring-options" style="display: none;">
-                    <label for="recurring-frequency">Frequency</label>
-                    <select id="recurring-frequency">
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="yearly">Yearly</option>
+                <div class="form-group">
+                    <label for="edit-amount">Amount (₹)</label>
+                    <input type="number" id="edit-amount" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-category">Category</label>
+                    <select id="edit-category" onchange="updateEditSubcategories()">
+                        <option value="">Select Category</option>
+                        <option value="home">Home</option>
+                        <option value="subscription">Subscription</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="food">Food</option>
+                        <option value="transport">Transport</option>
+                        <option value="grocery">Grocery</option>
+                        <option value="snacks">Snacks</option>
+                        <option value="health">Health and Wellness</option>
+                        <option value="investment">Investment</option>
+                        <option value="emi">EMI</option>
+                        <option value="salary">Salary</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
-                <button type="submit" class="btn">Add Transaction</button>
+                <div class="form-group">
+                    <label for="edit-subcategory">Subcategory</label>
+                    <select id="edit-subcategory">
+                        <option value="">Select Subcategory</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-date">Date</label>
+                    <input type="date" id="edit-date" required>
+                </div>
+                <button type="submit" class="btn">Update Transaction</button>
             </form>
         </div>
     </div>
@@ -810,6 +865,39 @@
                     <input type="number" id="account-balance" placeholder="0.00" step="0.01" required>
                 </div>
                 <button type="submit" class="btn">Add Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Account Modal -->
+    <div class="modal" id="edit-account-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Account</h2>
+                <button class="modal-close" onclick="closeEditAccountModal()">×</button>
+            </div>
+            <form id="edit-account-form">
+                <input type="hidden" id="edit-account-id">
+                <div class="form-group">
+                    <label for="edit-account-name">Account Name</label>
+                    <input type="text" id="edit-account-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-account-type">Account Type</label>
+                    <select id="edit-account-type">
+                        <option value="bank">Bank Account</option>
+                        <option value="cash">Cash</option>
+                        <option value="credit">Credit Card</option>
+                        <option value="wallet">Digital Wallet</option>
+                        <option value="investment">Investment</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-account-balance">Current Balance (₹)</label>
+                    <input type="number" id="edit-account-balance" step="0.01" required>
+                </div>
+                <button type="submit" class="btn">Update Account</button>
             </form>
         </div>
     </div>
@@ -862,6 +950,55 @@
         </div>
     </div>
 
+    <!-- Edit Budget Modal -->
+    <div class="modal" id="edit-budget-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Budget</h2>
+                <button class="modal-close" onclick="closeEditBudgetModal()">×</button>
+            </div>
+            <form id="edit-budget-form">
+                <input type="hidden" id="edit-budget-id">
+                <div class="form-group">
+                    <label for="edit-budget-category">Category</label>
+                    <select id="edit-budget-category" onchange="updateEditBudgetSubcategories()">
+                        <option value="">Select Category</option>
+                        <option value="home">Home</option>
+                        <option value="subscription">Subscription</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="food">Food</option>
+                        <option value="transport">Transport</option>
+                        <option value="grocery">Grocery</option>
+                        <option value="snacks">Snacks</option>
+                        <option value="health">Health and Wellness</option>
+                        <option value="investment">Investment</option>
+                        <option value="emi">EMI</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-budget-subcategory">Subcategory</label>
+                    <select id="edit-budget-subcategory">
+                        <option value="">Select Subcategory</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-budget-amount">Monthly Budget (₹)</label>
+                    <input type="number" id="edit-budget-amount" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-budget-period">Period</label>
+                    <select id="edit-budget-period">
+                        <option value="monthly">Monthly</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Update Budget</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -904,12 +1041,6 @@
         const form = document.getElementById('transaction-form');
         const dateInput = document.getElementById('date');
         dateInput.valueAsDate = new Date();
-
-        // Recurring transaction checkbox handler
-        document.getElementById('is-recurring').addEventListener('change', function() {
-            const recurringOptions = document.getElementById('recurring-options');
-            recurringOptions.style.display = this.checked ? 'block' : 'none';
-        });
 
         // Type toggle
         document.querySelectorAll('.type-btn').forEach(btn => {
@@ -994,7 +1125,6 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const isRecurring = document.getElementById('is-recurring').checked;
             const category = document.getElementById('category').value;
             const subcategory = document.getElementById('subcategory').value;
             
@@ -1010,21 +1140,11 @@
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            if (isRecurring) {
-                // Add recurring transaction
-                await recurringRef.add({
-                    ...transactionData,
-                    frequency: document.getElementById('recurring-frequency').value,
-                    nextDate: document.getElementById('date').value
-                });
-            } else {
-                // Add regular transaction
-                await transactionsRef.add(transactionData);
-            }
+            // Add regular transaction
+            await transactionsRef.add(transactionData);
 
             form.reset();
             dateInput.valueAsDate = new Date();
-            document.getElementById('recurring-options').style.display = 'none';
             closeTransactionModal();
         });
 
@@ -1059,6 +1179,62 @@
             });
             e.target.reset();
             closeBudgetModal();
+        });
+
+        // Edit transaction form
+        document.getElementById('edit-transaction-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('edit-transaction-id').value;
+            const category = document.getElementById('edit-category').value;
+            const subcategory = document.getElementById('edit-subcategory').value;
+            
+            // Use subcategory if selected, otherwise use category
+            const finalCategory = subcategory || category;
+            
+            await transactionsRef.doc(id).update({
+                description: document.getElementById('edit-description').value,
+                amount: parseFloat(document.getElementById('edit-amount').value),
+                category: finalCategory,
+                date: document.getElementById('edit-date').value
+            });
+            
+            closeEditTransactionModal();
+        });
+
+        // Edit budget form
+        document.getElementById('edit-budget-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('edit-budget-id').value;
+            const category = document.getElementById('edit-budget-category').value;
+            const subcategory = document.getElementById('edit-budget-subcategory').value;
+            
+            // Use subcategory if selected, otherwise use category
+            const finalCategory = subcategory || category;
+            
+            await budgetsRef.doc(id).update({
+                category: finalCategory,
+                amount: parseFloat(document.getElementById('edit-budget-amount').value),
+                period: document.getElementById('edit-budget-period').value
+            });
+            
+            closeEditBudgetModal();
+        });
+
+        // Edit account form
+        document.getElementById('edit-account-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('edit-account-id').value;
+            
+            await accountsRef.doc(id).update({
+                name: document.getElementById('edit-account-name').value,
+                type: document.getElementById('edit-account-type').value,
+                balance: parseFloat(document.getElementById('edit-account-balance').value)
+            });
+            
+            closeEditAccountModal();
         });
 
         // Delete functions
@@ -1320,7 +1496,10 @@
                     <span class="transaction-amount ${t.type}">
                         ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
                     </span>
-                    <button class="delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
+                    <div class="transaction-actions">
+                        <button class="edit-btn" onclick="editTransaction('${t.id}')">✎</button>
+                        <button class="delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
+                    </div>
                 </li>
             `;
 
@@ -1363,7 +1542,10 @@
                     <span class="transaction-amount ${t.type}">
                         ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
                     </span>
-                    <button class="delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
+                    <div class="transaction-actions">
+                        <button class="edit-btn" onclick="editTransaction('${t.id}')">✎</button>
+                        <button class="delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
+                    </div>
                 </li>
             `;
 
@@ -1588,7 +1770,7 @@
         // Subcategory management
         const subcategories = {
             home: ['Rent', 'EB', 'Other'],
-            subscription: ['Mobile and wifi', 'Other'],
+            subscription: ['Mobile', 'Wifi', 'Other'],
             shopping: ['Shopping', 'Other'],
             food: ['Food', 'Other'],
             transport: ['Fuel', 'Service', 'Other'],
@@ -1699,12 +1881,114 @@
             updateSubcategories();
         }
         
+        function updateEditSubcategories() {
+            const categorySelect = document.getElementById('edit-category');
+            const subcategorySelect = document.getElementById('edit-subcategory');
+            const selectedCategory = categorySelect.value;
+            
+            subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+            
+            if (selectedCategory && subcategories[selectedCategory]) {
+                subcategories[selectedCategory].forEach(subcat => {
+                    const option = document.createElement('option');
+                    option.value = selectedCategory + '-' + subcat.toLowerCase().replace(/\s+/g, '-');
+                    option.textContent = subcat;
+                    subcategorySelect.appendChild(option);
+                });
+            }
+        }
+        
+        function updateEditBudgetSubcategories() {
+            const categorySelect = document.getElementById('edit-budget-category');
+            const subcategorySelect = document.getElementById('edit-budget-subcategory');
+            const selectedCategory = categorySelect.value;
+            
+            subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+            
+            if (selectedCategory && subcategories[selectedCategory]) {
+                subcategories[selectedCategory].forEach(subcat => {
+                    const option = document.createElement('option');
+                    option.value = selectedCategory + '-' + subcat.toLowerCase().replace(/\s+/g, '-');
+                    option.textContent = subcat;
+                    subcategorySelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Edit Transaction Functions
+        function editTransaction(id) {
+            const transaction = transactions.find(t => t.id === id);
+            if (!transaction) return;
+            
+            document.getElementById('edit-transaction-id').value = transaction.id;
+            document.getElementById('edit-description').value = transaction.description;
+            document.getElementById('edit-amount').value = transaction.amount;
+            document.getElementById('edit-date').value = transaction.date;
+            
+            // Set category and subcategory
+            const categoryValue = transaction.category.includes('-') ? 
+                transaction.category.split('-')[0] : transaction.category;
+            document.getElementById('edit-category').value = categoryValue;
+            updateEditSubcategories();
+            document.getElementById('edit-subcategory').value = transaction.category;
+            
+            document.getElementById('edit-transaction-modal').classList.add('active');
+        }
+        
+        function closeEditTransactionModal() {
+            document.getElementById('edit-transaction-modal').classList.remove('active');
+            document.getElementById('edit-transaction-form').reset();
+        }
+        
+        // Edit Budget Functions
+        function editBudget(id) {
+            const budget = budgets.find(b => b.id === id);
+            if (!budget) return;
+            
+            document.getElementById('edit-budget-id').value = budget.id;
+            document.getElementById('edit-budget-amount').value = budget.amount;
+            document.getElementById('edit-budget-period').value = budget.period;
+            
+            // Set category and subcategory
+            const categoryValue = budget.category.includes('-') ? 
+                budget.category.split('-')[0] : budget.category;
+            document.getElementById('edit-budget-category').value = categoryValue;
+            updateEditBudgetSubcategories();
+            document.getElementById('edit-budget-subcategory').value = budget.category;
+            
+            document.getElementById('edit-budget-modal').classList.add('active');
+        }
+        
+        function closeEditBudgetModal() {
+            document.getElementById('edit-budget-modal').classList.remove('active');
+            document.getElementById('edit-budget-form').reset();
+        }
+        
+        // Edit Account Functions
+        function editAccount(id) {
+            const account = accounts.find(a => a.id === id);
+            if (!account) return;
+            
+            document.getElementById('edit-account-id').value = account.id;
+            document.getElementById('edit-account-name').value = account.name;
+            document.getElementById('edit-account-type').value = account.type;
+            document.getElementById('edit-account-balance').value = account.balance;
+            
+            document.getElementById('edit-account-modal').classList.add('active');
+        }
+        
+        function closeEditAccountModal() {
+            document.getElementById('edit-account-modal').classList.remove('active');
+            document.getElementById('edit-account-form').reset();
+        }
+        
         function formatCategory(cat) {
             const cats = {
                 'home-rent': 'Rent',
                 'home-eb': 'EB',
                 'home-other': 'Other',
-                'subscription-mobile': 'Mobile and wifi',
+                'subscription-mobile': 'Mobile',
+                'subscription-wifi': 'Wifi',
                 'subscription-other': 'Other',
                 'shopping': 'Shopping',
                 'shopping-other': 'Other',
