@@ -1963,6 +1963,30 @@
             justify-content: flex-end;
         }
 
+        .investment-footer-enhanced {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .investment-risk-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            z-index: 10;
+            max-width: 80px;
+            text-align: center;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
         .btn-edit, .btn-delete {
             padding: 10px 18px;
             border: none;
@@ -3534,9 +3558,6 @@
                                     <div class="invested-amount">${formatCurrency(investment.amount)}</div>
                                     ${investment.currentValue ? `<div class="current-amount">${formatCurrency(investment.currentValue)}</div>` : ''}
                                 </div>
-                                <div class="investment-risk-badge risk-${investment.risk || 'medium'}">
-                                    ${investment.risk ? investment.risk.charAt(0).toUpperCase() + investment.risk.slice(1) + ' Risk' : 'Medium Risk'}
-                                </div>
                             </div>
                             ${investment.currentValue ? `
                                 <div class="investment-returns ${isPositive ? 'positive-return' : 'negative-return'}">
@@ -3544,9 +3565,14 @@
                                 </div>
                             ` : ''}
                             ${investment.description ? `<div class="investment-description-enhanced">${escapeHtml(investment.description)}</div>` : ''}
-                            <div class="investment-actions-enhanced">
-                                <button class="btn-edit" onclick="editInvestment('${investment.id}')">Edit</button>
-                                <button class="btn-delete" onclick="deleteInvestment('${investment.id}')">Delete</button>
+                            <div class="investment-footer-enhanced">
+                                <div class="investment-risk-badge risk-${investment.risk || 'medium'}">
+                                    ${investment.risk ? investment.risk.charAt(0).toUpperCase() + investment.risk.slice(1) + ' Risk' : 'Medium Risk'}
+                                </div>
+                                <div class="investment-actions-enhanced">
+                                    <button class="btn-edit" onclick="editInvestment('${investment.id}')">Edit</button>
+                                    <button class="btn-delete" onclick="deleteInvestment('${investment.id}')">Delete</button>
+                                </div>
                             </div>
                         </div>
                     </div>
