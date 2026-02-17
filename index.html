@@ -1796,6 +1796,7 @@
             font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.8);
             margin-bottom: 8px;
+            align-items: center;
         }
 
         .investment-type-enhanced {
@@ -1814,6 +1815,7 @@
         .investment-date-enhanced {
             color: rgba(255, 255, 255, 0.7);
             font-weight: 500;
+            margin-left: auto;
         }
 
         .investment-amounts {
@@ -3516,8 +3518,10 @@
                 const returnsPercentage = investment.amount > 0 ? (returns / investment.amount) * 100 : 0;
                 const isPositive = returns >= 0;
                 
-                // Format investment type with special handling for PPF
-                const formattedType = investment.type === 'ppf' ? 'PPF' : investment.type.charAt(0).toUpperCase() + investment.type.slice(1).replace('-', ' ');
+                // Format investment type with special handling for PPF and Mutual Fund
+                const formattedType = investment.type === 'ppf' ? 'PPF' : 
+                                     investment.type === 'mutual-fund' ? 'Mutual Fund' : 
+                                     investment.type.charAt(0).toUpperCase() + investment.type.slice(1).replace('-', ' ');
                 
                 return `
                     <div class="investment-item-enhanced">
