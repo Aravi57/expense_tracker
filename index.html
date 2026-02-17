@@ -1775,6 +1775,7 @@
 
         .investment-info {
             flex: 1;
+            max-width: 60%; /* Limit width to prevent alignment issues */
         }
 
         .investment-name-enhanced {
@@ -1797,6 +1798,7 @@
             color: rgba(255, 255, 255, 0.8);
             margin-bottom: 8px;
             align-items: center;
+            justify-content: flex-start; /* Left align the type */
         }
 
         .investment-type-enhanced {
@@ -1810,6 +1812,7 @@
             letter-spacing: 0.5px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            flex-shrink: 0; /* Prevent shrinking */
         }
 
         .investment-date-enhanced {
@@ -1819,11 +1822,14 @@
         }
 
         .investment-amounts {
-            text-align: right;
+            text-align: center;
             display: flex;
             flex-direction: column;
             gap: 5px;
             margin-right: 80px; /* Add space for risk badge */
+            align-items: center;
+            justify-content: flex-start; /* Align to top */
+            min-width: 120px; /* Ensure consistent width */
         }
 
         .invested-amount {
