@@ -1962,24 +1962,9 @@
             font-weight: 600;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-            overflow: hidden;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-
-        .btn-edit::before, .btn-delete::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn-edit:hover::before, .btn-delete:hover::before {
-            left: 100%;
+            z-index: 1; /* Ensure buttons are clickable */
         }
 
         .btn-edit {
@@ -3296,7 +3281,9 @@
 
         // Delete investment
         window.deleteInvestment = async function(id) {
+            console.log('Delete button clicked for ID:', id);
             if (confirm('Are you sure you want to delete this investment?')) {
+                console.log('Confirmed deletion for ID:', id);
                 await investmentsRef.doc(id).delete();
             }
         }
@@ -3762,8 +3749,14 @@
 
         // Edit investment
         window.editInvestment = function(id) {
+            console.log('Edit button clicked for ID:', id);
             const investment = investments.find(inv => inv.id === id);
-            if (!investment) return;
+            if (!investment) {
+                console.log('Investment not found for ID:', id);
+                return;
+            }
+            
+            console.log('Found investment:', investment);
             
             // Populate form with investment data
             document.getElementById('investment-name').value = investment.name;
