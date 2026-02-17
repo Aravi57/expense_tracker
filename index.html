@@ -2386,6 +2386,10 @@
                         <span class="stat-label">Current Balance</span>
                         <span class="stat-value" id="header-balance">₹0.00</span>
                     </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Investment</span>
+                        <span class="stat-value" id="header-investment">₹0.00</span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -2517,23 +2521,6 @@
                         <h3>Best Performer</h3>
                         <div class="card-value" id="best-performer-name">-</div>
                         <div class="card-change" id="best-performer-return">+0.00%</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Investment Analytics Dashboard -->
-            <div class="investment-analytics-grid">
-                <div class="analytics-card">
-                    <h3>Portfolio Performance</h3>
-                    <div class="chart-container">
-                        <canvas id="portfolio-performance-chart"></canvas>
-                    </div>
-                </div>
-                
-                <div class="analytics-card">
-                    <h3>Investment Distribution</h3>
-                    <div class="chart-container">
-                        <canvas id="investment-distribution-chart"></canvas>
                     </div>
                 </div>
             </div>
@@ -2740,6 +2727,23 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- Investment Analytics Dashboard -->
+            <div class="investment-analytics-grid">
+                <div class="analytics-card">
+                    <h3>Portfolio Performance</h3>
+                    <div class="chart-container">
+                        <canvas id="portfolio-performance-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="analytics-card">
+                    <h3>Investment Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="investment-distribution-chart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3846,6 +3850,14 @@
             
             updateInvestmentOverview();
             renderInvestmentCharts();
+            
+            // Update header investment value
+            const headerInvestment = document.getElementById('header-investment');
+            if (headerInvestment) {
+                const totalInvestmentValue = investments.reduce((sum, inv) => sum + (inv.currentValue || inv.amount || 0), 0);
+                headerInvestment.textContent = formatCurrency(totalInvestmentValue);
+                headerInvestment.style.color = '#667eea'; // Investment blue color
+            }
         }
 
         // Update investment overview cards
@@ -4243,6 +4255,14 @@
             if (headerBalance) {
                 headerBalance.textContent = formatCurrency(balance);
                 headerBalance.style.color = balance >= 0 ? '#2ecc71' : '#e74c3c';
+            }
+
+            // Update header investment value
+            const headerInvestment = document.getElementById('header-investment');
+            if (headerInvestment) {
+                const totalInvestmentValue = investments.reduce((sum, inv) => sum + (inv.currentValue || inv.amount || 0), 0);
+                headerInvestment.textContent = formatCurrency(totalInvestmentValue);
+                headerInvestment.style.color = '#667eea'; // Investment blue color
             }
 
             // Update investment details
