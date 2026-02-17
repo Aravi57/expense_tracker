@@ -58,6 +58,8 @@
             display: flex;
             align-items: center;
             gap: 20px;
+            justify-content: center;
+            flex: 1;
         }
 
         .title-icon {
@@ -71,6 +73,13 @@
             50% { transform: translateY(-10px); }
         }
 
+        .title-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
         .title-text h1 {
             font-size: 2.8rem;
             margin-bottom: 5px;
@@ -81,6 +90,7 @@
             text-shadow: 0 0 40px rgba(102, 126, 234, 0.4);
             font-weight: 700;
             letter-spacing: -1px;
+            text-align: center;
         }
 
         .app-subtitle {
@@ -89,6 +99,7 @@
             margin: 0;
             font-weight: 400;
             letter-spacing: 0.5px;
+            text-align: center;
         }
 
         .header-stats {
@@ -791,6 +802,9 @@
             .app-title {
                 flex-direction: column;
                 gap: 15px;
+                justify-content: center;
+                align-items: center;
+                flex: 1;
             }
 
             .title-icon {
@@ -938,6 +952,9 @@
 
             .app-title {
                 gap: 25px;
+                justify-content: center;
+                align-items: center;
+                flex: 1;
             }
 
             .title-icon {
@@ -1022,6 +1039,9 @@
 
             .app-title {
                 gap: 30px;
+                justify-content: center;
+                align-items: center;
+                flex: 1;
             }
 
             .title-icon {
