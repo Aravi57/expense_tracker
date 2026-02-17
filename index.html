@@ -3033,16 +3033,38 @@
         document.getElementById('investment-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            await investmentsRef.add({
-                name: document.getElementById('investment-name').value,
-                type: document.getElementById('investment-type').value,
-                amount: parseFloat(document.getElementById('investment-amount').value),
-                currentValue: parseFloat(document.getElementById('investment-current-value').value) || parseFloat(document.getElementById('investment-amount').value),
-                date: document.getElementById('investment-date').value,
-                risk: document.getElementById('investment-risk').value,
-                description: document.getElementById('investment-description').value,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            const editId = document.getElementById('investment-form').dataset.editId;
+            
+            if (editId) {
+                // Update existing investment
+                await investmentsRef.doc(editId).update({
+                    name: document.getElementById('investment-name').value,
+                    type: document.getElementById('investment-type').value,
+                    amount: parseFloat(document.getElementById('investment-amount').value),
+                    currentValue: parseFloat(document.getElementById('investment-current-value').value) || parseFloat(document.getElementById('investment-amount').value),
+                    date: document.getElementById('investment-date').value,
+                    risk: document.getElementById('investment-risk').value,
+                    description: document.getElementById('investment-description').value,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Clear edit mode
+                delete document.getElementById('investment-form').dataset.editId;
+                const submitBtn = document.getElementById('investment-form').querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<span class="btn-icon">💼</span> Record Investment';
+            } else {
+                // Create new investment
+                await investmentsRef.add({
+                    name: document.getElementById('investment-name').value,
+                    type: document.getElementById('investment-type').value,
+                    amount: parseFloat(document.getElementById('investment-amount').value),
+                    currentValue: parseFloat(document.getElementById('investment-current-value').value) || parseFloat(document.getElementById('investment-amount').value),
+                    date: document.getElementById('investment-date').value,
+                    risk: document.getElementById('investment-risk').value,
+                    description: document.getElementById('investment-description').value,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
             
             resetInvestmentForm();
         });
@@ -3052,6 +3074,13 @@
             document.getElementById('investment-form').reset();
             // Set today's date as default
             document.getElementById('investment-date').valueAsDate = new Date();
+            
+            // Clear edit mode if exists
+            if (document.getElementById('investment-form').dataset.editId) {
+                delete document.getElementById('investment-form').dataset.editId;
+                const submitBtn = document.getElementById('investment-form').querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<span class="btn-icon">💼</span> Record Investment';
+            }
         }
 
         // Refresh investments
@@ -3587,7 +3616,7 @@
             });
         }
 
-        // Edit investment (placeholder function)
+        // Edit investment
         function editInvestment(id) {
             const investment = investments.find(inv => inv.id === id);
             if (!investment) return;
@@ -3600,6 +3629,13 @@
             document.getElementById('investment-date').value = investment.date;
             document.getElementById('investment-risk').value = investment.risk || 'medium';
             document.getElementById('investment-description').value = investment.description || '';
+            
+            // Store the investment ID for updating
+            document.getElementById('investment-form').dataset.editId = id;
+            
+            // Change button text to indicate edit mode
+            const submitBtn = document.getElementById('investment-form').querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<span class="btn-icon">💼</span> Update Investment';
             
             // Scroll to form
             document.getElementById('investment-form').scrollIntoView({ behavior: 'smooth' });
