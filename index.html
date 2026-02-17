@@ -1775,7 +1775,8 @@
 
         .investment-info {
             flex: 1;
-            max-width: 60%; /* Limit width to prevent alignment issues */
+            max-width: 50%; /* Reduced width to prevent overlap */
+            min-width: 150px; /* Ensure minimum width for long names */
         }
 
         .investment-meta {
@@ -1791,20 +1792,24 @@
         .investment-type-enhanced {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
             color: #fff;
-            padding: 6px 16px;
+            padding: 4px 12px;
             border-radius: 16px;
             text-transform: capitalize;
             font-weight: 700;
-            font-size: 1.3rem; /* Increased size to match investment name */
-            letter-spacing: -0.5px; /* Added letter spacing like investment name */
+            font-size: 1.1rem; /* Reduced from 1.3rem to prevent overlap */
+            letter-spacing: -0.5px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
-            flex-shrink: 0; /* Prevent shrinking */
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Added text shadow like investment name */
-            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%); /* Gradient text like investment name */
+            flex-shrink: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            white-space: nowrap; /* Prevent text wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add ellipsis for very long names */
+            max-width: 100%; /* Ensure it doesn't overflow */
         }
 
         .investment-date-enhanced {
