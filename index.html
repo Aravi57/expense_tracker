@@ -503,6 +503,17 @@
             color: white;
             background: rgba(255, 255, 255, 0.05);
         }
+        
+        select {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            color: white !important;
+        }
+        
+        select option {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
 
         /* Mobile adjustments */
         @media (max-width: 600px) {
@@ -608,46 +619,24 @@
                         </select>
                     </div>
                     <div class="form-group" style="margin: 0;">
-                        <select id="category-filter" onchange="filterTransactions()">
+                        <select id="category-filter" onchange="updateFilterSubcategories()">
                             <option value="">All Categories</option>
-                            <optgroup label="Home">
-                                <option value="home-rent">Rent</option>
-                                <option value="home-eb">EB</option>
-                            </optgroup>
-                            <optgroup label="Subscription">
-                                <option value="subscription-mobile">Mobile and wifi</option>
-                            </optgroup>
-                            <optgroup label="Shopping">
-                                <option value="shopping">Shopping</option>
-                            </optgroup>
-                            <optgroup label="Food">
-                                <option value="food">Food</option>
-                            </optgroup>
-                            <optgroup label="Transport">
-                                <option value="transport-fuel">Fuel</option>
-                                <option value="transport-service">Service</option>
-                            </optgroup>
-                            <optgroup label="Grocery">
-                                <option value="grocery-nuts">Nuts</option>
-                                <option value="grocery-nonveg">Nonveg</option>
-                            </optgroup>
-                            <optgroup label="Snacks">
-                                <option value="snacks">Snacks</option>
-                            </optgroup>
-                            <optgroup label="Health and Wellness">
-                                <option value="health-badminton">Badminton</option>
-                                <option value="health-grooming">Grooming</option>
-                            </optgroup>
-                            <optgroup label="Investment">
-                                <option value="investment-ppf">PPF</option>
-                                <option value="investment-mf">MF</option>
-                            </optgroup>
-                            <optgroup label="EMI">
-                                <option value="emi">EMI</option>
-                            </optgroup>
-                            <optgroup label="Income">
-                                <option value="salary">Salary</option>
-                            </optgroup>
+                            <option value="home">Home</option>
+                            <option value="subscription">Subscription</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="food">Food</option>
+                            <option value="transport">Transport</option>
+                            <option value="grocery">Grocery</option>
+                            <option value="snacks">Snacks</option>
+                            <option value="health">Health and Wellness</option>
+                            <option value="investment">Investment</option>
+                            <option value="emi">EMI</option>
+                            <option value="salary">Salary</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <select id="subcategory-filter" onchange="filterTransactions()">
+                            <option value="">All Subcategories</option>
                         </select>
                     </div>
                 </div>
@@ -747,45 +736,25 @@
                 </div>
                 <div class="form-group">
                     <label for="category">Category</label>
-                    <select id="category">
-                        <optgroup label="Home">
-                            <option value="home-rent">Rent</option>
-                            <option value="home-eb">EB</option>
-                        </optgroup>
-                        <optgroup label="Subscription">
-                            <option value="subscription-mobile">Mobile and wifi</option>
-                        </optgroup>
-                        <optgroup label="Shopping">
-                            <option value="shopping">Shopping</option>
-                        </optgroup>
-                        <optgroup label="Food">
-                            <option value="food">Food</option>
-                        </optgroup>
-                        <optgroup label="Transport">
-                            <option value="transport-fuel">Fuel</option>
-                            <option value="transport-service">Service</option>
-                        </optgroup>
-                        <optgroup label="Grocery">
-                            <option value="grocery-nuts">Nuts</option>
-                            <option value="grocery-nonveg">Nonveg</option>
-                        </optgroup>
-                        <optgroup label="Snacks">
-                            <option value="snacks">Snacks</option>
-                        </optgroup>
-                        <optgroup label="Health and Wellness">
-                            <option value="health-badminton">Badminton</option>
-                            <option value="health-grooming">Grooming</option>
-                        </optgroup>
-                        <optgroup label="Investment">
-                            <option value="investment-ppf">PPF</option>
-                            <option value="investment-mf">MF</option>
-                        </optgroup>
-                        <optgroup label="EMI">
-                            <option value="emi">EMI</option>
-                        </optgroup>
-                        <optgroup label="Income">
-                            <option value="salary">Salary</option>
-                        </optgroup>
+                    <select id="category" onchange="updateSubcategories()">
+                        <option value="">Select Category</option>
+                        <option value="home">Home</option>
+                        <option value="subscription">Subscription</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="food">Food</option>
+                        <option value="transport">Transport</option>
+                        <option value="grocery">Grocery</option>
+                        <option value="snacks">Snacks</option>
+                        <option value="health">Health and Wellness</option>
+                        <option value="investment">Investment</option>
+                        <option value="emi">EMI</option>
+                        <option value="salary">Salary</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="subcategory">Subcategory</label>
+                    <select id="subcategory">
+                        <option value="">Select Subcategory</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -853,42 +822,24 @@
             <form id="budget-form">
                 <div class="form-group">
                     <label for="budget-category">Category</label>
-                    <select id="budget-category">
-                        <optgroup label="Home">
-                            <option value="home-rent">Rent</option>
-                            <option value="home-eb">EB</option>
-                        </optgroup>
-                        <optgroup label="Subscription">
-                            <option value="subscription-mobile">Mobile and wifi</option>
-                        </optgroup>
-                        <optgroup label="Shopping">
-                            <option value="shopping">Shopping</option>
-                        </optgroup>
-                        <optgroup label="Food">
-                            <option value="food">Food</option>
-                        </optgroup>
-                        <optgroup label="Transport">
-                            <option value="transport-fuel">Fuel</option>
-                            <option value="transport-service">Service</option>
-                        </optgroup>
-                        <optgroup label="Grocery">
-                            <option value="grocery-nuts">Nuts</option>
-                            <option value="grocery-nonveg">Nonveg</option>
-                        </optgroup>
-                        <optgroup label="Snacks">
-                            <option value="snacks">Snacks</option>
-                        </optgroup>
-                        <optgroup label="Health and Wellness">
-                            <option value="health-badminton">Badminton</option>
-                            <option value="health-grooming">Grooming</option>
-                        </optgroup>
-                        <optgroup label="Investment">
-                            <option value="investment-ppf">PPF</option>
-                            <option value="investment-mf">MF</option>
-                        </optgroup>
-                        <optgroup label="EMI">
-                            <option value="emi">EMI</option>
-                        </optgroup>
+                    <select id="budget-category" onchange="updateBudgetSubcategories()">
+                        <option value="">Select Category</option>
+                        <option value="home">Home</option>
+                        <option value="subscription">Subscription</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="food">Food</option>
+                        <option value="transport">Transport</option>
+                        <option value="grocery">Grocery</option>
+                        <option value="snacks">Snacks</option>
+                        <option value="health">Health and Wellness</option>
+                        <option value="investment">Investment</option>
+                        <option value="emi">EMI</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="budget-subcategory">Subcategory</label>
+                    <select id="budget-subcategory">
+                        <option value="">Select Subcategory</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1040,11 +991,17 @@
             e.preventDefault();
             
             const isRecurring = document.getElementById('is-recurring').checked;
+            const category = document.getElementById('category').value;
+            const subcategory = document.getElementById('subcategory').value;
+            
+            // Use subcategory if selected, otherwise use category
+            const finalCategory = subcategory || category;
+            
             const transactionData = {
                 type: currentType,
                 description: document.getElementById('description').value,
                 amount: parseFloat(document.getElementById('amount').value),
-                category: document.getElementById('category').value,
+                category: finalCategory,
                 date: document.getElementById('date').value,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -1083,8 +1040,15 @@
         // Add budget
         document.getElementById('budget-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            const category = document.getElementById('budget-category').value;
+            const subcategory = document.getElementById('budget-subcategory').value;
+            
+            // Use subcategory if selected, otherwise use category
+            const finalCategory = subcategory || category;
+            
             await budgetsRef.add({
-                category: document.getElementById('budget-category').value,
+                category: finalCategory,
                 amount: parseFloat(document.getElementById('budget-amount').value),
                 period: document.getElementById('budget-period').value,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1365,6 +1329,7 @@
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const typeFilter = document.getElementById('type-filter').value;
             const categoryFilter = document.getElementById('category-filter').value;
+            const subcategoryFilter = document.getElementById('subcategory-filter').value;
             
             let filteredTransactions = transactions.filter(t => {
                 const matchesSearch = !searchTerm || 
@@ -1372,9 +1337,10 @@
                     formatCategory(t.category).toLowerCase().includes(searchTerm);
                     
                 const matchesType = !typeFilter || t.type === typeFilter;
-                const matchesCategory = !categoryFilter || t.category === categoryFilter;
+                const matchesCategory = !categoryFilter || t.category.startsWith(categoryFilter);
+                const matchesSubcategory = !subcategoryFilter || t.category === subcategoryFilter;
                 
-                return matchesSearch && matchesType && matchesCategory;
+                return matchesSearch && matchesType && matchesCategory && matchesSubcategory;
             });
 
             const fullList = document.getElementById('transaction-list');
@@ -1614,6 +1580,75 @@
 
         // Helper functions
         function formatCurrency(amt) { return '₹' + Math.abs(amt).toFixed(2); }
+        
+        // Subcategory management
+        const subcategories = {
+            home: ['Rent', 'EB'],
+            subscription: ['Mobile and wifi'],
+            shopping: ['Shopping'],
+            food: ['Food'],
+            transport: ['Fuel', 'Service'],
+            grocery: ['Nuts', 'Nonveg'],
+            snacks: ['Snacks'],
+            health: ['Badminton', 'Grooming'],
+            investment: ['PPF', 'MF'],
+            emi: ['EMI'],
+            salary: ['Salary']
+        };
+        
+        function updateSubcategories() {
+            const categorySelect = document.getElementById('category');
+            const subcategorySelect = document.getElementById('subcategory');
+            const selectedCategory = categorySelect.value;
+            
+            subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+            
+            if (selectedCategory && subcategories[selectedCategory]) {
+                subcategories[selectedCategory].forEach(subcat => {
+                    const option = document.createElement('option');
+                    option.value = selectedCategory + '-' + subcat.toLowerCase().replace(/\s+/g, '-');
+                    option.textContent = subcat;
+                    subcategorySelect.appendChild(option);
+                });
+            }
+        }
+        
+        function updateFilterSubcategories() {
+            const categorySelect = document.getElementById('category-filter');
+            const subcategorySelect = document.getElementById('subcategory-filter');
+            const selectedCategory = categorySelect.value;
+            
+            subcategorySelect.innerHTML = '<option value="">All Subcategories</option>';
+            
+            if (selectedCategory && subcategories[selectedCategory]) {
+                subcategories[selectedCategory].forEach(subcat => {
+                    const option = document.createElement('option');
+                    option.value = selectedCategory + '-' + subcat.toLowerCase().replace(/\s+/g, '-');
+                    option.textContent = subcat;
+                    subcategorySelect.appendChild(option);
+                });
+            }
+            
+            // Trigger filter update
+            filterTransactions();
+        }
+        
+        function updateBudgetSubcategories() {
+            const categorySelect = document.getElementById('budget-category');
+            const subcategorySelect = document.getElementById('budget-subcategory');
+            const selectedCategory = categorySelect.value;
+            
+            subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+            
+            if (selectedCategory && subcategories[selectedCategory]) {
+                subcategories[selectedCategory].forEach(subcat => {
+                    const option = document.createElement('option');
+                    option.value = selectedCategory + '-' + subcat.toLowerCase().replace(/\s+/g, '-');
+                    option.textContent = subcat;
+                    subcategorySelect.appendChild(option);
+                });
+            }
+        }
         
         function formatCategory(cat) {
             const cats = {
