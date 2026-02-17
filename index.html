@@ -2626,7 +2626,7 @@
                         <div class="investment-amount">₹${investment.amount.toFixed(2)}</div>
                     </div>
                     <div class="investment-details">
-                        <div class="investment-type">${investment.type}</div>
+                        <div class="investment-type">${investment.type.charAt(0).toUpperCase() + investment.type.slice(1).replace('-', ' ')}</div>
                         <div class="investment-date">${investment.date}</div>
                     </div>
                     ${investment.description ? `<div class="investment-description">${investment.description}</div>` : ''}
@@ -2772,7 +2772,7 @@
             document.getElementById('total-invested').textContent = `₹${totalInvested.toFixed(2)}`;
             document.getElementById('investment-count').textContent = investmentCount;
             document.getElementById('latest-investment').textContent = `₹${latestInvestment.toFixed(2)}`;
-            document.getElementById('investment-types').textContent = investmentTypes.length > 0 ? investmentTypes.join(', ') : '-';
+            document.getElementById('investment-types').textContent = investmentTypes.length > 0 ? investmentTypes.map(type => type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')).join(', ') : '-';
         }
 
         // Render transactions
