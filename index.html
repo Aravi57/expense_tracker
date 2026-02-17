@@ -2099,13 +2099,28 @@
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 15px 15px 15px 45px;
+            padding: 15px; /* Equal padding since icon is centered */
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             color: white;
             font-size: 0.9rem;
             transition: all 0.3s ease;
+            text-align: center; /* Center the text and placeholder */
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            text-align: center; /* Center placeholder text */
+        }
+
+        .form-group select {
+            text-align: center; /* Center select text */
+            padding-left: 15px; /* Remove left padding for select */
+        }
+
+        .form-group select option {
+            text-align: center; /* Center select options */
         }
 
         .form-group input:focus,
@@ -2118,11 +2133,18 @@
 
         .input-icon {
             position: absolute;
-            left: 15px;
+            left: 50%;
             top: 50%;
-            transform: translateY(-50%);
+            transform: translate(-50%, -50%); /* Center the icon */
             font-size: 1.1rem;
             color: rgba(255, 255, 255, 0.5);
+            pointer-events: none; /* Prevent icon from interfering with input */
+        }
+
+        /* Hide icon when input is focused to avoid overlap with centered text */
+        .form-group input:focus + .input-icon,
+        .form-group textarea:focus + .input-icon {
+            opacity: 0.3;
         }
 
         .form-actions {
