@@ -1476,6 +1476,90 @@
             width: 100%;
         }
 
+        /* Investment Section Styling */
+        .investment-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .investment-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s ease;
+        }
+
+        .investment-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .investment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .investment-name {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .investment-amount {
+            font-weight: 600;
+            color: #2ecc71;
+            font-size: 1.1rem;
+        }
+
+        .investment-details {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+        }
+
+        .investment-type {
+            text-transform: capitalize;
+        }
+
+        .investment-date {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .investment-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+
+        .investment-actions {
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .btn-small {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.3s ease;
+        }
+
+        .btn-small:hover {
+            background: #c0392b;
+        }
+
         /* Enhanced Loading States */
         .loading {
             position: relative;
@@ -2070,12 +2154,14 @@
         const accountsRef = db.collection('accounts');
         const budgetsRef = db.collection('budgets');
         const recurringRef = db.collection('recurring');
+        const investmentsRef = db.collection('investments');
 
         // State
         let transactions = [];
         let accounts = [];
         let budgets = [];
         let recurringTransactions = [];
+        let investments = [];
         let currentType = 'expense';
         let charts = {
             budget: null,
@@ -2101,6 +2187,10 @@
         const form = document.getElementById('transaction-form');
         const dateInput = document.getElementById('date');
         dateInput.valueAsDate = new Date();
+
+        // Set default date for investment form
+        const investmentDateInput = document.getElementById('investment-date');
+        investmentDateInput.valueAsDate = new Date();
 
         // Type toggle
         document.querySelectorAll('.type-btn').forEach(btn => {
@@ -2182,6 +2272,11 @@
             checkAndCreateRecurringTransactions();
         });
 
+        investmentsRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderInvestments();
+        });
+
         // Add transaction
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -2240,6 +2335,24 @@
             });
             e.target.reset();
             closeBudgetModal();
+        });
+
+        // Add investment
+        document.getElementById('investment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            await investmentsRef.add({
+                name: document.getElementById('investment-name').value,
+                type: document.getElementById('investment-type').value,
+                amount: parseFloat(document.getElementById('investment-amount').value),
+                date: document.getElementById('investment-date').value,
+                description: document.getElementById('investment-description').value,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            e.target.reset();
+            // Set today's date as default
+            document.getElementById('investment-date').valueAsDate = new Date();
         });
 
         // Edit transaction form
@@ -2309,6 +2422,10 @@
 
         async function deleteBudget(id) {
             await budgetsRef.doc(id).delete();
+        }
+
+        async function deleteInvestment(id) {
+            await investmentsRef.doc(id).delete();
         }
 
         // Check and create recurring transactions
@@ -2477,6 +2594,33 @@
 
             // Render budget chart
             renderBudgetChart(categorySpending);
+        }
+
+        // Render investments
+        function renderInvestments() {
+            const investmentList = document.getElementById('investment-list');
+            
+            if (investments.length === 0) {
+                investmentList.innerHTML = '<p class="empty-state">No investments recorded yet</p>';
+                return;
+            }
+            
+            investmentList.innerHTML = investments.map(investment => `
+                <div class="investment-item">
+                    <div class="investment-header">
+                        <div class="investment-name">${investment.name}</div>
+                        <div class="investment-amount">₹${investment.amount.toFixed(2)}</div>
+                    </div>
+                    <div class="investment-details">
+                        <div class="investment-type">${investment.type}</div>
+                        <div class="investment-date">${investment.date}</div>
+                    </div>
+                    ${investment.description ? `<div class="investment-description">${investment.description}</div>` : ''}
+                    <div class="investment-actions">
+                        <button class="btn-small" onclick="deleteInvestment('${investment.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
         // Render budget chart
