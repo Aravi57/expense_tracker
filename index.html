@@ -1778,19 +1778,6 @@
             max-width: 60%; /* Limit width to prevent alignment issues */
         }
 
-        .investment-name-enhanced {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.5px;
-        }
-
         .investment-meta {
             display: flex;
             gap: 15px;
@@ -1826,7 +1813,6 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
-            margin-right: 80px; /* Add space for risk badge */
             align-items: center;
             justify-content: flex-start; /* Align to top */
             min-width: 120px; /* Ensure consistent width */
@@ -1920,9 +1906,6 @@
         }
 
         .investment-risk-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.75rem;
@@ -1935,6 +1918,8 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            align-self: flex-start; /* Align to top */
+            margin-top: 0; /* Remove top margin */
         }
 
         .risk-low {
@@ -3541,13 +3526,9 @@
                 
                 return `
                     <div class="investment-item-enhanced">
-                        <div class="investment-risk-badge risk-${investment.risk || 'medium'}">
-                            ${investment.risk ? investment.risk.charAt(0).toUpperCase() + investment.risk.slice(1) + ' Risk' : 'Medium Risk'}
-                        </div>
                         <div class="investment-content">
                             <div class="investment-header-enhanced">
                                 <div class="investment-info">
-                                    <div class="investment-name-enhanced">${escapeHtml(investment.name)}</div>
                                     <div class="investment-meta">
                                         <span class="investment-type-enhanced">${formattedType}</span>
                                     </div>
@@ -3555,6 +3536,9 @@
                                 <div class="investment-amounts">
                                     <div class="invested-amount">${formatCurrency(investment.amount)}</div>
                                     ${investment.currentValue ? `<div class="current-amount">${formatCurrency(investment.currentValue)}</div>` : ''}
+                                </div>
+                                <div class="investment-risk-badge risk-${investment.risk || 'medium'}">
+                                    ${investment.risk ? investment.risk.charAt(0).toUpperCase() + investment.risk.slice(1) + ' Risk' : 'Medium Risk'}
                                 </div>
                             </div>
                             ${investment.currentValue ? `
