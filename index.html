@@ -505,13 +505,13 @@
         }
         
         select {
-            background: rgba(255, 255, 255, 0.1) !important;
+            background: #1a1a2e !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
             color: white !important;
         }
         
         select option {
-            background: rgba(255, 255, 255, 0.1) !important;
+            background: #1a1a2e !important;
             color: white !important;
         }
 
@@ -632,6 +632,7 @@
                             <option value="investment">Investment</option>
                             <option value="emi">EMI</option>
                             <option value="salary">Salary</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
                     <div class="form-group" style="margin: 0;">
@@ -749,6 +750,7 @@
                         <option value="investment">Investment</option>
                         <option value="emi">EMI</option>
                         <option value="salary">Salary</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -834,6 +836,7 @@
                         <option value="health">Health and Wellness</option>
                         <option value="investment">Investment</option>
                         <option value="emi">EMI</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -914,6 +917,7 @@
                 document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentType = btn.dataset.type;
+                updateCategoriesByType();
             });
         });
 
@@ -1583,23 +1587,25 @@
         
         // Subcategory management
         const subcategories = {
-            home: ['Rent', 'EB'],
-            subscription: ['Mobile and wifi'],
-            shopping: ['Shopping'],
-            food: ['Food'],
-            transport: ['Fuel', 'Service'],
-            grocery: ['Nuts', 'Nonveg'],
-            snacks: ['Snacks'],
-            health: ['Badminton', 'Grooming'],
-            investment: ['PPF', 'MF'],
-            emi: ['EMI'],
-            salary: ['Salary']
+            home: ['Rent', 'EB', 'Other'],
+            subscription: ['Mobile and wifi', 'Other'],
+            shopping: ['Shopping', 'Other'],
+            food: ['Food', 'Other'],
+            transport: ['Fuel', 'Service', 'Other'],
+            grocery: ['Nuts', 'Nonveg', 'Other'],
+            snacks: ['Snacks', 'Other'],
+            health: ['Badminton', 'Grooming', 'Other'],
+            investment: ['PPF', 'MF', 'Other'],
+            emi: ['EMI', 'Other'],
+            salary: ['Salary', 'Other'],
+            other: ['Other']
         };
         
         function updateSubcategories() {
             const categorySelect = document.getElementById('category');
             const subcategorySelect = document.getElementById('subcategory');
             const selectedCategory = categorySelect.value;
+            const currentType = document.querySelector('.type-btn.active').dataset.type;
             
             subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
             
@@ -1650,24 +1656,80 @@
             }
         }
         
+        function updateCategoriesByType() {
+            const categorySelect = document.getElementById('category');
+            const currentType = document.querySelector('.type-btn.active').dataset.type;
+            const currentValue = categorySelect.value;
+            
+            // Clear current options
+            categorySelect.innerHTML = '<option value="">Select Category</option>';
+            
+            if (currentType === 'expense') {
+                // Show all expense categories except salary
+                categorySelect.innerHTML += `
+                    <option value="home">Home</option>
+                    <option value="subscription">Subscription</option>
+                    <option value="shopping">Shopping</option>
+                    <option value="food">Food</option>
+                    <option value="transport">Transport</option>
+                    <option value="grocery">Grocery</option>
+                    <option value="snacks">Snacks</option>
+                    <option value="health">Health and Wellness</option>
+                    <option value="investment">Investment</option>
+                    <option value="emi">EMI</option>
+                    <option value="other">Other</option>
+                `;
+            } else if (currentType === 'income') {
+                // Show only salary for income
+                categorySelect.innerHTML += `
+                    <option value="salary">Salary</option>
+                    <option value="other">Other</option>
+                `;
+            }
+            
+            // Restore previous selection if it's still valid
+            if (currentValue) {
+                const optionExists = Array.from(categorySelect.options).some(option => option.value === currentValue);
+                if (optionExists) {
+                    categorySelect.value = currentValue;
+                }
+            }
+            
+            // Update subcategories
+            updateSubcategories();
+        }
+        
         function formatCategory(cat) {
             const cats = {
                 'home-rent': 'Rent',
                 'home-eb': 'EB',
+                'home-other': 'Other',
                 'subscription-mobile': 'Mobile and wifi',
+                'subscription-other': 'Other',
                 'shopping': 'Shopping',
+                'shopping-other': 'Other',
                 'food': 'Food',
+                'food-other': 'Other',
                 'transport-fuel': 'Fuel',
                 'transport-service': 'Service',
+                'transport-other': 'Other',
                 'grocery-nuts': 'Nuts',
                 'grocery-nonveg': 'Nonveg',
+                'grocery-other': 'Other',
                 'snacks': 'Snacks',
+                'snacks-other': 'Other',
                 'health-badminton': 'Badminton',
                 'health-grooming': 'Grooming',
+                'health-other': 'Other',
                 'investment-ppf': 'PPF',
                 'investment-mf': 'MF',
+                'investment-other': 'Other',
                 'emi': 'EMI',
-                'salary': 'Salary'
+                'emi-other': 'Other',
+                'salary': 'Salary',
+                'salary-other': 'Other',
+                'other': 'Other',
+                'other-other': 'Other'
             };
             return cats[cat] || cat;
         }
