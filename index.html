@@ -491,6 +491,19 @@
             transition: width 0.5s ease;
         }
 
+        /* Category Optgroups Styling */
+        select optgroup {
+            font-weight: bold;
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        select option {
+            font-weight: normal;
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
         /* Mobile adjustments */
         @media (max-width: 600px) {
             .top-bar {
@@ -597,17 +610,44 @@
                     <div class="form-group" style="margin: 0;">
                         <select id="category-filter" onchange="filterTransactions()">
                             <option value="">All Categories</option>
-                            <option value="home">Home</option>
-                            <option value="subscription">Subscription</option>
-                            <option value="shopping">Shopping</option>
-                            <option value="food">Food</option>
-                            <option value="transport">Transport</option>
-                            <option value="grocery">Grocery</option>
-                            <option value="snacks">Snacks</option>
-                            <option value="health">Health and Wellness</option>
-                            <option value="investment">Investment</option>
-                            <option value="emi">EMI</option>
-                            <option value="salary">Salary</option>
+                            <optgroup label="Home">
+                                <option value="home-rent">Rent</option>
+                                <option value="home-eb">EB</option>
+                            </optgroup>
+                            <optgroup label="Subscription">
+                                <option value="subscription-mobile">Mobile and wifi</option>
+                            </optgroup>
+                            <optgroup label="Shopping">
+                                <option value="shopping">Shopping</option>
+                            </optgroup>
+                            <optgroup label="Food">
+                                <option value="food">Food</option>
+                            </optgroup>
+                            <optgroup label="Transport">
+                                <option value="transport-fuel">Fuel</option>
+                                <option value="transport-service">Service</option>
+                            </optgroup>
+                            <optgroup label="Grocery">
+                                <option value="grocery-nuts">Nuts</option>
+                                <option value="grocery-nonveg">Nonveg</option>
+                            </optgroup>
+                            <optgroup label="Snacks">
+                                <option value="snacks">Snacks</option>
+                            </optgroup>
+                            <optgroup label="Health and Wellness">
+                                <option value="health-badminton">Badminton</option>
+                                <option value="health-grooming">Grooming</option>
+                            </optgroup>
+                            <optgroup label="Investment">
+                                <option value="investment-ppf">PPF</option>
+                                <option value="investment-mf">MF</option>
+                            </optgroup>
+                            <optgroup label="EMI">
+                                <option value="emi">EMI</option>
+                            </optgroup>
+                            <optgroup label="Income">
+                                <option value="salary">Salary</option>
+                            </optgroup>
                         </select>
                     </div>
                 </div>
@@ -708,17 +748,44 @@
                 <div class="form-group">
                     <label for="category">Category</label>
                     <select id="category">
-                        <option value="home">Home</option>
-                        <option value="subscription">Subscription</option>
-                        <option value="shopping">Shopping</option>
-                        <option value="food">Food</option>
-                        <option value="transport">Transport</option>
-                        <option value="grocery">Grocery</option>
-                        <option value="snacks">Snacks</option>
-                        <option value="health">Health and Wellness</option>
-                        <option value="investment">Investment</option>
-                        <option value="emi">EMI</option>
-                        <option value="salary">Salary</option>
+                        <optgroup label="Home">
+                            <option value="home-rent">Rent</option>
+                            <option value="home-eb">EB</option>
+                        </optgroup>
+                        <optgroup label="Subscription">
+                            <option value="subscription-mobile">Mobile and wifi</option>
+                        </optgroup>
+                        <optgroup label="Shopping">
+                            <option value="shopping">Shopping</option>
+                        </optgroup>
+                        <optgroup label="Food">
+                            <option value="food">Food</option>
+                        </optgroup>
+                        <optgroup label="Transport">
+                            <option value="transport-fuel">Fuel</option>
+                            <option value="transport-service">Service</option>
+                        </optgroup>
+                        <optgroup label="Grocery">
+                            <option value="grocery-nuts">Nuts</option>
+                            <option value="grocery-nonveg">Nonveg</option>
+                        </optgroup>
+                        <optgroup label="Snacks">
+                            <option value="snacks">Snacks</option>
+                        </optgroup>
+                        <optgroup label="Health and Wellness">
+                            <option value="health-badminton">Badminton</option>
+                            <option value="health-grooming">Grooming</option>
+                        </optgroup>
+                        <optgroup label="Investment">
+                            <option value="investment-ppf">PPF</option>
+                            <option value="investment-mf">MF</option>
+                        </optgroup>
+                        <optgroup label="EMI">
+                            <option value="emi">EMI</option>
+                        </optgroup>
+                        <optgroup label="Income">
+                            <option value="salary">Salary</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="form-group">
@@ -787,17 +854,41 @@
                 <div class="form-group">
                     <label for="budget-category">Category</label>
                     <select id="budget-category">
-                        <option value="home">Home</option>
-                        <option value="subscription">Subscription</option>
-                        <option value="shopping">Shopping</option>
-                        <option value="food">Food</option>
-                        <option value="transport">Transport</option>
-                        <option value="grocery">Grocery</option>
-                        <option value="snacks">Snacks</option>
-                        <option value="health">Health and Wellness</option>
-                        <option value="investment">Investment</option>
-                        <option value="emi">EMI</option>
-                        <option value="salary">Salary</option>
+                        <optgroup label="Home">
+                            <option value="home-rent">Rent</option>
+                            <option value="home-eb">EB</option>
+                        </optgroup>
+                        <optgroup label="Subscription">
+                            <option value="subscription-mobile">Mobile and wifi</option>
+                        </optgroup>
+                        <optgroup label="Shopping">
+                            <option value="shopping">Shopping</option>
+                        </optgroup>
+                        <optgroup label="Food">
+                            <option value="food">Food</option>
+                        </optgroup>
+                        <optgroup label="Transport">
+                            <option value="transport-fuel">Fuel</option>
+                            <option value="transport-service">Service</option>
+                        </optgroup>
+                        <optgroup label="Grocery">
+                            <option value="grocery-nuts">Nuts</option>
+                            <option value="grocery-nonveg">Nonveg</option>
+                        </optgroup>
+                        <optgroup label="Snacks">
+                            <option value="snacks">Snacks</option>
+                        </optgroup>
+                        <optgroup label="Health and Wellness">
+                            <option value="health-badminton">Badminton</option>
+                            <option value="health-grooming">Grooming</option>
+                        </optgroup>
+                        <optgroup label="Investment">
+                            <option value="investment-ppf">PPF</option>
+                            <option value="investment-mf">MF</option>
+                        </optgroup>
+                        <optgroup label="EMI">
+                            <option value="emi">EMI</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1526,10 +1617,22 @@
         
         function formatCategory(cat) {
             const cats = {
-                home: 'Home', subscription: 'Subscription', shopping: 'Shopping',
-                food: 'Food', transport: 'Transport', grocery: 'Grocery',
-                snacks: 'Snacks', health: 'Health and Wellness', investment: 'Investment',
-                emi: 'EMI', salary: 'Salary'
+                'home-rent': 'Rent',
+                'home-eb': 'EB',
+                'subscription-mobile': 'Mobile and wifi',
+                'shopping': 'Shopping',
+                'food': 'Food',
+                'transport-fuel': 'Fuel',
+                'transport-service': 'Service',
+                'grocery-nuts': 'Nuts',
+                'grocery-nonveg': 'Nonveg',
+                'snacks': 'Snacks',
+                'health-badminton': 'Badminton',
+                'health-grooming': 'Grooming',
+                'investment-ppf': 'PPF',
+                'investment-mf': 'MF',
+                'emi': 'EMI',
+                'salary': 'Salary'
             };
             return cats[cat] || cat;
         }
