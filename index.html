@@ -1791,15 +1791,20 @@
         .investment-type-enhanced {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
             color: #fff;
-            padding: 4px 12px;
+            padding: 6px 16px;
             border-radius: 16px;
             text-transform: capitalize;
-            font-weight: 600;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
+            font-weight: 700;
+            font-size: 1.3rem; /* Increased size to match investment name */
+            letter-spacing: -0.5px; /* Added letter spacing like investment name */
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
             flex-shrink: 0; /* Prevent shrinking */
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Added text shadow like investment name */
+            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%); /* Gradient text like investment name */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .investment-date-enhanced {
