@@ -295,6 +295,60 @@
             transform: translateY(0);
         }
 
+        /* Investment Details Card */
+        .investment-summary {
+            margin-bottom: 20px;
+        }
+
+        .investment-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .investment-row:last-child {
+            border-bottom: none;
+        }
+
+        .investment-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+        }
+
+        .investment-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2ecc71;
+        }
+
+        .investment-return {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .investment-return.positive {
+            color: #2ecc71;
+        }
+
+        .investment-return.negative {
+            color: #e74c3c;
+        }
+
+        .investment-rate {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .investment-chart-container {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         /* Section */
         .section {
             display: none;
@@ -1442,6 +1496,31 @@
                 </div>
 
                 <div class="card">
+                    <h3>💼 Investment Details</h3>
+                    <div class="investment-summary">
+                        <div class="investment-row">
+                            <div class="investment-label">Total Invested</div>
+                            <div class="investment-value" id="total-invested">₹0.00</div>
+                        </div>
+                        <div class="investment-row">
+                            <div class="investment-label">Current Value</div>
+                            <div class="investment-value" id="investment-value">₹0.00</div>
+                        </div>
+                        <div class="investment-row">
+                            <div class="investment-label">Returns</div>
+                            <div class="investment-return" id="investment-return">₹0.00</div>
+                        </div>
+                        <div class="investment-row">
+                            <div class="investment-label">Return Rate</div>
+                            <div class="investment-rate" id="investment-rate">0.00%</div>
+                        </div>
+                    </div>
+                    <div class="investment-chart-container">
+                        <canvas id="investment-chart" width="100%" height="150"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
                     <h3>Recent Transactions</h3>
                     <ul class="transaction-list" id="recent-transactions">
                         <li class="empty-state">No transactions yet</li>
@@ -1859,7 +1938,13 @@
         let budgets = [];
         let recurringTransactions = [];
         let currentType = 'expense';
-        let charts = {};
+        let charts = {
+            budget: null,
+            monthlyTrend: null,
+            incomeExpense: null,
+            categoryPie: null,
+            investment: null
+        };
 
         // Account colors
         const accountColors = [
@@ -2309,11 +2394,90 @@
             });
         }
 
+        // Render investment chart
+        function renderInvestmentChart(investmentTransactions) {
+            const ctx = document.getElementById('investment-chart').getContext('2d');
+            
+            if (charts.investment) {
+                charts.investment.destroy();
+            }
+
+            // Group transactions by month
+            const monthlyData = {};
+            investmentTransactions.forEach(t => {
+                const month = t.date.substring(0, 7); // YYYY-MM format
+                const amount = t.type === 'income' ? t.amount : -t.amount;
+                monthlyData[month] = (monthlyData[month] || 0) + amount;
+            });
+
+            // Sort months and get last 6 months
+            const sortedMonths = Object.keys(monthlyData).sort().slice(-6);
+            const labels = sortedMonths.map(month => {
+                const date = new Date(month + '-01');
+                return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            });
+
+            const data = sortedMonths.map(month => monthlyData[month] || 0);
+
+            charts.investment = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Investment Performance',
+                        data: data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { 
+                                color: 'white',
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         // Render transactions
         function render() {
             const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
             const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
             const balance = income - expense;
+
+            // Calculate investment details
+            const investmentTransactions = transactions.filter(t => t.category === 'investment');
+            const investmentIncome = investmentTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const investmentExpense = investmentTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const totalInvested = investmentIncome;
+            const currentValue = investmentIncome - investmentExpense;
+            const returns = currentValue - totalInvested;
+            const returnRate = totalInvested > 0 ? (returns / totalInvested) * 100 : 0;
 
             // Update dashboard balance
             document.getElementById('balance').textContent = formatCurrency(balance);
@@ -2327,6 +2491,16 @@
                 headerBalance.textContent = formatCurrency(balance);
                 headerBalance.style.color = balance >= 0 ? '#2ecc71' : '#e74c3c';
             }
+
+            // Update investment details
+            document.getElementById('total-invested').textContent = formatCurrency(totalInvested);
+            document.getElementById('investment-value').textContent = formatCurrency(currentValue);
+            document.getElementById('investment-return').textContent = formatCurrency(returns);
+            document.getElementById('investment-return').className = 'investment-return ' + (returns >= 0 ? 'positive' : 'negative');
+            document.getElementById('investment-rate').textContent = returnRate.toFixed(2) + '%';
+
+            // Render investment chart
+            renderInvestmentChart(investmentTransactions);
 
             const recentList = document.getElementById('recent-transactions');
             const fullList = document.getElementById('transaction-list');
