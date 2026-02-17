@@ -2038,6 +2038,20 @@
             margin-top: 30px;
         }
 
+        .investment-forms-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .investment-forms-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
         .form-card {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
             border-radius: 20px;
@@ -2186,6 +2200,37 @@
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.2);
             border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .topup-summary {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1) 0%, rgba(39, 174, 96, 0.05) 100%);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+            margin-top: 10px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-row span:first-child {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .summary-row span:last-child {
+            color: #2ecc71;
+            font-weight: 600;
+            font-size: 1.1rem;
         }
 
         .empty-state-investments {
@@ -2536,85 +2581,154 @@
                 </div>
             </div>
 
-            <!-- Advanced Investment Form -->
-            <div class="investment-form-section">
+            <!-- Advanced Investment Forms -->
+            <div class="investment-forms-container">
+                <!-- Record Investment Card -->
                 <div class="form-card">
                     <div class="form-header">
                         <h2>Record Investment</h2>
-                        <div class="form-icon">💼</div>
+                        <div class="form-icon">📈</div>
                     </div>
-                    <div class="investment-form">
-                        <form id="investment-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="investment-name">Investment Name</label>
-                                    <input type="text" id="investment-name" placeholder="e.g., Apple Stocks, HDFC Mutual Fund" required>
-                                    <div class="input-icon">📝</div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="investment-type">Investment Type</label>
-                                    <select id="investment-type" required>
-                                        <option value="">Select Type</option>
-                                        <option value="stocks">📈 Stocks</option>
-                                        <option value="mutual-fund">💼 Mutual Fund</option>
-                                        <option value="ppf">🏦 PPF</option>
-                                        <option value="epf">🏦 EPF</option>
-                                        <option value="silver">🥈 Silver</option>
-                                        <option value="gold">🥇 Gold</option>
-                                        <option value="real-estate">🏠 Real Estate</option>
-                                        <option value="bonds">🏦 Bonds</option>
-                                        <option value="crypto">₿ Cryptocurrency</option>
-                                        <option value="fixed-deposit">🏦 Fixed Deposit</option>
-                                        <option value="other">📦 Other</option>
-                                    </select>
-                                    <div class="input-icon">📂</div>
-                                </div>
+                    <form class="investment-form" id="investment-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="investment-name">Investment Name</label>
+                                <div class="input-icon">📝</div>
+                                <input type="text" id="investment-name" placeholder="e.g., Apple Stocks, HDFC Mutual Fund" required>
                             </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="investment-amount">Invested Amount (₹)</label>
-                                    <input type="number" id="investment-amount" placeholder="0.00" step="0.01" min="0.01" required>
-                                    <div class="input-icon">💰</div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="investment-current-value">Current Value (₹)</label>
-                                    <input type="number" id="investment-current-value" placeholder="0.00" step="0.01" min="0.01">
-                                    <div class="input-icon">📊</div>
-                                </div>
+                            <div class="form-group">
+                                <label for="investment-type">Investment Type</label>
+                                <div class="input-icon">📂</div>
+                                <select id="investment-type" required>
+                                    <option value="">Select Type</option>
+                                    <option value="stocks">📈 Stocks</option>
+                                    <option value="mutual-fund">💼 Mutual Fund</option>
+                                    <option value="ppf">🏦 PPF</option>
+                                    <option value="epf">🏦 EPF</option>
+                                    <option value="silver">🥈 Silver</option>
+                                    <option value="gold">🥇 Gold</option>
+                                    <option value="real-estate">🏠 Real Estate</option>
+                                    <option value="bonds">🏦 Bonds</option>
+                                    <option value="crypto">₿ Cryptocurrency</option>
+                                    <option value="fixed-deposit">🏦 Fixed Deposit</option>
+                                    <option value="other">📦 Other</option>
+                                </select>
                             </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="investment-date">Investment Date</label>
-                                    <input type="date" id="investment-date" required>
-                                    <div class="input-icon">📅</div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="investment-risk">Risk Level</label>
-                                    <select id="investment-risk">
-                                        <option value="low">🟢 Low Risk</option>
-                                        <option value="medium">🟡 Medium Risk</option>
-                                        <option value="high">🔴 High Risk</option>
-                                    </select>
-                                    <div class="input-icon">⚠️</div>
-                                </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="investment-amount">Invested Amount (₹)</label>
+                                <div class="input-icon">💰</div>
+                                <input type="number" id="investment-amount" placeholder="0.00" step="0.01" min="0" required>
                             </div>
+                            <div class="form-group">
+                                <label for="investment-current-value">Current Value (₹)</label>
+                                <div class="input-icon">💵</div>
+                                <input type="number" id="investment-current-value" placeholder="0.00" step="0.01" min="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="investment-date">Investment Date</label>
+                                <div class="input-icon">📅</div>
+                                <input type="date" id="investment-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="investment-risk">Risk Level</label>
+                                <div class="input-icon">📊</div>
+                                <select id="investment-risk">
+                                    <option value="low">🟢 Low Risk</option>
+                                    <option value="medium" selected>🟡 Medium Risk</option>
+                                    <option value="high">🔴 High Risk</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="investment-description">Description</label>
+                            <div class="input-icon">📝</div>
+                            <textarea id="investment-description" placeholder="Add notes about this investment..." rows="3"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">
+                                <span class="btn-icon">💼</span> Record Investment
+                            </button>
+                            <button type="button" class="btn-secondary" onclick="resetInvestmentForm()">
+                                <span class="btn-icon">🔄</span> Reset
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Top-up Investment Card -->
+                <div class="form-card">
+                    <div class="form-header" style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);">
+                        <h2>Top-up Investment</h2>
+                        <div class="form-icon">💰</div>
+                    </div>
+                    <form class="investment-form" id="topup-form">
+                        <div class="form-row">
                             <div class="form-group full-width">
-                                <label for="investment-description">Description & Notes</label>
-                                <textarea id="investment-description" placeholder="Enter investment details, goals, or notes..." rows="3"></textarea>
-                                <div class="input-icon">📋</div>
+                                <label for="topup-investment">Select Investment</label>
+                                <div class="input-icon">📂</div>
+                                <select id="topup-investment" required>
+                                    <option value="">Choose Investment to Top-up</option>
+                                </select>
                             </div>
-                            <div class="form-actions">
-                                <button type="submit" class="btn-primary">
-                                    <span class="btn-icon">💼</span>
-                                    Record Investment
-                                </button>
-                                <button type="button" class="btn-secondary" onclick="resetInvestmentForm()">
-                                    <span class="btn-icon">🔄</span>
-                                    Reset
-                                </button>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="topup-amount">Top-up Amount (₹)</label>
+                                <div class="input-icon">💰</div>
+                                <input type="number" id="topup-amount" placeholder="0.00" step="0.01" min="0" required>
                             </div>
-                        </form>
-                    </div>
+                            <div class="form-group">
+                                <label for="topup-frequency">Frequency</label>
+                                <div class="input-icon">🔄</div>
+                                <select id="topup-frequency" required>
+                                    <option value="monthly">📅 Monthly</option>
+                                    <option value="quarterly">📊 Quarterly</option>
+                                    <option value="yearly">📆 Yearly</option>
+                                    <option value="onetime">💵 One-time</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="topup-date">Start Date</label>
+                                <div class="input-icon">📅</div>
+                                <input type="date" id="topup-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="topup-description">Notes</label>
+                                <div class="input-icon">📝</div>
+                                <input type="text" id="topup-description" placeholder="Optional notes...">
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <div class="topup-summary">
+                                <div class="summary-row">
+                                    <span>Current Investment:</span>
+                                    <span id="topup-current-value">₹0</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>After Top-up:</span>
+                                    <span id="topup-new-value">₹0</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Total Invested:</span>
+                                    <span id="topup-total-invested">₹0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);">
+                                <span class="btn-icon">💰</span> Add Top-up
+                            </button>
+                            <button type="button" class="btn-secondary" onclick="resetTopupForm()">
+                                <span class="btn-icon">🔄</span> Reset
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -3247,6 +3361,109 @@
             resetInvestmentForm();
         });
 
+        // Top-up investment form functionality
+        document.getElementById('topup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const investmentId = document.getElementById('topup-investment').value;
+            const topupAmount = parseFloat(document.getElementById('topup-amount').value);
+            const frequency = document.getElementById('topup-frequency').value;
+            const startDate = document.getElementById('topup-date').value;
+            const description = document.getElementById('topup-description').value;
+            
+            if (!investmentId || !topupAmount) {
+                alert('Please select an investment and enter a valid amount');
+                return;
+            }
+            
+            // Get the current investment
+            const investment = investments.find(inv => inv.id === investmentId);
+            if (!investment) {
+                alert('Investment not found');
+                return;
+            }
+            
+            // Update the investment with top-up
+            const newAmount = investment.amount + topupAmount;
+            const newCurrentValue = (investment.currentValue || investment.amount) + topupAmount;
+            
+            await investmentsRef.doc(investmentId).update({
+                amount: newAmount,
+                currentValue: newCurrentValue,
+                lastTopup: {
+                    amount: topupAmount,
+                    frequency: frequency,
+                    date: startDate,
+                    description: description,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                },
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Add a transaction record for the top-up
+            await transactionsRef.add({
+                type: 'expense',
+                description: `Top-up: ${investment.name}`,
+                amount: topupAmount,
+                category: 'investment',
+                subcategory: 'investment-other',
+                date: startDate,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            resetTopupForm();
+            alert('Top-up added successfully!');
+        });
+
+        // Update top-up summary when investment or amount changes
+        document.getElementById('topup-investment').addEventListener('change', updateTopupSummary);
+        document.getElementById('topup-amount').addEventListener('input', updateTopupSummary);
+
+        function updateTopupSummary() {
+            const investmentId = document.getElementById('topup-investment').value;
+            const topupAmount = parseFloat(document.getElementById('topup-amount').value) || 0;
+            
+            if (investmentId) {
+                const investment = investments.find(inv => inv.id === investmentId);
+                if (investment) {
+                    const currentAmount = investment.amount || 0;
+                    const currentValue = investment.currentValue || investment.amount || 0;
+                    const newAmount = currentAmount + topupAmount;
+                    const newValue = currentValue + topupAmount;
+                    
+                    document.getElementById('topup-current-value').textContent = formatCurrency(currentAmount);
+                    document.getElementById('topup-new-value').textContent = formatCurrency(newValue);
+                    document.getElementById('topup-total-invested').textContent = formatCurrency(newAmount);
+                }
+            } else {
+                document.getElementById('topup-current-value').textContent = '₹0';
+                document.getElementById('topup-new-value').textContent = formatCurrency(topupAmount);
+                document.getElementById('topup-total-invested').textContent = formatCurrency(topupAmount);
+            }
+        }
+
+        function resetTopupForm() {
+            document.getElementById('topup-form').reset();
+            document.getElementById('topup-date').valueAsDate = new Date();
+            updateTopupSummary();
+        }
+
+        function populateTopupInvestments() {
+            const select = document.getElementById('topup-investment');
+            select.innerHTML = '<option value="">Choose Investment to Top-up</option>';
+            
+            investments.forEach(investment => {
+                const formattedType = investment.type === 'ppf' ? 'PPF' : 
+                                     investment.type === 'mutual-fund' ? 'Mutual Fund' : 
+                                     investment.type === 'epf' ? 'EPF' :
+                                     investment.type.charAt(0).toUpperCase() + investment.type.slice(1).replace('-', ' ');
+                const option = document.createElement('option');
+                option.value = investment.id;
+                option.textContent = `${formattedType} - ${investment.name}`;
+                select.appendChild(option);
+            });
+        }
+
         // Reset investment form
         function resetInvestmentForm() {
             document.getElementById('investment-form').reset();
@@ -3528,6 +3745,9 @@
             const investmentList = document.getElementById('investment-list');
             const sortBy = document.getElementById('investment-sort').value;
             const filterType = document.getElementById('investment-filter-type').value;
+            
+            // Populate top-up investments dropdown
+            populateTopupInvestments();
             
             // Filter investments
             let filteredInvestments = investments;
