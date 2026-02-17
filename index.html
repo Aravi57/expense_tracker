@@ -3389,6 +3389,9 @@
                 const returnsPercentage = investment.amount > 0 ? (returns / investment.amount) * 100 : 0;
                 const isPositive = returns >= 0;
                 
+                // Format investment type with special handling for PPF
+                const formattedType = investment.type === 'ppf' ? 'PPF' : investment.type.charAt(0).toUpperCase() + investment.type.slice(1).replace('-', ' ');
+                
                 return `
                     <div class="investment-item-enhanced">
                         <div class="investment-risk-badge risk-${investment.risk || 'medium'}">
@@ -3398,7 +3401,7 @@
                             <div class="investment-info">
                                 <div class="investment-name-enhanced">${escapeHtml(investment.name)}</div>
                                 <div class="investment-meta">
-                                    <span class="investment-type-enhanced">${investment.type.charAt(0).toUpperCase() + investment.type.slice(1).replace('-', ' ')}</span>
+                                    <span class="investment-type-enhanced">${formattedType}</span>
                                     <span class="investment-date-enhanced">${formatDate(investment.date)}</span>
                                 </div>
                             </div>
@@ -3579,7 +3582,10 @@
                 typeData[inv.type] += inv.currentValue || inv.amount;
             });
             
-            const labels = Object.keys(typeData).map(type => type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' '));
+            const labels = Object.keys(typeData).map(type => {
+                if (type === 'ppf') return 'PPF';
+                return type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ');
+            });
             const data = Object.values(typeData);
             
             const colors = {
