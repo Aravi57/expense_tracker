@@ -16,9 +16,74 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a2e;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             color: white;
+        }
+
+        /* App Header */
+        .app-header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .app-title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .app-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .header-stats .stat-item {
+            text-align: center;
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-stats .stat-label {
+            display: block;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-stats .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2ecc71;
         }
 
         .app-container {
@@ -52,6 +117,13 @@
             cursor: pointer;
             border-radius: 8px;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-icon {
+            font-size: 1rem;
         }
 
         .nav-tab:hover {
@@ -539,8 +611,44 @@
             color: white !important;
         }
 
-        /* Mobile adjustments */
+        /* Enhanced Mobile and Responsive Design */
         @media (max-width: 600px) {
+            .app-container {
+                padding: 10px;
+            }
+
+            .app-header {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .app-title h1 {
+                font-size: 2rem;
+            }
+
+            .app-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .header-stats {
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .header-stats .stat-item {
+                padding: 10px 15px;
+            }
+
+            .header-stats .stat-value {
+                font-size: 1.2rem;
+            }
+
             .top-bar {
                 flex-direction: column;
                 gap: 15px;
@@ -549,16 +657,422 @@
 
             .nav-tabs {
                 order: 2;
+                flex-wrap: wrap;
+                gap: 2px;
+            }
+
+            .nav-tab {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+
+            .nav-icon {
+                font-size: 0.9rem;
             }
 
             .add-transaction-btn {
                 order: 1;
                 justify-content: center;
+                padding: 10px 20px;
+                font-size: 0.85rem;
             }
 
             .account-card, .add-account-card {
-                min-width: 150px;
+                min-width: 140px;
+                padding: 15px;
             }
+
+            .card {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .transaction-item {
+                padding: 12px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .transaction-info {
+                width: 100%;
+            }
+
+            .transaction-amount {
+                margin-right: 0;
+                align-self: flex-end;
+            }
+
+            .transaction-actions {
+                align-self: flex-end;
+                margin-top: 5px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .stat-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .summary-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .category-bar {
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+            .balance-amount {
+                font-size: 2rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card h3 {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (min-width: 601px) and (max-width: 768px) {
+            .app-container {
+                padding: 15px;
+            }
+
+            .app-header {
+                padding: 25px;
+            }
+
+            .app-title h1 {
+                font-size: 2.2rem;
+            }
+
+            .header-content {
+                gap: 25px;
+            }
+
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .account-card, .add-account-card {
+                min-width: 160px;
+            }
+
+            .transaction-item {
+                padding: 12px 15px;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .app-container {
+                padding: 20px;
+            }
+
+            .app-title h1 {
+                font-size: 2.3rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .account-card, .add-account-card {
+                min-width: 170px;
+            }
+
+            .header-stats .stat-item {
+                padding: 12px 20px;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            .accounts-row {
+                overflow-x: auto;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+            }
+
+            .accounts-row::-webkit-scrollbar {
+                height: 6px;
+            }
+
+            .accounts-row::-webkit-scrollbar-track {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 3px;
+            }
+
+            .accounts-row::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 3px;
+            }
+        }
+
+        /* Enhanced Visual Effects */
+        .card {
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .account-card {
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .account-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .transaction-item {
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .transaction-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-bar {
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            transition: transform 0.2s ease;
+        }
+
+        .category-bar:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Enhanced Buttons */
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Enhanced Form Elements */
+        input, select {
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        /* Enhanced Modal */
+        .modal-content {
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Enhanced Navigation */
+        .nav-tab {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #667eea;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-tab:hover::after {
+            width: 80%;
+        }
+
+        .nav-tab.active::after {
+            width: 100%;
+        }
+
+        /* Enhanced Type Toggle */
+        .type-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .type-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .type-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Enhanced Progress Bars */
+        .bar-fill {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Enhanced Empty States */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+            position: relative;
+        }
+
+        .empty-state::before {
+            content: '📊';
+            display: block;
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
+        /* Enhanced Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Enhanced Loading States */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
     </style>
 </head>
@@ -570,13 +1084,37 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="app-title">
+                    <h1>💰 Expense Tracker</h1>
+                    <p class="app-subtitle">Manage your finances with ease</p>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Balance</span>
+                        <span class="stat-value" id="header-balance">₹0.00</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
         <!-- Top Bar -->
         <div class="top-bar">
             <nav class="nav-tabs">
-                <button class="nav-tab active" data-section="dashboard">Dashboard</button>
-                <button class="nav-tab" data-section="history">History</button>
-                <button class="nav-tab" data-section="budget">Budget</button>
-                <button class="nav-tab" data-section="analysis">Analysis</button>
+                <button class="nav-tab active" data-section="dashboard">
+                    <span class="nav-icon">📊</span> Dashboard
+                </button>
+                <button class="nav-tab" data-section="history">
+                    <span class="nav-icon">📝</span> History
+                </button>
+                <button class="nav-tab" data-section="budget">
+                    <span class="nav-icon">💳</span> Budget
+                </button>
+                <button class="nav-tab" data-section="analysis">
+                    <span class="nav-icon">📈</span> Analysis
+                </button>
             </nav>
             <button class="add-transaction-btn" onclick="openTransactionModal()">
                 <span>+</span> Add Transaction
@@ -1481,10 +2019,18 @@
             const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
             const balance = income - expense;
 
+            // Update dashboard balance
             document.getElementById('balance').textContent = formatCurrency(balance);
             document.getElementById('balance').className = 'balance-amount ' + (balance >= 0 ? 'positive' : 'negative');
             document.getElementById('total-income').textContent = '+' + formatCurrency(income);
             document.getElementById('total-expense').textContent = '-' + formatCurrency(expense);
+
+            // Update header balance
+            const headerBalance = document.getElementById('header-balance');
+            if (headerBalance) {
+                headerBalance.textContent = formatCurrency(balance);
+                headerBalance.style.color = balance >= 0 ? '#2ecc71' : '#e74c3c';
+            }
 
             const recentList = document.getElementById('recent-transactions');
             const fullList = document.getElementById('transaction-list');
