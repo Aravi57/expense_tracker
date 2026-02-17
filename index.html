@@ -333,21 +333,38 @@
             color: #2ecc71;
         }
 
-        .investment-return.negative {
-            color: #e74c3c;
-        }
-
-        .investment-rate {
-            font-size: 1.1rem;
-            font-weight: 600;
+        .investment-types {
             color: #667eea;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
-        .investment-chart-container {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
+.balance-amount.positive { color: #2ecc71; }
+.balance-amount.negative { color: #e74c3c; }
+
+.summary-row {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.summary-item {
+    flex: 1;
+}
+
+.summary-item .label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.summary-item .value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+.summary-item .value.income { color: #2ecc71; }
+.summary-item .value.expense { color: #e74c3c; }
 
         /* Section */
         .section {
@@ -1677,20 +1694,17 @@
                             <div class="investment-value" id="total-invested">₹0.00</div>
                         </div>
                         <div class="investment-row">
-                            <div class="investment-label">Current Value</div>
-                            <div class="investment-value" id="investment-value">₹0.00</div>
+                            <div class="investment-label">Number of Investments</div>
+                            <div class="investment-value" id="investment-count">0</div>
                         </div>
                         <div class="investment-row">
-                            <div class="investment-label">Returns</div>
-                            <div class="investment-return" id="investment-return">₹0.00</div>
+                            <div class="investment-label">Latest Investment</div>
+                            <div class="investment-value" id="latest-investment">₹0.00</div>
                         </div>
                         <div class="investment-row">
-                            <div class="investment-label">Return Rate</div>
-                            <div class="investment-rate" id="investment-rate">0.00%</div>
+                            <div class="investment-label">Investment Types</div>
+                            <div class="investment-types" id="investment-types">-</div>
                         </div>
-                    </div>
-                    <div class="investment-chart-container">
-                        <canvas id="investment-chart" width="100%" height="150"></canvas>
                     </div>
                 </div>
 
@@ -2275,6 +2289,7 @@
         investmentsRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
             investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderInvestments();
+            updateInvestmentDashboard();
         });
 
         // Add transaction
@@ -2746,6 +2761,19 @@
                     }
                 }
             });
+        }
+
+        // Update investment dashboard
+        function updateInvestmentDashboard() {
+            const totalInvested = investments.reduce((sum, inv) => sum + inv.amount, 0);
+            const investmentCount = investments.length;
+            const latestInvestment = investments.length > 0 ? investments[0].amount : 0;
+            const investmentTypes = [...new Set(investments.map(inv => inv.type))];
+            
+            document.getElementById('total-invested').textContent = `₹${totalInvested.toFixed(2)}`;
+            document.getElementById('investment-count').textContent = investmentCount;
+            document.getElementById('latest-investment').textContent = `₹${latestInvestment.toFixed(2)}`;
+            document.getElementById('investment-types').textContent = investmentTypes.length > 0 ? investmentTypes.join(', ') : '-';
         }
 
         // Render transactions
@@ -3391,6 +3419,7 @@
             transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
                 const type = t.type.charAt(0).toUpperCase() + t.type.slice(1);
                 const amount = t.type === 'income' ? `+₹${t.amount.toFixed(2)}` : `-₹${t.amount.toFixed(2)}`;
+                content += `${formatDate(t.date).padEnd(12)} ${type.padEnd(10)} ${(t.description.substring(0, 24)).padEnd(25)} ${formatCategory(t.category).padEnd(15)} ${amount.padEnd(10)}\n`;
                 content += `${t.date.padEnd(12)} ${type.padEnd(10)} ${(t.description.substring(0, 24)).padEnd(25)} ${formatCategory(t.category).padEnd(15)} ${amount.padEnd(10)}\n`;
             });
 
