@@ -3309,8 +3309,11 @@
             await budgetsRef.doc(id).delete();
         }
 
-        async function deleteInvestment(id) {
-            await investmentsRef.doc(id).delete();
+        // Delete investment
+        window.deleteInvestment = async function(id) {
+            if (confirm('Are you sure you want to delete this investment?')) {
+                await investmentsRef.doc(id).delete();
+            }
         }
 
         // Check and create recurring transactions
@@ -3774,7 +3777,7 @@
         }
 
         // Edit investment
-        function editInvestment(id) {
+        window.editInvestment = function(id) {
             const investment = investments.find(inv => inv.id === id);
             if (!investment) return;
             
