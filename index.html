@@ -371,6 +371,11 @@
             display: none;
         }
 
+        /* Hide topup form when not in investment section */
+        #investments-section:not(.active) #topup-form {
+            display: none !important;
+        }
+
         .section.active {
             display: block;
         }
