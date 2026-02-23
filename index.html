@@ -4290,10 +4290,21 @@
             const returnRate = totalInvested > 0 ? (returns / totalInvested) * 100 : 0;
 
             // Update dashboard balance
-            document.getElementById('balance').textContent = formatCurrency(balance);
-            document.getElementById('balance').className = 'balance-amount ' + (balance >= 0 ? 'positive' : 'negative');
-            document.getElementById('total-income').textContent = '+' + formatCurrency(income);
-            document.getElementById('total-expense').textContent = '-' + formatCurrency(expense);
+            const balanceElement = document.getElementById('balance');
+            if (balanceElement) {
+                balanceElement.textContent = formatCurrency(balance);
+                balanceElement.className = 'balance-amount ' + (balance >= 0 ? 'positive' : 'negative');
+            }
+            
+            const totalIncomeElement = document.getElementById('total-income');
+            if (totalIncomeElement) {
+                totalIncomeElement.textContent = '+' + formatCurrency(income);
+            }
+            
+            const totalExpenseElement = document.getElementById('total-expense');
+            if (totalExpenseElement) {
+                totalExpenseElement.textContent = '-' + formatCurrency(expense);
+            }
 
             // Update header balance
             const headerBalance = document.getElementById('header-balance');
@@ -4311,11 +4322,26 @@
             }
 
             // Update investment details
-            document.getElementById('total-invested').textContent = formatCurrency(totalInvested);
-            document.getElementById('investment-value').textContent = formatCurrency(currentValue);
-            document.getElementById('investment-return').textContent = formatCurrency(returns);
-            document.getElementById('investment-return').className = 'investment-return ' + (returns >= 0 ? 'positive' : 'negative');
-            document.getElementById('investment-rate').textContent = returnRate.toFixed(2) + '%';
+            const totalInvestedElement = document.getElementById('total-invested');
+            if (totalInvestedElement) {
+                totalInvestedElement.textContent = formatCurrency(totalInvested);
+            }
+            
+            const investmentValueElement = document.getElementById('investment-value');
+            if (investmentValueElement) {
+                investmentValueElement.textContent = formatCurrency(currentValue);
+            }
+            
+            const investmentReturnElement = document.getElementById('investment-return');
+            if (investmentReturnElement) {
+                investmentReturnElement.textContent = formatCurrency(returns);
+                investmentReturnElement.className = 'investment-return ' + (returns >= 0 ? 'positive' : 'negative');
+            }
+            
+            const investmentRateElement = document.getElementById('investment-rate');
+            if (investmentRateElement) {
+                investmentRateElement.textContent = returnRate.toFixed(2) + '%';
+            }
 
             // Render investment chart
             renderInvestmentChart(investmentTransactions);
