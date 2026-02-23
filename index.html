@@ -3258,6 +3258,7 @@
         accountsRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
             accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderAccounts();
+            render(); // Update balance when accounts change
         });
 
         budgetsRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
@@ -3274,6 +3275,7 @@
             investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderInvestments();
             updateInvestmentDashboard();
+            render(); // Update balance when investments change
         });
 
         // Add transaction
