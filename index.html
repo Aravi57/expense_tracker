@@ -373,12 +373,12 @@
 
         /* Hide topup form when not in investment section */
         #investments-section:not(.active) #topup-form,
-        .section:not(#investments-section) #topup-form {
+        #investments-section:not(.active) #topup-form-card {
             display: none !important;
         }
 
-        /* Also hide the entire topup form card when not in investment section */
-        #investments-section:not(.active) .form-card:has(#topup-form) {
+        .section:not(#investments-section) #topup-form,
+        .section:not(#investments-section) #topup-form-card {
             display: none !important;
         }
 
@@ -3634,7 +3634,7 @@
                 </div>
 
                 <!-- Top-up Investment Card -->
-                <div class="form-card">
+                <div class="form-card" id="topup-form-card">
                     <div class="form-header" style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);">
                         <h2>Top-up Investment</h2>
                         <div class="form-icon">💰</div>
@@ -4167,11 +4167,14 @@
                 
                 // Explicitly hide topup form when not in investment section
                 const topupForm = document.getElementById('topup-form');
-                if (topupForm) {
+                const topupCard = document.getElementById('topup-form-card');
+                if (topupForm && topupCard) {
                     if (tab.dataset.section === 'investments') {
                         topupForm.style.display = 'block';
+                        topupCard.style.display = 'block';
                     } else {
                         topupForm.style.display = 'none';
+                        topupCard.style.display = 'none';
                     }
                 }
                 
