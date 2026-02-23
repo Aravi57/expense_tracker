@@ -4097,7 +4097,11 @@
 
         // Render budget chart
         function renderBudgetChart(categorySpending) {
-            const ctx = document.getElementById('budget-chart').getContext('2d');
+            const canvas = document.getElementById('budget-chart');
+            if (!canvas) {
+                return; // Exit if canvas doesn't exist
+            }
+            const ctx = canvas.getContext('2d');
             
             if (charts.budget) {
                 charts.budget.destroy();
@@ -4152,7 +4156,11 @@
 
         // Render investment chart
         function renderInvestmentChart(investmentTransactions) {
-            const ctx = document.getElementById('investment-chart').getContext('2d');
+            const canvas = document.getElementById('investment-chart');
+            if (!canvas) {
+                return; // Exit if canvas doesn't exist
+            }
+            const ctx = canvas.getContext('2d');
             
             if (charts.investment) {
                 charts.investment.destroy();
@@ -4473,7 +4481,11 @@
 
         // Render monthly trend chart
         function renderMonthlyTrendChart() {
-            const ctx = document.getElementById('monthly-trend-chart').getContext('2d');
+            const canvas = document.getElementById('monthly-trend-chart');
+            if (!canvas) {
+                return; // Exit if canvas doesn't exist
+            }
+            const ctx = canvas.getContext('2d');
             
             if (charts.monthlyTrend) {
                 charts.monthlyTrend.destroy();
@@ -4550,7 +4562,11 @@
 
         // Render income vs expense chart
         function renderIncomeExpenseChart() {
-            const ctx = document.getElementById('income-expense-chart').getContext('2d');
+            const canvas = document.getElementById('income-expense-chart');
+            if (!canvas) {
+                return; // Exit if canvas doesn't exist
+            }
+            const ctx = canvas.getContext('2d');
             
             if (charts.incomeExpense) {
                 charts.incomeExpense.destroy();
@@ -4590,7 +4606,11 @@
 
         // Render category pie chart
         function renderCategoryPieChart() {
-            const ctx = document.getElementById('category-pie-chart').getContext('2d');
+            const canvas = document.getElementById('category-pie-chart');
+            if (!canvas) {
+                return; // Exit if canvas doesn't exist
+            }
+            const ctx = canvas.getContext('2d');
             
             if (charts.categoryPie) {
                 charts.categoryPie.destroy();
