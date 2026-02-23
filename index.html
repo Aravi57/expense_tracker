@@ -3315,6 +3315,11 @@
             // Add regular transaction
             await transactionsRef.add(transactionData);
 
+            // Update account balance if account is selected
+            if (transactionData.account) {
+                await updateAccountBalance(transactionData.account, transactionData.amount, transactionData.type);
+            }
+
             form.reset();
             dateInput.valueAsDate = new Date();
             closeTransactionModal();
@@ -3537,13 +3542,33 @@
             // Use subcategory if selected, otherwise use category
             const finalCategory = subcategory || category;
             
+            // Get old transaction data for balance adjustment
+            const oldTransaction = transactions.find(t => t.id === id);
+            const oldAmount = oldTransaction ? oldTransaction.amount : 0;
+            const oldType = oldTransaction ? oldTransaction.type : 'expense';
+            const oldAccount = oldTransaction ? oldTransaction.account : null;
+            
+            const newAmount = parseFloat(document.getElementById('edit-amount').value);
+            const newType = currentType; // Current type from the form
+            const newAccount = document.getElementById('edit-account').value;
+            
             await transactionsRef.doc(id).update({
                 description: document.getElementById('edit-description').value,
-                amount: parseFloat(document.getElementById('edit-amount').value),
+                amount: newAmount,
                 category: finalCategory,
-                account: document.getElementById('edit-account').value,
+                account: newAccount,
                 date: document.getElementById('edit-date').value
             });
+            
+            // Update account balances
+            if (oldAccount && oldAccount !== newAccount) {
+                // Account changed - reverse old transaction and apply new one
+                await updateAccountBalanceOnEdit(oldAccount, oldAmount, oldType, 0, oldType); // Remove from old account
+                await updateAccountBalance(newAccount, newAmount, newType); // Add to new account
+            } else if (oldAccount === newAccount && oldAccount) {
+                // Same account - just update the difference
+                await updateAccountBalanceOnEdit(newAccount, oldAmount, oldType, newAmount, newType);
+            }
             
             closeEditTransactionModal();
         });
@@ -3585,7 +3610,19 @@
 
         // Delete functions
         async function deleteTransaction(id) {
+            // Get transaction data before deletion for balance adjustment
+            const transaction = transactions.find(t => t.id === id);
+            
             await transactionsRef.doc(id).delete();
+            
+            // Reverse the transaction effect on account balance
+            if (transaction && transaction.account) {
+                if (transaction.type === 'expense') {
+                    await updateAccountBalance(transaction.account, transaction.amount, 'income'); // Add back expense
+                } else if (transaction.type === 'income') {
+                    await updateAccountBalance(transaction.account, transaction.amount, 'expense'); // Subtract income
+                }
+            }
         }
 
         async function deleteAccount(id) {
@@ -3685,6 +3722,40 @@
             
             // Also populate account dropdowns in transaction forms
             populateAccountDropdowns();
+        }
+
+        // Update account balance based on transaction
+        async function updateAccountBalance(accountId, amount, transactionType) {
+            if (!accountId) return;
+            
+            const accountDoc = await accountsRef.doc(accountId).get();
+            if (!accountDoc.exists) return;
+            
+            const account = accountDoc.data();
+            let newBalance = account.balance || 0;
+            
+            if (transactionType === 'expense') {
+                newBalance -= amount;
+            } else if (transactionType === 'income') {
+                newBalance += amount;
+            }
+            
+            await accountsRef.doc(accountId).update({ balance: newBalance });
+        }
+
+        // Update account balance when transaction is edited (need to reverse old transaction and apply new one)
+        async function updateAccountBalanceOnEdit(accountId, oldAmount, oldType, newAmount, newType) {
+            if (!accountId) return;
+            
+            // Reverse old transaction
+            if (oldType === 'expense') {
+                await updateAccountBalance(accountId, oldAmount, 'income'); // Add back expense amount
+            } else if (oldType === 'income') {
+                await updateAccountBalance(accountId, oldAmount, 'expense'); // Subtract income amount
+            }
+            
+            // Apply new transaction
+            await updateAccountBalance(accountId, newAmount, newType);
         }
 
         // Populate account dropdowns in transaction forms
