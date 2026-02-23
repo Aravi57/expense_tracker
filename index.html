@@ -852,6 +852,217 @@
             100% { transform: translateX(100%); }
         }
 
+        /* Login Screen Styles */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            font-size: 3rem;
+            background: rgba(255, 255, 255, 0.2);
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo h1 {
+            color: white;
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .login-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .auth-form {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .auth-form h2 {
+            color: white;
+            margin: 0 0 8px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .form-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0 0 25px 0;
+            font-size: 0.9rem;
+        }
+
+        .auth-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .auth-form label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .auth-form input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .auth-form .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .auth-form .btn-primary,
+        .auth-form .btn-secondary {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        .auth-form .btn-primary {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .auth-form .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .auth-form .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .auth-form .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .auth-switch {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .auth-switch p {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .auth-switch .btn-link {
+            background: none;
+            border: none;
+            color: #2ecc71;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: underline;
+        }
+
+        .auth-switch .btn-link:hover {
+            color: #27ae60;
+        }
+
+        /* Main App Styles */
+        .main-app {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .logout-btn {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: rgba(231, 76, 60, 0.3);
+            transform: translateY(-1px);
+        }
+
         @media (min-width: 768px) {
             .dashboard-grid {
                 grid-template-columns: 1fr 1fr;
@@ -2910,31 +3121,84 @@
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-content">
-                <div class="app-title">
-                    <div class="title-icon">💰</div>
-                    <div class="title-text">
-                        <h1>Expense Tracker</h1>
-                        <p class="app-subtitle">Manage your finances with ease</p>
-                    </div>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo">
+                    <span class="logo-icon">💰</span>
+                    <h1>Expense Tracker</h1>
                 </div>
-                <div class="header-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Current Balance</span>
-                        <span class="stat-value" id="header-balance">₹0.00</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Investment</span>
-                        <span class="stat-value" id="header-investment">₹0.00</span>
-                    </div>
+                <p class="login-subtitle">Manage your finances with ease</p>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form active">
+                <h2>Welcome Back</h2>
+                <p class="form-subtitle">Sign in to your account</p>
+                
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" placeholder="Enter your username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-primary" onclick="handleLogin()">
+                        <span class="btn-icon">🔓</span>
+                        <span>Login</span>
+                    </button>
+                </div>
+                
+                <div class="auth-switch">
+                    <p>Don't have an account? <button type="button" class="btn-link" onclick="showSignup()">Sign Up</button></p>
                 </div>
             </div>
-        </header>
 
-        <!-- Top Bar -->
+            <!-- Signup Form -->
+            <div id="signup-form" class="auth-form">
+                <h2>Create Account</h2>
+                <p class="form-subtitle">Join us and start tracking expenses</p>
+                
+                <div class="form-group">
+                    <label for="signup-username">Username</label>
+                    <input type="text" id="signup-username" placeholder="Choose a username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" placeholder="Create a password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-confirm-password">Confirm Password</label>
+                    <input type="password" id="signup-confirm-password" placeholder="Confirm your password" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="showLogin()">
+                        <span class="btn-icon">🔙</span>
+                        <span>Back to Login</span>
+                    </button>
+                    <button type="button" class="btn-primary" onclick="handleSignup()">
+                        <span class="btn-icon">➕</span>
+                        <span>Sign Up</span>
+                    </button>
+                </div>
+                
+                <div class="auth-switch">
+                    <p>Already have an account? <button type="button" class="btn-link" onclick="showLogin()">Sign In</button></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App (Hidden initially) -->
+    <div id="main-app" class="main-app" style="display: none;">
         <div class="top-bar">
             <div class="nav-container">
                 <nav class="nav-tabs">
@@ -2946,13 +3210,13 @@
                         <span class="nav-icon">📝</span>
                         <span class="nav-text">History</span>
                     </button>
-                    <button class="nav-tab" data-section="budget">
-                        <span class="nav-icon">💳</span>
-                        <span class="nav-text">Budget</span>
-                    </button>
                     <button class="nav-tab" data-section="investments">
                         <span class="nav-icon">📈</span>
                         <span class="nav-text">Investments</span>
+                    </button>
+                    <button class="nav-tab" data-section="budget">
+                        <span class="nav-icon">💰</span>
+                        <span class="nav-text">Budget</span>
                     </button>
                     <button class="nav-tab" data-section="analysis">
                         <span class="nav-icon">📊</span>
@@ -2963,217 +3227,12 @@
                     <span class="btn-icon">+</span>
                     <span class="btn-text">Add Transaction</span>
                 </button>
+                <button class="logout-btn" onclick="handleLogout()">
+                    <span class="btn-icon">🚪</span>
+                    <span class="btn-text">Logout</span>
+                </button>
             </div>
         </div>
-
-        <!-- Dashboard Section -->
-        <div id="dashboard-section" class="section active">
-            <!-- Account Cards Section -->
-            <div class="accounts-section">
-                <div class="section-header">
-                    <h3>Accounts</h3>
-                    <button class="btn-secondary" onclick="openAccountModal()">
-                        <span class="btn-icon">➕</span>
-                        <span>Add Account</span>
-                    </button>
-                </div>
-                <div class="accounts-row" id="accounts-row">
-                    <div class="add-account-card" onclick="openAccountModal()">
-                        <div class="plus-icon">+</div>
-                        <span>Add Account</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Dashboard Grid -->
-            <div class="dashboard-grid">
-                <!-- Enhanced Balance Card -->
-                <div class="card enhanced-card">
-                    <div class="card-header">
-                        <h3>Balance Breakdown</h3>
-                        <div class="card-badge" id="balance-period">This Month</div>
-                    </div>
-                    <div class="balance-breakdown">
-                        <div class="balance-item">
-                            <div class="balance-label">Starting Balance</div>
-                            <div class="balance-value" id="starting-balance">₹0.00</div>
-                        </div>
-                        <div class="balance-item">
-                            <div class="balance-label">Income</div>
-                            <div class="balance-value positive" id="income-breakdown">+₹0.00</div>
-                        </div>
-                        <div class="balance-item">
-                            <div class="balance-label">Expenses</div>
-                            <div class="balance-value negative" id="expense-breakdown">-₹0.00</div>
-                        </div>
-                        <div class="balance-divider"></div>
-                        <div class="balance-item total">
-                            <div class="balance-label">Current Balance</div>
-                            <div class="balance-value" id="current-balance">₹0.00</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Enhanced Investment Card -->
-                <div class="card enhanced-card">
-                    <div class="card-header">
-                        <h3>Investment Portfolio</h3>
-                        <div class="card-badge success" id="portfolio-status">Active</div>
-                    </div>
-                    <div class="portfolio-summary">
-                        <div class="portfolio-metrics">
-                            <div class="metric-item">
-                                <div class="metric-label">Total Invested</div>
-                                <div class="metric-value" id="total-invested">₹0.00</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">Current Value</div>
-                                <div class="metric-value" id="investment-value">₹0.00</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">Returns</div>
-                                <div class="metric-value" id="investment-return">₹0.00</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">Return Rate</div>
-                                <div class="metric-value" id="investment-rate">0.00%</div>
-                            </div>
-                        </div>
-                        <div class="portfolio-details">
-                            <div class="detail-item">
-                                <div class="detail-label">Investments</div>
-                                <div class="detail-value" id="investment-count">0</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Latest</div>
-                                <div class="detail-value" id="latest-investment">₹0.00</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Types</div>
-                                <div class="detail-value" id="investment-types">-</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Enhanced Recent Transactions Card -->
-                <div class="card enhanced-card">
-                    <div class="card-header">
-                        <h3>Recent Activity</h3>
-                        <button class="btn-link" onclick="showSection('history')">View All</button>
-                    </div>
-                    <div class="recent-transactions-wrapper">
-                        <ul class="transaction-list enhanced-list" id="recent-transactions">
-                            <li class="empty-state">
-                                <div class="empty-icon">📝</div>
-                                <div class="empty-text">No transactions yet</div>
-                                <div class="empty-subtitle">Start tracking your expenses</div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Investments Section -->
-        <div id="investments-section" class="section">
-            <!-- Investment Overview Cards -->
-            <div class="investment-overview-grid">
-                <div class="investment-overview-card total-invested">
-                    <div class="card-icon">💰</div>
-                    <div class="card-content">
-                        <h3>Total Invested</h3>
-                        <div class="card-value" id="overview-total-invested">₹0.00</div>
-                        <div class="card-change positive" id="total-invested-change">+0.00%</div>
-                    </div>
-                </div>
-                
-                <div class="investment-overview-card current-value">
-                    <div class="card-icon">📈</div>
-                    <div class="card-content">
-                        <h3>Current Value</h3>
-                        <div class="card-value" id="overview-current-value">₹0.00</div>
-                        <div class="card-change" id="current-value-change">+0.00%</div>
-                    </div>
-                </div>
-                
-                <div class="investment-overview-card total-returns">
-                    <div class="card-icon">💎</div>
-                    <div class="card-content">
-                        <h3>Total Returns</h3>
-                        <div class="card-value" id="overview-total-returns">₹0.00</div>
-                        <div class="card-change" id="total-returns-change">+0.00%</div>
-                    </div>
-                </div>
-                
-                <div class="investment-overview-card best-performer">
-                    <div class="card-icon">🏆</div>
-                    <div class="card-content">
-                        <h3>Best Performer</h3>
-                        <div class="card-value" id="best-performer-name">-</div>
-                        <div class="card-change" id="best-performer-return">+0.00%</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Investment Portfolio with Advanced Features -->
-            <div class="investment-portfolio-section">
-                <div class="portfolio-header">
-                    <h2>Investment Portfolio</h2>
-                    <div class="portfolio-controls">
-                        <div class="sort-filter-controls">
-                            <select id="investment-sort" class="control-select">
-                                <option value="date-desc">Newest First</option>
-                                <option value="date-asc">Oldest First</option>
-                                <option value="amount-desc">Highest Amount</option>
-                                <option value="amount-asc">Lowest Amount</option>
-                                <option value="name-asc">Name A-Z</option>
-                                <option value="name-desc">Name Z-A</option>
-                            </select>
-                            <select id="investment-filter-type" class="control-select">
-                                <option value="all">All Types</option>
-                                <option value="stocks">Stocks</option>
-                                <option value="mutual-fund">Mutual Fund</option>
-                                <option value="ppf">PPF</option>
-                                <option value="epf">EPF</option>
-                                <option value="silver">Silver</option>
-                                <option value="gold">Gold</option>
-                                <option value="real-estate">Real Estate</option>
-                                <option value="bonds">Bonds</option>
-                                <option value="crypto">Cryptocurrency</option>
-                                <option value="fixed-deposit">Fixed Deposit</option>
-                                <option value="other">Other</option>
-                            </select>
-                            <button class="btn-icon" onclick="refreshInvestments()" title="Refresh">
-                                <span>🔄</span>
-                            </button>
-                        </div>
-                        <div class="portfolio-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Total Investments</span>
-                                <span class="stat-value" id="portfolio-count">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Avg. Investment</span>
-                                <span class="stat-value" id="portfolio-average">₹0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="investment-grid" id="investment-list">
-                    <div class="empty-state-investments">
-                        <div class="empty-icon">📊</div>
-                        <h3>No Investments Yet</h3>
-                        <p>Start building your investment portfolio by adding your first investment below.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Advanced Investment Forms -->
-            <div class="investment-forms-container">
-                <!-- Record Investment Card -->
-                <div class="form-card">
                     <div class="form-header">
                         <h2>Record Investment</h2>
                         <div class="form-icon">📈</div>
@@ -3795,6 +3854,94 @@
     </div>
 
     <script>
+        // Authentication Functions
+        function showLogin() {
+            document.getElementById('login-form').classList.add('active');
+            document.getElementById('signup-form').classList.remove('active');
+            clearAuthForms();
+        }
+
+        function showSignup() {
+            document.getElementById('signup-form').classList.add('active');
+            document.getElementById('login-form').classList.remove('active');
+            clearAuthForms();
+        }
+
+        function clearAuthForms() {
+            // Clear login form
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            
+            // Clear signup form
+            document.getElementById('signup-username').value = '';
+            document.getElementById('signup-password').value = '';
+            document.getElementById('signup-confirm-password').value = '';
+        }
+
+        function handleLogin() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+
+            // For now, just login with any credentials (backend will be added later)
+            console.log('Login attempt:', { username, password });
+            
+            // Show main app
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            
+            // Initialize the app after login
+            initializeApp();
+        }
+
+        function handleSignup() {
+            const username = document.getElementById('signup-username').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+            if (!username || !password || !confirmPassword) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters long');
+                return;
+            }
+
+            // For now, just show success and redirect to login (backend will be added later)
+            console.log('Signup attempt:', { username, password });
+            alert('Account created successfully! Please login.');
+            showLogin();
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Hide main app and show login screen
+                document.getElementById('main-app').style.display = 'none';
+                document.getElementById('login-screen').style.display = 'flex';
+                showLogin();
+                
+                // Clear any user data if needed
+                console.log('User logged out');
+            }
+        }
+
+        function initializeApp() {
+            // This function will be called after successful login
+            console.log('App initialized for user');
+            // Any additional initialization can go here
+        }
+
         // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBPuOrb5GWvyYtDcCk-8y7UDaMnhqmci4k",
