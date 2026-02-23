@@ -372,7 +372,13 @@
         }
 
         /* Hide topup form when not in investment section */
-        #investments-section:not(.active) #topup-form {
+        #investments-section:not(.active) #topup-form,
+        .section:not(#investments-section) #topup-form {
+            display: none !important;
+        }
+
+        /* Also hide the entire topup form card when not in investment section */
+        #investments-section:not(.active) .form-card:has(#topup-form) {
             display: none !important;
         }
 
@@ -4158,6 +4164,16 @@
                 
                 document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
                 document.getElementById(tab.dataset.section + '-section').classList.add('active');
+                
+                // Explicitly hide topup form when not in investment section
+                const topupForm = document.getElementById('topup-form');
+                if (topupForm) {
+                    if (tab.dataset.section === 'investments') {
+                        topupForm.style.display = 'block';
+                    } else {
+                        topupForm.style.display = 'none';
+                    }
+                }
                 
                 if (tab.dataset.section === 'analysis') renderAnalysis();
                 if (tab.dataset.section === 'budget') renderBudget();
