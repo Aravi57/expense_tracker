@@ -2754,6 +2754,8 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3>All Transactions</h3>
                     <div style="display: flex; gap: 10px;">
+                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 0.9rem; background: #f39c12;" onclick="debugTransactions()">Debug</button>
+                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 0.9rem; background: #e67e22;" onclick="forceSyncTransactions()">Force Sync</button>
                         <button class="btn" style="width: auto; padding: 8px 16px; font-size: 0.9rem;" onclick="exportToCSV()">Export CSV</button>
                         <button class="btn" style="width: auto; padding: 8px 16px; font-size: 0.9rem;" onclick="exportToPDF()">Export PDF</button>
                     </div>
@@ -4229,6 +4231,39 @@
             document.getElementById('investment-count').textContent = investmentCount;
             document.getElementById('latest-investment').textContent = `₹${latestInvestment.toFixed(2)}`;
             document.getElementById('investment-types').textContent = investmentTypes.length > 0 ? investmentTypes.map(type => type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')).join(', ') : '-';
+        }
+
+        // Debug function to check transaction sync
+        function debugTransactions() {
+            console.log('=== TRANSACTIONS DEBUG ===');
+            console.log('Total transactions in memory:', transactions.length);
+            console.log('Transactions:', transactions);
+            
+            // Check for any transaction with amount 5000
+            const txn5000 = transactions.filter(t => t.amount === 5000 || t.amount === '5000');
+            console.log('Transactions with amount 5000:', txn5000);
+            
+            // Check recent transactions
+            console.log('Recent transactions (last 10):', transactions.slice(0, 10));
+            
+            // Check filters
+            const searchTerm = document.getElementById('search-input')?.value || '';
+            const typeFilter = document.getElementById('type-filter')?.value || '';
+            const categoryFilter = document.getElementById('category-filter')?.value || '';
+            console.log('Current filters:', { searchTerm, typeFilter, categoryFilter });
+        }
+
+        // Manual sync function
+        function forceSyncTransactions() {
+            console.log('Force syncing transactions...');
+            transactionsRef.get().then(snapshot => {
+                transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log('Synced transactions:', transactions);
+                render();
+                debugTransactions();
+            }).catch(error => {
+                console.error('Error syncing transactions:', error);
+            });
         }
 
         // Render transactions
