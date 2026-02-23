@@ -4385,14 +4385,16 @@
             const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
             const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
             
-            // Calculate total account balances
-            const totalAccountBalance = accounts.reduce((sum, account) => sum + (account.balance || 0), 0);
+            // Calculate total bank account balances only
+            const totalBankBalance = accounts
+                .filter(account => account.type === 'bank')
+                .reduce((sum, account) => sum + (account.balance || 0), 0);
             
             // Calculate total investment current values
             const totalInvestmentValue = investments.reduce((sum, inv) => sum + (inv.currentValue || inv.amount || 0), 0);
             
-            // Calculate comprehensive balance: (income - expense) + account balances + investment values
-            const balance = (income - expense) + totalAccountBalance + totalInvestmentValue;
+            // Calculate balance: bank account balances + investment values (excluding transactions)
+            const balance = totalBankBalance + totalInvestmentValue;
 
             // Calculate investment details
             const investmentTransactions = transactions.filter(t => t.category === 'investment');
