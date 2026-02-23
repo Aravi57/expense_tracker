@@ -3233,16 +3233,331 @@
                 </button>
             </div>
         </div>
-                    <div class="form-header">
-                        <h2>Record Investment</h2>
-                        <div class="form-icon">📈</div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="section active">
+            <!-- Account Cards Section -->
+            <div class="accounts-section">
+                <div class="section-header">
+                    <h3>Accounts</h3>
+                    <button class="btn-secondary" onclick="openAccountModal()">
+                        <span class="btn-icon">➕</span>
+                        <span>Add Account</span>
+                    </button>
+                </div>
+                <div class="accounts-row" id="accounts-row">
+                    <div class="add-account-card" onclick="openAccountModal()">
+                        <div class="plus-icon">+</div>
+                        <span>Add Account</span>
                     </div>
-                    <form class="investment-form" id="investment-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="investment-name">Investment Name</label>
-                                <div class="input-icon">📝</div>
-                                <input type="text" id="investment-name" placeholder="e.g., Apple Stocks, HDFC Mutual Fund" required>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Enhanced Balance Card -->
+                <div class="card enhanced-card">
+                    <div class="card-header">
+                        <h3>Balance Breakdown</h3>
+                        <div class="card-badge" id="balance-period">This Month</div>
+                    </div>
+                    <div class="balance-breakdown">
+                        <div class="balance-item">
+                            <div class="balance-label">Starting Balance</div>
+                            <div class="balance-value" id="starting-balance">₹0.00</div>
+                        </div>
+                        <div class="balance-item">
+                            <div class="balance-label">Income</div>
+                            <div class="balance-value positive" id="income-breakdown">+₹0.00</div>
+                        </div>
+                        <div class="balance-item">
+                            <div class="balance-label">Expenses</div>
+                            <div class="balance-value negative" id="expense-breakdown">-₹0.00</div>
+                        </div>
+                        <div class="balance-divider"></div>
+                        <div class="balance-item total">
+                            <div class="balance-label">Current Balance</div>
+                            <div class="balance-value" id="current-balance">₹0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Investment Card -->
+                <div class="card enhanced-card">
+                    <div class="card-header">
+                        <h3>Investment Portfolio</h3>
+                        <div class="card-badge success" id="portfolio-status">Active</div>
+                    </div>
+                    <div class="portfolio-summary">
+                        <div class="portfolio-metrics">
+                            <div class="metric-item">
+                                <div class="metric-label">Total Invested</div>
+                                <div class="metric-value" id="total-invested">₹0.00</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Current Value</div>
+                                <div class="metric-value" id="investment-value">₹0.00</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Returns</div>
+                                <div class="metric-value" id="investment-return">₹0.00</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Return Rate</div>
+                                <div class="metric-value" id="investment-rate">0.00%</div>
+                            </div>
+                        </div>
+                        <div class="portfolio-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Investments</div>
+                                <div class="detail-value" id="investment-count">0</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Latest</div>
+                                <div class="detail-value" id="latest-investment">₹0.00</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Types</div>
+                                <div class="detail-value" id="investment-types">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Recent Transactions Card -->
+                <div class="card enhanced-card">
+                    <div class="card-header">
+                        <h3>Recent Activity</h3>
+                        <button class="btn-link" onclick="showSection('history')">View All</button>
+                    </div>
+                    <div class="recent-transactions-wrapper">
+                        <ul class="transaction-list enhanced-list" id="recent-transactions">
+                            <li class="empty-state">
+                                <div class="empty-icon">📝</div>
+                                <div class="empty-text">No transactions yet</div>
+                                <div class="empty-subtitle">Start tracking your expenses</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div id="history-section" class="section">
+            <!-- History Header -->
+            <div class="history-header">
+                <div class="history-title">
+                    <h3>Transaction History</h3>
+                    <div class="history-subtitle">View and manage all your transactions</div>
+                </div>
+                <div class="history-actions">
+                    <button class="btn-icon" onclick="exportTransactions()" title="Export">
+                        <span>📥</span>
+                    </button>
+                    <button class="btn-icon" onclick="printTransactions()" title="Print">
+                        <span>🖨️</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- History Statistics -->
+            <div class="history-stats-grid">
+                <div class="stat-card income-stat">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Income</div>
+                        <div class="stat-value" id="history-total-income">₹0.00</div>
+                    </div>
+                </div>
+                <div class="stat-card expense-stat">
+                    <div class="stat-icon">💸</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Expenses</div>
+                        <div class="stat-value" id="history-total-expense">₹0.00</div>
+                    </div>
+                </div>
+                <div class="stat-card balance-stat">
+                    <div class="stat-icon">⚖️</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Net Balance</div>
+                        <div class="stat-value" id="history-net-balance">₹0.00</div>
+                    </div>
+                </div>
+                <div class="stat-card transactions-stat">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Transactions</div>
+                        <div class="stat-value" id="history-transaction-count">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Filters -->
+            <div class="history-filters">
+                <div class="filter-row">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Search transactions...">
+                    </div>
+                    <div class="filter-group">
+                        <select id="date-filter">
+                            <option value="">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <select id="type-filter">
+                            <option value="">All Types</option>
+                            <option value="income">💰 Income</option>
+                            <option value="expense">💸 Expense</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="category-filter">
+                            <option value="">All Categories</option>
+                            <option value="home">🏠 Home</option>
+                            <option value="subscription">📱 Subscription</option>
+                            <option value="shopping">🛍️ Shopping</option>
+                            <option value="food">🍔 Food</option>
+                            <option value="transport">🚗 Transport</option>
+                            <option value="grocery">🛒 Grocery</option>
+                            <option value="snacks">🍿 Snacks</option>
+                            <option value="health">🏥 Health</option>
+                            <option value="investment">📈 Investment</option>
+                            <option value="emi">💳 EMI</option>
+                            <option value="salary">💼 Salary</option>
+                            <option value="other">📦 Other</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="subcategory-filter">
+                            <option value="">All Subcategories</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Info -->
+            <div class="filter-info">
+                <span id="history-filter-info">All Transactions (0)</span>
+            </div>
+
+            <!-- Transaction List -->
+            <div class="transaction-list-container">
+                <ul class="transaction-list" id="transaction-list">
+                    <li class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <div class="empty-text">No Transactions Found</div>
+                        <div class="empty-subtitle">Try adjusting your filters</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Investments Section -->
+        <div id="investments-section" class="section">
+            <!-- Investment Overview Cards -->
+            <div class="investment-overview-grid">
+                <div class="investment-overview-card total-invested">
+                    <div class="card-icon">💰</div>
+                    <div class="card-content">
+                        <h3>Total Invested</h3>
+                        <div class="card-value" id="overview-total-invested">₹0.00</div>
+                        <div class="card-change positive" id="total-invested-change">+0.00%</div>
+                    </div>
+                </div>
+                
+                <div class="investment-overview-card current-value">
+                    <div class="card-icon">📈</div>
+                    <div class="card-content">
+                        <h3>Current Value</h3>
+                        <div class="card-value" id="overview-current-value">₹0.00</div>
+                        <div class="card-change" id="current-value-change">+0.00%</div>
+                    </div>
+                </div>
+                
+                <div class="investment-overview-card total-returns">
+                    <div class="card-icon">💎</div>
+                    <div class="card-content">
+                        <h3>Total Returns</h3>
+                        <div class="card-value" id="overview-total-returns">₹0.00</div>
+                        <div class="card-change" id="total-returns-change">+0.00%</div>
+                    </div>
+                </div>
+                
+                <div class="investment-overview-card best-performer">
+                    <div class="card-icon">🏆</div>
+                    <div class="card-content">
+                        <h3>Best Performer</h3>
+                        <div class="card-value" id="best-performer-name">-</div>
+                        <div class="card-change" id="best-performer-return">+0.00%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investment Portfolio with Advanced Features -->
+            <div class="investment-portfolio-section">
+                <div class="portfolio-header">
+                    <h2>Investment Portfolio</h2>
+                    <div class="portfolio-controls">
+                        <div class="sort-filter-controls">
+                            <select id="investment-sort" class="control-select">
+                                <option value="date-desc">Newest First</option>
+                                <option value="date-asc">Oldest First</option>
+                                <option value="amount-desc">Highest Amount</option>
+                                <option value="amount-asc">Lowest Amount</option>
+                                <option value="name-asc">Name A-Z</option>
+                                <option value="name-desc">Name Z-A</option>
+                            </select>
+                            <select id="investment-filter-type" class="control-select">
+                                <option value="all">All Types</option>
+                                <option value="stocks">Stocks</option>
+                                <option value="mutual-fund">Mutual Fund</option>
+                                <option value="ppf">PPF</option>
+                                <option value="epf">EPF</option>
+                                <option value="silver">Silver</option>
+                                <option value="gold">Gold</option>
+                                <option value="real-estate">Real Estate</option>
+                                <option value="bonds">Bonds</option>
+                                <option value="crypto">Cryptocurrency</option>
+                                <option value="fixed-deposit">Fixed Deposit</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <button class="btn-icon" onclick="refreshInvestments()" title="Refresh">
+                                <span>🔄</span>
+                            </button>
+                        </div>
+                        <div class="portfolio-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Total Investments</span>
+                                <span class="stat-value" id="portfolio-count">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Avg. Investment</span>
+                                <span class="stat-value" id="portfolio-average">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="investment-grid" id="investment-list">
+                    <div class="empty-state-investments">
+                        <div class="empty-icon">📊</div>
+                        <h3>No Investments Yet</h3>
+                        <p>Start building your investment portfolio by adding your first investment below.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Investment Forms -->
+            <div class="investment-forms-container">
+                <!-- Record Investment Card -->
+                <div class="form-card">
                             </div>
                             <div class="form-group">
                                 <label for="investment-type">Investment Type</label>
