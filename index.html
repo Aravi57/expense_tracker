@@ -5795,22 +5795,13 @@
             const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
             const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
             
-            // Calculate total account balances (all account types except investment)
-            const totalAccountBalance = accounts
-                .filter(account => account.type !== 'investment')
+            // Calculate current balance: sum of all bank accounts only
+            const balance = accounts
+                .filter(account => account.type === 'bank')
                 .reduce((sum, account) => sum + (account.balance || 0), 0);
-            
-            // Calculate total investment current values
-            const totalInvestmentValue = investments.reduce((sum, inv) => sum + (inv.currentValue || inv.amount || 0), 0);
-            
-            // Calculate current balance: account balances + income - expense (excluding investment transactions)
-            const investmentTransactions = transactions.filter(t => t.category === 'investment');
-            const nonInvestmentIncome = income - investmentTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-            const nonInvestmentExpense = expense - investmentTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-            
-            const balance = totalAccountBalance + nonInvestmentIncome - nonInvestmentExpense;
 
             // Calculate investment details
+            const investmentTransactions = transactions.filter(t => t.category === 'investment');
             const investmentIncome = investmentTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
             const investmentExpense = investmentTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
             const totalInvested = investmentIncome;
