@@ -4227,11 +4227,15 @@
         }
 
         async function handleSignup() {
+            console.log('Signup button clicked'); // Debug log
+            
             const fullname = document.getElementById('signup-fullname').value.trim();
             const email = document.getElementById('signup-email').value.trim();
             const username = document.getElementById('signup-username').value.trim();
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+            console.log('Form values:', { fullname, email, username, password, confirmPassword }); // Debug log
 
             // Validation
             if (!fullname || !email || !username || !password || !confirmPassword) {
@@ -4262,6 +4266,8 @@
                 return;
             }
 
+            console.log('Validation passed, attempting to create user...'); // Debug log
+
             try {
                 // Check if username already exists
                 const usersRef = db.collection('users');
@@ -4289,8 +4295,10 @@
                     createdAt: new Date().toISOString()
                 };
 
+                console.log('Creating user with data:', newUser); // Debug log
                 const docRef = await usersRef.add(newUser);
                 
+                console.log('User document created with ID:', docRef.id); // Debug log
                 alert('Account created successfully! Please login with your new credentials.');
                 showLogin();
                 
