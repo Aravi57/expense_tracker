@@ -4467,6 +4467,12 @@
                     console.log('Transactions loaded:', snapshot.docs.length);
                     transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     render();
+                    
+                    // Update history page if active
+                    const historySection = document.getElementById('history-section');
+                    if (historySection && historySection.classList.contains('active')) {
+                        filterTransactions();
+                    }
                 },
                 error => {
                     console.error('Transactions query error:', error);
@@ -4476,6 +4482,12 @@
                             console.log('Transactions loaded (fallback):', snapshot.docs.length);
                             transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                             render();
+                            
+                            // Update history page if active
+                            const historySection = document.getElementById('history-section');
+                            if (historySection && historySection.classList.contains('active')) {
+                                filterTransactions();
+                            }
                         },
                         fallbackError => {
                             console.error('Fallback transactions query failed:', fallbackError);
@@ -4941,17 +4953,52 @@
 
         // Delete functions
         async function deleteTransaction(id) {
+            // Check if user is logged in
+            if (!currentUser) {
+                alert('Please login to delete transactions');
+                return;
+            }
+            
             // Get transaction data before deletion for balance adjustment
             const transaction = transactions.find(t => t.id === id);
+            if (!transaction) {
+                alert('Transaction not found');
+                return;
+            }
             
-            await transactionsRef.doc(id).delete();
+            // Check if user owns this transaction
+            if (transaction.userId !== currentUser.id) {
+                alert('You can only delete your own transactions');
+                return;
+            }
             
-            // Reverse the transaction effect on account balance
-            if (transaction && transaction.account) {
-                if (transaction.type === 'expense') {
-                    await updateAccountBalance(transaction.account, transaction.amount, 'income'); // Add back expense
-                } else if (transaction.type === 'income') {
-                    await updateAccountBalance(transaction.account, transaction.amount, 'expense'); // Subtract income
+            if (confirm(`Are you sure you want to delete this transaction: "${transaction.description}"?`)) {
+                try {
+                    await transactionsRef.doc(id).delete();
+                    
+                    // Reverse the transaction effect on account balance
+                    if (transaction && transaction.account) {
+                        if (transaction.type === 'expense') {
+                            await updateAccountBalance(transaction.account, transaction.amount, 'income'); // Add back expense
+                        } else if (transaction.type === 'income') {
+                            await updateAccountBalance(transaction.account, transaction.amount, 'expense'); // Subtract income
+                        }
+                    }
+                    
+                    console.log('Transaction deleted successfully');
+                    
+                    // Update history page statistics if on history page
+                    const historySection = document.getElementById('history-section');
+                    if (historySection && historySection.classList.contains('active')) {
+                        // Re-filter and update history statistics
+                        setTimeout(() => {
+                            filterTransactions();
+                        }, 100); // Small delay to ensure data is updated
+                    }
+                    
+                } catch (error) {
+                    console.error('Error deleting transaction:', error);
+                    alert('Failed to delete transaction. Please try again.');
                 }
             }
         }
