@@ -4459,37 +4459,126 @@
         function loadUserSpecificData() {
             if (!currentUser) return;
             
-            // Load user-specific transactions
-            transactionsRef.where('userId', '==', currentUser.id).orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-                transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                render();
-            });
+            console.log('Loading user-specific data for:', currentUser.id);
             
-            // Load user-specific accounts
-            accountsRef.where('userId', '==', currentUser.id).orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-                accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderAccounts();
-                render(); // Update balance when accounts change
-            });
+            // Load user-specific transactions with error handling
+            transactionsRef.where('userId', '==', currentUser.id).onSnapshot(
+                snapshot => {
+                    console.log('Transactions loaded:', snapshot.docs.length);
+                    transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    render();
+                },
+                error => {
+                    console.error('Transactions query error:', error);
+                    // Fallback: try without ordering
+                    transactionsRef.where('userId', '==', currentUser.id).onSnapshot(
+                        snapshot => {
+                            console.log('Transactions loaded (fallback):', snapshot.docs.length);
+                            transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            render();
+                        },
+                        fallbackError => {
+                            console.error('Fallback transactions query failed:', fallbackError);
+                        }
+                    );
+                }
+            );
             
-            // Load user-specific budgets
-            budgetsRef.where('userId', '==', currentUser.id).orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-                budgets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderBudget();
-            });
+            // Load user-specific accounts with error handling
+            accountsRef.where('userId', '==', currentUser.id).onSnapshot(
+                snapshot => {
+                    console.log('Accounts loaded:', snapshot.docs.length);
+                    accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderAccounts();
+                    render(); // Update balance when accounts change
+                },
+                error => {
+                    console.error('Accounts query error:', error);
+                    // Fallback: try without ordering
+                    accountsRef.where('userId', '==', currentUser.id).onSnapshot(
+                        snapshot => {
+                            console.log('Accounts loaded (fallback):', snapshot.docs.length);
+                            accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            renderAccounts();
+                            render();
+                        },
+                        fallbackError => {
+                            console.error('Fallback accounts query failed:', fallbackError);
+                        }
+                    );
+                }
+            );
             
-            // Load user-specific recurring transactions
-            recurringRef.where('userId', '==', currentUser.id).orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-                recurringTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                checkAndCreateRecurringTransactions();
-            });
+            // Load user-specific budgets with error handling
+            budgetsRef.where('userId', '==', currentUser.id).onSnapshot(
+                snapshot => {
+                    console.log('Budgets loaded:', snapshot.docs.length);
+                    budgets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderBudget();
+                },
+                error => {
+                    console.error('Budgets query error:', error);
+                    // Fallback: try without ordering
+                    budgetsRef.where('userId', '==', currentUser.id).onSnapshot(
+                        snapshot => {
+                            console.log('Budgets loaded (fallback):', snapshot.docs.length);
+                            budgets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            renderBudget();
+                        },
+                        fallbackError => {
+                            console.error('Fallback budgets query failed:', fallbackError);
+                        }
+                    );
+                }
+            );
             
-            // Load user-specific investments
-            investmentsRef.where('userId', '==', currentUser.id).orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-                investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderInvestments();
-                updateInvestmentDashboard();
-            });
+            // Load user-specific recurring transactions with error handling
+            recurringRef.where('userId', '==', currentUser.id).onSnapshot(
+                snapshot => {
+                    console.log('Recurring transactions loaded:', snapshot.docs.length);
+                    recurringTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    checkAndCreateRecurringTransactions();
+                },
+                error => {
+                    console.error('Recurring transactions query error:', error);
+                    // Fallback: try without ordering
+                    recurringRef.where('userId', '==', currentUser.id).onSnapshot(
+                        snapshot => {
+                            console.log('Recurring transactions loaded (fallback):', snapshot.docs.length);
+                            recurringTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            checkAndCreateRecurringTransactions();
+                        },
+                        fallbackError => {
+                            console.error('Fallback recurring transactions query failed:', fallbackError);
+                        }
+                    );
+                }
+            );
+            
+            // Load user-specific investments with error handling
+            investmentsRef.where('userId', '==', currentUser.id).onSnapshot(
+                snapshot => {
+                    console.log('Investments loaded:', snapshot.docs.length);
+                    investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderInvestments();
+                    updateInvestmentDashboard();
+                },
+                error => {
+                    console.error('Investments query error:', error);
+                    // Fallback: try without ordering
+                    investmentsRef.where('userId', '==', currentUser.id).onSnapshot(
+                        snapshot => {
+                            console.log('Investments loaded (fallback):', snapshot.docs.length);
+                            investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            renderInvestments();
+                            updateInvestmentDashboard();
+                        },
+                        fallbackError => {
+                            console.error('Fallback investments query failed:', fallbackError);
+                        }
+                    );
+                }
+            );
         }
 
         // Add transaction
@@ -4546,15 +4635,28 @@
             
             console.log('Creating account for user:', currentUser.id); // Debug log
             
-            await accountsRef.add({
-                name: document.getElementById('account-name').value,
-                type: document.getElementById('account-type').value,
-                balance: parseFloat(document.getElementById('account-balance').value),
-                userId: currentUser.id, // Add userId to account
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            e.target.reset();
-            closeAccountModal();
+            try {
+                const accountData = {
+                    name: document.getElementById('account-name').value,
+                    type: document.getElementById('account-type').value,
+                    balance: parseFloat(document.getElementById('account-balance').value),
+                    userId: currentUser.id, // Add userId to account
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                console.log('Account data:', accountData);
+                
+                await accountsRef.add(accountData);
+                
+                console.log('Account created successfully');
+                alert('Account created successfully!');
+                
+                e.target.reset();
+                closeAccountModal();
+            } catch (error) {
+                console.error('Error creating account:', error);
+                alert('Failed to create account. Please try again.');
+            }
         });
 
         // Add budget
