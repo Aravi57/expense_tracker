@@ -4687,8 +4687,7 @@
                         headerInvestment.style.color = '#667eea'; // Investment blue color
                     }
                     
-                    // Update investment dashboard immediately
-                    renderInvestments();
+                    // Let the real-time listener handle the investment list rendering to prevent flicker
                     updateInvestmentDashboard();
                 }
                 
@@ -4724,8 +4723,7 @@
                     headerInvestment.style.color = '#667eea'; // Investment blue color
                 }
                 
-                // Update investment dashboard immediately
-                renderInvestments();
+                // Let the real-time listener handle the investment list rendering to prevent flicker
                 updateInvestmentDashboard();
             }
             
@@ -5096,8 +5094,7 @@
                         headerInvestment.style.color = '#667eea'; // Investment blue color
                     }
                     
-                    // Update investment dashboard immediately
-                    renderInvestments();
+                    // Let the real-time listener handle the investment list rendering to prevent flicker
                     updateInvestmentDashboard();
                     
                     alert('Investment deleted successfully!');
