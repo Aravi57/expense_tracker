@@ -3659,38 +3659,6 @@
 
         <!-- History Section -->
         <div id="history-section" class="section">
-            <!-- Statistics Cards -->
-            <div class="history-stats-grid">
-                <div class="stat-card income-stat">
-                    <div class="stat-icon">💰</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Total Income</div>
-                        <div class="stat-value" id="history-total-income">₹0</div>
-                    </div>
-                </div>
-                <div class="stat-card expense-stat">
-                    <div class="stat-icon">💸</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Total Expenses</div>
-                        <div class="stat-value" id="history-total-expense">₹0</div>
-                    </div>
-                </div>
-                <div class="stat-card balance-stat">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Net Balance</div>
-                        <div class="stat-value" id="history-net-balance">₹0</div>
-                    </div>
-                </div>
-                <div class="stat-card transactions-stat">
-                    <div class="stat-icon">📝</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Transactions</div>
-                        <div class="stat-value" id="history-transaction-count">0</div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Main History Card -->
             <div class="card">
                 <div class="history-header">
@@ -5990,35 +5958,6 @@
             filterTransactions(); // Apply filters to full list
         }
 
-        // Update history statistics
-        function updateHistoryStats(filteredTransactions) {
-            const income = filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-            const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-            const netBalance = income - expense;
-            
-            // Update stat cards
-            const totalIncomeElement = document.getElementById('history-total-income');
-            if (totalIncomeElement) {
-                totalIncomeElement.textContent = formatCurrency(income);
-            }
-            
-            const totalExpenseElement = document.getElementById('history-total-expense');
-            if (totalExpenseElement) {
-                totalExpenseElement.textContent = formatCurrency(expense);
-            }
-            
-            const netBalanceElement = document.getElementById('history-net-balance');
-            if (netBalanceElement) {
-                netBalanceElement.textContent = formatCurrency(netBalance);
-                netBalanceElement.style.color = netBalance >= 0 ? '#2ecc71' : '#e74c3c';
-            }
-            
-            const transactionCountElement = document.getElementById('history-transaction-count');
-            if (transactionCountElement) {
-                transactionCountElement.textContent = filteredTransactions.length;
-            }
-        }
-
         // Update filter info
         function updateFilterInfo(count) {
             const filterInfo = document.getElementById('history-filter-info');
@@ -6101,9 +6040,6 @@
                 return matchesSearch && matchesType && matchesCategory && matchesSubcategory && matchesDate;
             });
 
-            // Update history statistics
-            updateHistoryStats(filteredTransactions);
-            
             // Update filter info
             updateFilterInfo(filteredTransactions.length);
 
