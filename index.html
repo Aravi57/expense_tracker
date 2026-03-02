@@ -3170,7 +3170,17 @@
             <!-- Signup Form -->
             <div id="signup-form" class="auth-form">
                 <h2>Create Account</h2>
-                <p class="form-subtitle">Join us and start tracking expenses</p>
+                <p class="form-subtitle">Please provide your details to create an account</p>
+                
+                <div class="form-group">
+                    <label for="signup-fullname">Full Name</label>
+                    <input type="text" id="signup-fullname" placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" placeholder="Enter your email address" required>
+                </div>
                 
                 <div class="form-group">
                     <label for="signup-username">Username</label>
@@ -3197,7 +3207,7 @@
                     </button>
                     <button type="button" class="btn-primary" onclick="handleSignup()">
                         <span class="btn-icon">➕</span>
-                        <span>Sign Up</span>
+                        <span>Create Account</span>
                     </button>
                 </div>
                 
@@ -4135,6 +4145,8 @@
             document.getElementById('login-password').value = '';
             
             // Clear signup form
+            document.getElementById('signup-fullname').value = '';
+            document.getElementById('signup-email').value = '';
             document.getElementById('signup-username').value = '';
             document.getElementById('signup-password').value = '';
             document.getElementById('signup-confirm-password').value = '';
@@ -4215,12 +4227,14 @@
         }
 
         async function handleSignup() {
+            const fullname = document.getElementById('signup-fullname').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
             const username = document.getElementById('signup-username').value.trim();
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
 
             // Validation
-            if (!username || !password || !confirmPassword) {
+            if (!fullname || !email || !username || !password || !confirmPassword) {
                 alert('Please fill in all fields');
                 return;
             }
@@ -4241,6 +4255,13 @@
                 return;
             }
 
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address');
+                return;
+            }
+
             try {
                 // Check if username already exists
                 const usersRef = db.collection('users');
@@ -4251,8 +4272,18 @@
                     return;
                 }
 
-                // Create new user
+                // Check if email already exists
+                const emailQuerySnapshot = await usersRef.where('email', '==', email).get();
+                
+                if (!emailQuerySnapshot.empty) {
+                    alert('Email already registered. Please use a different email address.');
+                    return;
+                }
+
+                // Create new user with additional details
                 const newUser = {
+                    fullname: fullname,
+                    email: email,
                     username: username,
                     password: password, // In production, hash this password
                     createdAt: new Date().toISOString()
@@ -4260,10 +4291,10 @@
 
                 const docRef = await usersRef.add(newUser);
                 
-                alert('Account created successfully! Please login.');
+                alert('Account created successfully! Please login with your new credentials.');
                 showLogin();
                 
-                console.log('User created:', username);
+                console.log('User created:', { fullname, email, username });
             } catch (error) {
                 console.error('Signup error:', error);
                 alert('Signup failed. Please try again.');
