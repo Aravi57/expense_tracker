@@ -4100,6 +4100,22 @@
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPuOrb5GWvyYtDcCk-8y7UDaMnhqmci4k",
+            authDomain: "expese-tracker-604b4.firebaseapp.com",
+            projectId: "expese-tracker-604b4",
+            storageBucket: "expese-tracker-604b4.firebasestorage.app",
+            messagingSenderId: "727835142110",
+            appId: "1:727835142110:web:9cc2b0b0fb20e45d439f4f"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // User Management System
+        let currentUser = null;
+
         // Authentication Functions
         function showLogin() {
             document.getElementById('login-form').classList.add('active');
@@ -4108,8 +4124,8 @@
         }
 
         function showSignup() {
-            document.getElementById('signup-form').classList.add('active');
-            document.getElementById('login-form').classList.remove('active');
+            document.getElementById('login-form').classList.add('active');
+            document.getElementById('signup-form').classList.remove('active');
             clearAuthForms();
         }
 
@@ -4137,7 +4153,7 @@
             };
         }
 
-        function handleLogin() {
+        async function handleLogin() {
             const username = document.getElementById('login-username').value.trim();
             const password = document.getElementById('login-password').value;
 
@@ -4158,19 +4174,47 @@
                 return;
             }
 
-            // For demo purposes, accept any valid credentials
-            // In production, this would authenticate against a backend
-            console.log('Login attempt:', { username, password });
-            
-            // Show main app
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            
-            // Initialize the app after login
-            initializeApp();
+            try {
+                // Check if user exists in Firestore
+                const usersRef = db.collection('users');
+                const querySnapshot = await usersRef.where('username', '==', username).get();
+                
+                if (querySnapshot.empty) {
+                    alert('User not found. Please sign up first.');
+                    return;
+                }
+
+                // Get user data
+                const userDoc = querySnapshot.docs[0];
+                const userData = userDoc.data();
+                
+                // Verify password (in production, use proper hashing)
+                if (userData.password === password) {
+                    currentUser = {
+                        id: userDoc.id,
+                        username: userData.username,
+                        createdAt: userData.createdAt
+                    };
+                    
+                    // Show main app
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'block';
+                    
+                    // Load user's data
+                    await loadUserData(currentUser.id);
+                    initializeApp();
+                    
+                    console.log('User logged in:', currentUser.username);
+                } else {
+                    alert('Incorrect password');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed. Please try again.');
+            }
         }
 
-        function handleSignup() {
+        async function handleSignup() {
             const username = document.getElementById('signup-username').value.trim();
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
@@ -4197,12 +4241,33 @@
                 return;
             }
 
-            // For demo purposes, accept any valid credentials
-            // In production, this would register user in backend
-            console.log('Signup attempt:', { username, password });
-            
-            alert('Account created successfully! Please login.');
-            showLogin();
+            try {
+                // Check if username already exists
+                const usersRef = db.collection('users');
+                const querySnapshot = await usersRef.where('username', '==', username).get();
+                
+                if (!querySnapshot.empty) {
+                    alert('Username already exists. Please choose a different username.');
+                    return;
+                }
+
+                // Create new user
+                const newUser = {
+                    username: username,
+                    password: password, // In production, hash this password
+                    createdAt: new Date().toISOString()
+                };
+
+                const docRef = await usersRef.add(newUser);
+                
+                alert('Account created successfully! Please login.');
+                showLogin();
+                
+                console.log('User created:', username);
+            } catch (error) {
+                console.error('Signup error:', error);
+                alert('Signup failed. Please try again.');
+            }
         }
 
         function handleLogout() {
@@ -4212,34 +4277,44 @@
                 document.getElementById('login-screen').style.display = 'flex';
                 showLogin();
                 
-                // Clear any user data if needed
+                // Clear current user
+                currentUser = null;
+                
+                // Clear any cached data
                 console.log('User logged out');
+            }
+        }
+
+        async function loadUserData(userId) {
+            try {
+                // Load user-specific data
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    console.log('Loaded user data:', userData);
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
             }
         }
 
         function initializeApp() {
             // This function will be called after successful login
-            console.log('App initialized for user');
-            // Any additional initialization can go here
+            console.log('App initialized for user:', currentUser?.username);
+            // Load user-specific data and initialize the app
+            if (currentUser) {
+                loadUserData(currentUser.id);
+            }
         }
 
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPuOrb5GWvyYtDcCk-8y7UDaMnhqmci4k",
-            authDomain: "expese-tracker-604b4.firebaseapp.com",
-            projectId: "expese-tracker-604b4",
-            storageBucket: "expese-tracker-604b4.firebasestorage.app",
-            messagingSenderId: "727835142110",
-            appId: "1:727835142110:web:9cc2b0b0fb20e45d439f4f"
-        };
-
-        firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase
         const db = firebase.firestore();
         const transactionsRef = db.collection('transactions');
         const accountsRef = db.collection('accounts');
         const budgetsRef = db.collection('budgets');
         const recurringRef = db.collection('recurring');
         const investmentsRef = db.collection('investments');
+        const usersRef = db.collection('users');
 
         // State
         let transactions = [];
@@ -4338,34 +4413,41 @@
             });
         });
 
-        // Load data from Firebase
-        transactionsRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-            transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            render();
-        });
-
-        accountsRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-            accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderAccounts();
-            render(); // Update balance when accounts change
-        });
-
-        budgetsRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-            budgets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderBudget();
-        });
-
-        recurringRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-            recurringTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            checkAndCreateRecurringTransactions();
-        });
-
-        investmentsRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-            investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderInvestments();
-            updateInvestmentDashboard();
-            render(); // Update balance when investments change
-        });
+        function loadUserSpecificData() {
+            if (!currentUser) return;
+            
+            // Load user-specific transactions
+            transactionsRef.where('userId', '==', currentUser.id).orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+                transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                render();
+            });
+            
+            // Load user-specific accounts
+            accountsRef.where('userId', '==', currentUser.id).orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+                accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAccounts();
+                render(); // Update balance when accounts change
+            });
+            
+            // Load user-specific budgets
+            budgetsRef.where('userId', '==', currentUser.id).orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+                budgets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderBudget();
+            });
+            
+            // Load user-specific recurring transactions
+            recurringRef.where('userId', '==', currentUser.id).orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+                recurringTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                checkAndCreateRecurringTransactions();
+            });
+            
+            // Load user-specific investments
+            investmentsRef.where('userId', '==', currentUser.id).orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+                investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderInvestments();
+                updateInvestmentDashboard();
+            });
+        }
 
         // Add transaction
         form.addEventListener('submit', async (e) => {
@@ -4384,6 +4466,7 @@
                 category: finalCategory,
                 account: document.getElementById('account').value,
                 date: document.getElementById('date').value,
+                userId: currentUser.id, // Add userId to transaction
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
@@ -4407,6 +4490,7 @@
                 name: document.getElementById('account-name').value,
                 type: document.getElementById('account-type').value,
                 balance: parseFloat(document.getElementById('account-balance').value),
+                userId: currentUser.id, // Add userId to account
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             e.target.reset();
@@ -4427,6 +4511,7 @@
                 category: finalCategory,
                 amount: parseFloat(document.getElementById('budget-amount').value),
                 period: document.getElementById('budget-period').value,
+                userId: currentUser.id, // Add userId to budget
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             e.target.reset();
@@ -4466,6 +4551,7 @@
                     date: document.getElementById('investment-date').value,
                     risk: document.getElementById('investment-risk').value,
                     description: document.getElementById('investment-description').value,
+                    userId: currentUser.id, // Add userId to investment
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }
