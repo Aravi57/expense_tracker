@@ -4215,8 +4215,9 @@
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('main-app').style.display = 'block';
                     
-                    // Load user's data
+                    // Load user's data and set up listeners
                     await loadUserData(currentUser.id);
+                    loadUserSpecificData(); // Set up user-specific data listeners
                     initializeApp();
                     
                     console.log('User logged in:', currentUser.username);
@@ -4495,6 +4496,12 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // Check if user is logged in
+            if (!currentUser) {
+                alert('Please login to add transactions');
+                return;
+            }
+            
             const category = document.getElementById('category').value;
             const subcategory = document.getElementById('subcategory').value;
             
@@ -4512,6 +4519,8 @@
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
+            console.log('Creating transaction:', transactionData); // Debug log
+
             // Add regular transaction
             await transactionsRef.add(transactionData);
 
@@ -4528,6 +4537,15 @@
         // Add account
         document.getElementById('account-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Check if user is logged in
+            if (!currentUser) {
+                alert('Please login to add accounts');
+                return;
+            }
+            
+            console.log('Creating account for user:', currentUser.id); // Debug log
+            
             await accountsRef.add({
                 name: document.getElementById('account-name').value,
                 type: document.getElementById('account-type').value,
@@ -4542,6 +4560,14 @@
         // Add budget
         document.getElementById('budget-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Check if user is logged in
+            if (!currentUser) {
+                alert('Please login to add budgets');
+                return;
+            }
+            
+            console.log('Creating budget for user:', currentUser.id); // Debug log
             
             const category = document.getElementById('budget-category').value;
             const subcategory = document.getElementById('budget-subcategory').value;
