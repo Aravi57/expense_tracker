@@ -4693,7 +4693,7 @@
             
             if (editId) {
                 // Update existing investment
-                await investmentsRef.doc(editId).update({
+                const updatedData = {
                     name: document.getElementById('investment-name').value,
                     type: document.getElementById('investment-type').value,
                     amount: parseFloat(document.getElementById('investment-amount').value),
@@ -4702,7 +4702,27 @@
                     risk: document.getElementById('investment-risk').value,
                     description: document.getElementById('investment-description').value,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                };
+                
+                await investmentsRef.doc(editId).update(updatedData);
+                
+                // Immediately update local array for instant UI update
+                const investmentIndex = investments.findIndex(inv => inv.id === editId);
+                if (investmentIndex !== -1) {
+                    investments[investmentIndex] = { id: editId, ...updatedData };
+                    
+                    // Update header investment value immediately
+                    const headerInvestment = document.getElementById('header-investment');
+                    if (headerInvestment) {
+                        const totalInvestmentValue = investments.reduce((sum, inv) => sum + (inv.currentValue || inv.amount || 0), 0);
+                        headerInvestment.textContent = formatCurrency(totalInvestmentValue);
+                        headerInvestment.style.color = '#667eea'; // Investment blue color
+                    }
+                    
+                    // Update investment dashboard immediately
+                    renderInvestments();
+                    updateInvestmentDashboard();
+                }
                 
                 // Clear edit mode
                 delete document.getElementById('investment-form').dataset.editId;
@@ -4710,7 +4730,7 @@
                 submitBtn.innerHTML = '<span class="btn-icon">💼</span> Record Investment';
             } else {
                 // Create new investment
-                await investmentsRef.add({
+                const investmentData = {
                     name: document.getElementById('investment-name').value,
                     type: document.getElementById('investment-type').value,
                     amount: parseFloat(document.getElementById('investment-amount').value),
@@ -4720,7 +4740,25 @@
                     description: document.getElementById('investment-description').value,
                     userId: currentUser.id, // Add userId to investment
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                };
+                
+                const docRef = await investmentsRef.add(investmentData);
+                
+                // Immediately add to local array for instant UI update
+                const newInvestment = { id: docRef.id, ...investmentData };
+                investments.unshift(newInvestment); // Add to beginning of array
+                
+                // Update header investment value immediately
+                const headerInvestment = document.getElementById('header-investment');
+                if (headerInvestment) {
+                    const totalInvestmentValue = investments.reduce((sum, inv) => sum + (inv.currentValue || inv.amount || 0), 0);
+                    headerInvestment.textContent = formatCurrency(totalInvestmentValue);
+                    headerInvestment.style.color = '#667eea'; // Investment blue color
+                }
+                
+                // Update investment dashboard immediately
+                renderInvestments();
+                updateInvestmentDashboard();
             }
             
             resetInvestmentForm();
@@ -5074,19 +5112,37 @@
                 return;
             }
             
-            console.log('Delete button clicked for ID:', id);
             if (confirm(`Are you sure you want to delete the investment "${investment.name}"? This action cannot be undone.`)) {
-                console.log('Confirmed deletion for ID:', id);
                 try {
+                    // Delete from database
                     await investmentsRef.doc(id).delete();
-                    console.log('Investment deleted successfully');
+                    
+                    // Immediately remove from local array for instant UI update
+                    investments = investments.filter(inv => inv.id !== id);
+                    
+                    // Update header investment value immediately
+                    const headerInvestment = document.getElementById('header-investment');
+                    if (headerInvestment) {
+                        const totalInvestmentValue = investments.reduce((sum, inv) => sum + (inv.currentValue || inv.amount || 0), 0);
+                        headerInvestment.textContent = formatCurrency(totalInvestmentValue);
+                        headerInvestment.style.color = '#667eea'; // Investment blue color
+                    }
+                    
+                    // Update investment dashboard immediately
+                    renderInvestments();
+                    updateInvestmentDashboard();
+                    
                     alert('Investment deleted successfully!');
                     
-                    // The investment balance will automatically update due to the real-time listener
-                    // renderInvestments() will be called automatically when the data changes
                 } catch (error) {
                     console.error('Error deleting investment:', error);
                     alert('Failed to delete investment. Please try again.');
+                    // Refresh data if deletion failed
+                    investmentsRef.where('userId', '==', currentUser.id).get().then(snapshot => {
+                        investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        renderInvestments();
+                        updateInvestmentDashboard();
+                    });
                 }
             }
         }
