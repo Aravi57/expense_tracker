@@ -4957,7 +4957,57 @@
         }
 
         async function deleteAccount(id) {
-            await accountsRef.doc(id).delete();
+            // Check if user is logged in
+            if (!currentUser) {
+                alert('Please login to delete accounts');
+                return;
+            }
+            
+            // Get account details for confirmation
+            const account = accounts.find(a => a.id === id);
+            if (!account) {
+                alert('Account not found');
+                return;
+            }
+            
+            // Check if user owns this account
+            if (account.userId !== currentUser.id) {
+                alert('You can only delete your own accounts');
+                return;
+            }
+            
+            // Confirm deletion
+            if (confirm(`Are you sure you want to delete the account "${account.name}"? This action cannot be undone.`)) {
+                try {
+                    console.log('Deleting account:', id, account.name);
+                    
+                    // Check if account has transactions
+                    const accountTransactions = transactions.filter(t => t.account === id);
+                    if (accountTransactions.length > 0) {
+                        if (!confirm(`This account has ${accountTransactions.length} transaction(s). Deleting it will also remove these transactions. Continue?`)) {
+                            return;
+                        }
+                        
+                        // Delete associated transactions
+                        for (const transaction of accountTransactions) {
+                            // Only delete transactions that belong to current user
+                            if (transaction.userId === currentUser.id) {
+                                await transactionsRef.doc(transaction.id).delete();
+                            }
+                        }
+                    }
+                    
+                    // Delete the account
+                    await accountsRef.doc(id).delete();
+                    
+                    console.log('Account deleted successfully');
+                    alert('Account deleted successfully!');
+                    
+                } catch (error) {
+                    console.error('Error deleting account:', error);
+                    alert('Failed to delete account. Please try again.');
+                }
+            }
         }
 
         async function deleteBudget(id) {
