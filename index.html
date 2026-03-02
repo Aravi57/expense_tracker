@@ -5016,10 +5016,39 @@
 
         // Delete investment
         window.deleteInvestment = async function(id) {
+            // Check if user is logged in
+            if (!currentUser) {
+                alert('Please login to delete investments');
+                return;
+            }
+            
+            // Get investment details for confirmation
+            const investment = investments.find(inv => inv.id === id);
+            if (!investment) {
+                alert('Investment not found');
+                return;
+            }
+            
+            // Check if user owns this investment
+            if (investment.userId !== currentUser.id) {
+                alert('You can only delete your own investments');
+                return;
+            }
+            
             console.log('Delete button clicked for ID:', id);
-            if (confirm('Are you sure you want to delete this investment?')) {
+            if (confirm(`Are you sure you want to delete the investment "${investment.name}"? This action cannot be undone.`)) {
                 console.log('Confirmed deletion for ID:', id);
-                await investmentsRef.doc(id).delete();
+                try {
+                    await investmentsRef.doc(id).delete();
+                    console.log('Investment deleted successfully');
+                    alert('Investment deleted successfully!');
+                    
+                    // The investment balance will automatically update due to the real-time listener
+                    // renderInvestments() will be called automatically when the data changes
+                } catch (error) {
+                    console.error('Error deleting investment:', error);
+                    alert('Failed to delete investment. Please try again.');
+                }
             }
         }
 
@@ -5766,19 +5795,22 @@
             const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
             const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
             
-            // Calculate total bank account balances only
-            const totalBankBalance = accounts
-                .filter(account => account.type === 'bank')
+            // Calculate total account balances (all account types except investment)
+            const totalAccountBalance = accounts
+                .filter(account => account.type !== 'investment')
                 .reduce((sum, account) => sum + (account.balance || 0), 0);
             
             // Calculate total investment current values
             const totalInvestmentValue = investments.reduce((sum, inv) => sum + (inv.currentValue || inv.amount || 0), 0);
             
-            // Calculate balance: bank account balances + investment values (excluding transactions)
-            const balance = totalBankBalance + totalInvestmentValue;
+            // Calculate current balance: account balances + income - expense (excluding investment transactions)
+            const investmentTransactions = transactions.filter(t => t.category === 'investment');
+            const nonInvestmentIncome = income - investmentTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const nonInvestmentExpense = expense - investmentTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            
+            const balance = totalAccountBalance + nonInvestmentIncome - nonInvestmentExpense;
 
             // Calculate investment details
-            const investmentTransactions = transactions.filter(t => t.category === 'investment');
             const investmentIncome = investmentTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
             const investmentExpense = investmentTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
             const totalInvested = investmentIncome;
