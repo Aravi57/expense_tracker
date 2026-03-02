@@ -4231,15 +4231,11 @@
         }
 
         async function handleSignup() {
-            console.log('Signup button clicked'); // Debug log
-            
             const fullname = document.getElementById('signup-fullname').value.trim();
             const email = document.getElementById('signup-email').value.trim();
             const username = document.getElementById('signup-username').value.trim();
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
-
-            console.log('Form values:', { fullname, email, username, password, confirmPassword }); // Debug log
 
             // Validation
             if (!fullname || !email || !username || !password || !confirmPassword) {
@@ -4270,8 +4266,6 @@
                 return;
             }
 
-            console.log('Validation passed, attempting to create user...'); // Debug log
-
             try {
                 // Check if username already exists
                 const usersRef = db.collection('users');
@@ -4299,14 +4293,11 @@
                     createdAt: new Date().toISOString()
                 };
 
-                console.log('Creating user with data:', newUser); // Debug log
                 const docRef = await usersRef.add(newUser);
                 
-                console.log('User document created with ID:', docRef.id); // Debug log
                 alert('Account created successfully! Please login with your new credentials.');
                 showLogin();
                 
-                console.log('User created:', { fullname, email, username });
             } catch (error) {
                 console.error('Signup error:', error);
                 alert('Signup failed. Please try again.');
@@ -4459,12 +4450,9 @@
         function loadUserSpecificData() {
             if (!currentUser) return;
             
-            console.log('Loading user-specific data for:', currentUser.id);
-            
             // Load user-specific transactions with error handling
             transactionsRef.where('userId', '==', currentUser.id).onSnapshot(
                 snapshot => {
-                    console.log('Transactions loaded:', snapshot.docs.length);
                     transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     render();
                     
@@ -4479,7 +4467,6 @@
                     // Fallback: try without ordering
                     transactionsRef.where('userId', '==', currentUser.id).onSnapshot(
                         snapshot => {
-                            console.log('Transactions loaded (fallback):', snapshot.docs.length);
                             transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                             render();
                             
@@ -4499,7 +4486,6 @@
             // Load user-specific accounts with error handling
             accountsRef.where('userId', '==', currentUser.id).onSnapshot(
                 snapshot => {
-                    console.log('Accounts loaded:', snapshot.docs.length);
                     accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderAccounts();
                     render(); // Update balance when accounts change
@@ -4509,7 +4495,6 @@
                     // Fallback: try without ordering
                     accountsRef.where('userId', '==', currentUser.id).onSnapshot(
                         snapshot => {
-                            console.log('Accounts loaded (fallback):', snapshot.docs.length);
                             accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                             renderAccounts();
                             render();
@@ -4524,7 +4509,6 @@
             // Load user-specific budgets with error handling
             budgetsRef.where('userId', '==', currentUser.id).onSnapshot(
                 snapshot => {
-                    console.log('Budgets loaded:', snapshot.docs.length);
                     budgets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderBudget();
                 },
@@ -4533,7 +4517,6 @@
                     // Fallback: try without ordering
                     budgetsRef.where('userId', '==', currentUser.id).onSnapshot(
                         snapshot => {
-                            console.log('Budgets loaded (fallback):', snapshot.docs.length);
                             budgets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                             renderBudget();
                         },
@@ -4547,7 +4530,6 @@
             // Load user-specific recurring transactions with error handling
             recurringRef.where('userId', '==', currentUser.id).onSnapshot(
                 snapshot => {
-                    console.log('Recurring transactions loaded:', snapshot.docs.length);
                     recurringTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     checkAndCreateRecurringTransactions();
                 },
@@ -4556,7 +4538,6 @@
                     // Fallback: try without ordering
                     recurringRef.where('userId', '==', currentUser.id).onSnapshot(
                         snapshot => {
-                            console.log('Recurring transactions loaded (fallback):', snapshot.docs.length);
                             recurringTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                             checkAndCreateRecurringTransactions();
                         },
@@ -4570,7 +4551,6 @@
             // Load user-specific investments with error handling
             investmentsRef.where('userId', '==', currentUser.id).onSnapshot(
                 snapshot => {
-                    console.log('Investments loaded:', snapshot.docs.length);
                     investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderInvestments();
                     updateInvestmentDashboard();
@@ -4580,7 +4560,6 @@
                     // Fallback: try without ordering
                     investmentsRef.where('userId', '==', currentUser.id).onSnapshot(
                         snapshot => {
-                            console.log('Investments loaded (fallback):', snapshot.docs.length);
                             investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                             renderInvestments();
                             updateInvestmentDashboard();
@@ -4620,8 +4599,6 @@
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            console.log('Creating transaction:', transactionData); // Debug log
-
             // Add regular transaction
             await transactionsRef.add(transactionData);
 
@@ -4645,8 +4622,6 @@
                 return;
             }
             
-            console.log('Creating account for user:', currentUser.id); // Debug log
-            
             try {
                 const accountData = {
                     name: document.getElementById('account-name').value,
@@ -4656,11 +4631,8 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                console.log('Account data:', accountData);
-                
                 await accountsRef.add(accountData);
                 
-                console.log('Account created successfully');
                 alert('Account created successfully!');
                 
                 e.target.reset();
@@ -4985,15 +4957,10 @@
                         }
                     }
                     
-                    console.log('Transaction deleted successfully');
-                    
-                    // Update history page statistics if on history page
+                    // Update history page statistics immediately if on history page
                     const historySection = document.getElementById('history-section');
                     if (historySection && historySection.classList.contains('active')) {
-                        // Re-filter and update history statistics
-                        setTimeout(() => {
-                            filterTransactions();
-                        }, 100); // Small delay to ensure data is updated
+                        filterTransactions();
                     }
                     
                 } catch (error) {
