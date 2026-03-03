@@ -5215,11 +5215,11 @@
                 if (tab.dataset.section === 'history') {
                     // Initialize current month display
                     if (!currentSelectedMonth) {
-                        const currentMonth = new Date().toISOString().slice(0, 7);
-                        currentSelectedMonth = currentMonth;
+                        const now = new Date();
+                        currentSelectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                         const monthDisplay = document.getElementById('current-month-display');
                         if (monthDisplay) {
-                            const monthName = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                            const monthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
                             monthDisplay.textContent = monthName;
                         }
                     }
@@ -7199,81 +7199,35 @@
 
         // Navigate months
         function navigateMonth(direction) {
-            // Find the earliest and latest transaction dates
-            let earliestDate = null;
-            let latestDate = null;
-            
-            transactions.forEach(t => {
-                if (t.date) {
-                    const date = new Date(t.date);
-                    if (!earliestDate || date < earliestDate) earliestDate = date;
-                    if (!latestDate || date > latestDate) latestDate = date;
-                }
-            });
-            
-            // If no transactions, use current month and extend range
-            if (!earliestDate || !latestDate) {
-                earliestDate = new Date();
-                latestDate = new Date();
+            // If no month is selected, start with current month
+            if (!currentSelectedMonth) {
+                const now = new Date();
+                currentSelectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             }
             
-            // Generate all months from earliest to latest
-            const months = [];
-            const current = new Date(earliestDate.getFullYear(), earliestDate.getMonth(), 1);
-            const end = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
+            // Parse current selected month
+            const [year, month] = currentSelectedMonth.split('-');
+            const currentDate = new Date(parseInt(year), parseInt(month) - 1, 1);
             
-            while (current <= end) {
-                const monthKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
-                months.push(monthKey);
-                current.setMonth(current.getMonth() + 1);
-            }
-            
-            // Sort in descending order (most recent first)
-            months.sort((a, b) => b.localeCompare(a));
-            
-            if (months.length === 0) return;
-            
-            // Find current selection
-            let currentIndex = -1;
-            
-            if (currentSelectedMonth) {
-                currentIndex = months.indexOf(currentSelectedMonth);
+            // Navigate to next or previous month
+            if (direction === 1) {
+                currentDate.setMonth(currentDate.getMonth() + 1);
             } else {
-                // Default to current month if no selection
-                const currentMonth = new Date().toISOString().slice(0, 7);
-                currentIndex = months.indexOf(currentMonth);
-                if (currentIndex < 0) currentIndex = 0;
+                currentDate.setMonth(currentDate.getMonth() - 1);
             }
             
-            // Calculate new index
-            let newIndex = currentIndex;
-            if (currentIndex >= 0) {
-                newIndex = currentIndex + direction;
-                // Wrap around if needed
-                if (newIndex < 0) newIndex = months.length - 1;
-                if (newIndex >= months.length) newIndex = 0;
-            } else {
-                // Default to current month if no selection
-                const currentMonth = new Date().toISOString().slice(0, 7);
-                newIndex = months.indexOf(currentMonth);
-                if (newIndex < 0) newIndex = 0;
+            // Update current selected month
+            currentSelectedMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+            
+            // Update display
+            const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            const monthDisplay = document.getElementById('current-month-display');
+            if (monthDisplay) {
+                monthDisplay.textContent = monthName;
             }
             
-            // Set the new selection
-            if (newIndex >= 0 && newIndex < months.length) {
-                currentSelectedMonth = months[newIndex];
-                const [year, month] = currentSelectedMonth.split('-');
-                const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                
-                // Update display
-                const monthDisplay = document.getElementById('current-month-display');
-                if (monthDisplay) {
-                    monthDisplay.textContent = monthName;
-                }
-                
-                // Apply filter
-                filterTransactions();
-            }
+            // Apply filter
+            filterTransactions();
         }
 
         // Clear all filters
