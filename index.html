@@ -780,6 +780,154 @@
         .balance-value.positive { color: #2ecc71; }
         .balance-value.negative { color: #e74c3c; }
 
+        /* Enhanced Analysis Page Styles */
+        .enhanced-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item.enhanced {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item.enhanced:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-item.enhanced .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .stat-item.enhanced .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .stat-change.positive {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .stat-change.negative {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        /* Pattern Analysis Styles */
+        .pattern-analysis {
+            display: grid;
+            gap: 15px;
+        }
+
+        .pattern-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .pattern-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .pattern-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 5px;
+        }
+
+        .pattern-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+
+        .pattern-detail {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Financial Insights Styles */
+        .insights-container {
+            display: grid;
+            gap: 15px;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .insight-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .insight-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .insight-content {
+            flex: 1;
+        }
+
+        .insight-title {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 3px;
+        }
+
+        .insight-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .insight-description {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
         /* Portfolio Summary */
         .portfolio-summary {
             display: grid;
@@ -3820,16 +3968,38 @@
         <!-- Analysis Section -->
         <div id="analysis-section" class="section">
             <div class="dashboard-grid">
-                <div class="card">
-                    <h3>Overview</h3>
-                    <div class="stat-grid">
-                        <div class="stat-item">
+                <div class="card enhanced-card">
+                    <h3>Financial Overview</h3>
+                    <div class="enhanced-stats-grid">
+                        <div class="stat-item enhanced">
                             <div class="stat-value" id="stat-transactions">0</div>
-                            <div class="stat-label">Transactions</div>
+                            <div class="stat-label">Total Transactions</div>
+                            <div class="stat-change" id="transaction-trend">+0%</div>
                         </div>
-                        <div class="stat-item">
+                        <div class="stat-item enhanced">
                             <div class="stat-value" id="stat-avg">₹0</div>
                             <div class="stat-label">Average Expense</div>
+                            <div class="stat-change" id="expense-trend">+0%</div>
+                        </div>
+                        <div class="stat-item enhanced">
+                            <div class="stat-value" id="stat-income">₹0</div>
+                            <div class="stat-label">Total Income</div>
+                            <div class="stat-change positive" id="income-trend">+0%</div>
+                        </div>
+                        <div class="stat-item enhanced">
+                            <div class="stat-value" id="stat-expenses">₹0</div>
+                            <div class="stat-label">Total Expenses</div>
+                            <div class="stat-change negative" id="expenses-trend">+0%</div>
+                        </div>
+                        <div class="stat-item enhanced">
+                            <div class="stat-value" id="stat-savings">₹0</div>
+                            <div class="stat-label">Net Savings</div>
+                            <div class="stat-change" id="savings-trend">+0%</div>
+                        </div>
+                        <div class="stat-item enhanced">
+                            <div class="stat-value" id="stat-savings-rate">0%</div>
+                            <div class="stat-label">Savings Rate</div>
+                            <div class="stat-change" id="savings-rate-trend">+0%</div>
                         </div>
                     </div>
                 </div>
@@ -3849,6 +4019,60 @@
                     <h3>Expenses by Category</h3>
                     <div class="chart-container">
                         <canvas id="category-pie-chart"></canvas>
+                    </div>
+                </div>
+                <div class="card enhanced-card">
+                    <h3>Spending Patterns</h3>
+                    <div class="pattern-analysis">
+                        <div class="pattern-item">
+                            <div class="pattern-label">Highest Spending Category</div>
+                            <div class="pattern-value" id="highest-category">-</div>
+                            <div class="pattern-detail" id="highest-category-amount">₹0</div>
+                        </div>
+                        <div class="pattern-item">
+                            <div class="pattern-label">Most Frequent Category</div>
+                            <div class="pattern-value" id="frequent-category">-</div>
+                            <div class="pattern-detail" id="frequent-category-count">0 transactions</div>
+                        </div>
+                        <div class="pattern-item">
+                            <div class="pattern-label">Average Daily Spending</div>
+                            <div class="pattern-value" id="daily-spending">₹0</div>
+                            <div class="pattern-detail" id="daily-spending-trend">vs last month</div>
+                        </div>
+                        <div class="pattern-item">
+                            <div class="pattern-label">Weekend vs Weekday</div>
+                            <div class="pattern-value" id="weekend-ratio">0%</div>
+                            <div class="pattern-detail" id="weekend-detail">Weekend spending</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card enhanced-card">
+                    <h3>Financial Insights</h3>
+                    <div class="insights-container">
+                        <div class="insight-item">
+                            <div class="insight-icon">📊</div>
+                            <div class="insight-content">
+                                <div class="insight-title">Budget Health</div>
+                                <div class="insight-value" id="budget-health">Good</div>
+                                <div class="insight-description" id="budget-health-desc">Spending within limits</div>
+                            </div>
+                        </div>
+                        <div class="insight-item">
+                            <div class="insight-icon">🎯</div>
+                            <div class="insight-content">
+                                <div class="insight-title">Financial Goal</div>
+                                <div class="insight-value" id="financial-goal">On Track</div>
+                                <div class="insight-description" id="financial-goal-desc">Maintaining positive savings</div>
+                            </div>
+                        </div>
+                        <div class="insight-item">
+                            <div class="insight-icon">⚠️</div>
+                            <div class="insight-content">
+                                <div class="insight-title">Alerts</div>
+                                <div class="insight-value" id="financial-alerts">None</div>
+                                <div class="insight-description" id="financial-alerts-desc">All metrics normal</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -6487,9 +6711,29 @@
             const expenses = transactions.filter(t => t.type === 'expense');
             const income = transactions.filter(t => t.type === 'income');
             
+            // Calculate comprehensive statistics
+            const totalIncome = income.reduce((sum, t) => sum + t.amount, 0);
+            const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
+            const netSavings = totalIncome - totalExpenses;
+            const savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0;
+            const avgExpense = expenses.length > 0 ? totalExpenses / expenses.length : 0;
+            
+            // Update enhanced overview statistics
             document.getElementById('stat-transactions').textContent = transactions.length;
-            const avg = expenses.length > 0 ? expenses.reduce((sum, t) => sum + t.amount, 0) / expenses.length : 0;
-            document.getElementById('stat-avg').textContent = formatCurrency(avg);
+            document.getElementById('stat-avg').textContent = formatCurrency(avgExpense);
+            document.getElementById('stat-income').textContent = formatCurrency(totalIncome);
+            document.getElementById('stat-expenses').textContent = formatCurrency(totalExpenses);
+            document.getElementById('stat-savings').textContent = formatCurrency(netSavings);
+            document.getElementById('stat-savings-rate').textContent = savingsRate.toFixed(1) + '%';
+            
+            // Calculate and update trends (comparing with previous month)
+            updateAnalysisTrends();
+            
+            // Update spending patterns
+            updateSpendingPatterns();
+            
+            // Update financial insights
+            updateFinancialInsights(totalIncome, totalExpenses, netSavings, savingsRate);
 
             // Render monthly trend chart
             renderMonthlyTrendChart();
@@ -6531,6 +6775,171 @@
                         </div>
                     </div>
                 `).join('');
+        }
+
+        // Update analysis trends
+        function updateAnalysisTrends() {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const previousMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
+            
+            const currentTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+            const previousTransactions = transactions.filter(t => t.date.startsWith(previousMonth));
+            
+            const currentExpenses = currentTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const previousExpenses = previousTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            
+            const currentIncome = currentTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const previousIncome = previousTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            
+            // Calculate trends
+            const transactionTrend = previousTransactions.length > 0 ? 
+                ((currentTransactions.length - previousTransactions.length) / previousTransactions.length * 100) : 0;
+            const expenseTrend = previousExpenses > 0 ? 
+                ((currentExpenses - previousExpenses) / previousExpenses * 100) : 0;
+            const incomeTrend = previousIncome > 0 ? 
+                ((currentIncome - previousIncome) / previousIncome * 100) : 0;
+            
+            // Update trend displays
+            updateTrendDisplay('transaction-trend', transactionTrend);
+            updateTrendDisplay('expense-trend', expenseTrend);
+            updateTrendDisplay('income-trend', incomeTrend);
+            updateTrendDisplay('expenses-trend', expenseTrend);
+            
+            // Calculate savings trend
+            const currentSavings = currentIncome - currentExpenses;
+            const previousSavings = previousIncome - previousExpenses;
+            const savingsTrend = previousSavings !== 0 ? 
+                ((currentSavings - previousSavings) / Math.abs(previousSavings) * 100) : 0;
+            updateTrendDisplay('savings-trend', savingsTrend);
+            
+            // Calculate savings rate trend
+            const currentSavingsRate = currentIncome > 0 ? (currentSavings / currentIncome) * 100 : 0;
+            const previousSavingsRate = previousIncome > 0 ? (previousSavings / previousIncome) * 100 : 0;
+            const savingsRateTrend = previousSavingsRate !== 0 ? 
+                ((currentSavingsRate - previousSavingsRate) / Math.abs(previousSavingsRate) * 100) : 0;
+            updateTrendDisplay('savings-rate-trend', savingsRateTrend);
+        }
+
+        // Update trend display with proper formatting
+        function updateTrendDisplay(elementId, trend) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                const sign = trend >= 0 ? '+' : '';
+                element.textContent = sign + trend.toFixed(1) + '%';
+                element.className = 'stat-change ' + (trend >= 0 ? 'positive' : 'negative');
+            }
+        }
+
+        // Update spending patterns
+        function updateSpendingPatterns() {
+            const expenses = transactions.filter(t => t.type === 'expense');
+            
+            // Highest spending category
+            const categoryTotals = {};
+            expenses.forEach(t => {
+                categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+            });
+            
+            const highestCategory = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
+            if (highestCategory) {
+                document.getElementById('highest-category').textContent = formatCategory(highestCategory[0]);
+                document.getElementById('highest-category-amount').textContent = formatCurrency(highestCategory[1]);
+            }
+            
+            // Most frequent category
+            const categoryCounts = {};
+            expenses.forEach(t => {
+                categoryCounts[t.category] = (categoryCounts[t.category] || 0) + 1;
+            });
+            
+            const frequentCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
+            if (frequentCategory) {
+                document.getElementById('frequent-category').textContent = formatCategory(frequentCategory[0]);
+                document.getElementById('frequent-category-count').textContent = frequentCategory[1] + ' transactions';
+            }
+            
+            // Average daily spending
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const currentMonthExpenses = expenses.filter(t => t.date.startsWith(currentMonth));
+            const totalMonthExpenses = currentMonthExpenses.reduce((sum, t) => sum + t.amount, 0);
+            const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+            const dailySpending = totalMonthExpenses / daysInMonth;
+            
+            document.getElementById('daily-spending').textContent = formatCurrency(dailySpending);
+            
+            // Weekend vs weekday spending
+            const weekendExpenses = currentMonthExpenses.filter(t => {
+                const date = new Date(t.date);
+                return date.getDay() === 0 || date.getDay() === 6; // Sunday or Saturday
+            }).reduce((sum, t) => sum + t.amount, 0);
+            
+            const weekdayExpenses = totalMonthExpenses - weekendExpenses;
+            const weekendRatio = totalMonthExpenses > 0 ? (weekendExpenses / totalMonthExpenses) * 100 : 0;
+            
+            document.getElementById('weekend-ratio').textContent = weekendRatio.toFixed(1) + '%';
+            document.getElementById('weekend-detail').textContent = formatCurrency(weekendExpenses) + ' on weekends';
+        }
+
+        // Update financial insights
+        function updateFinancialInsights(totalIncome, totalExpenses, netSavings, savingsRate) {
+            // Budget health
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const currentMonthExpenses = transactions.filter(t => 
+                t.type === 'expense' && t.date.startsWith(currentMonth)
+            ).reduce((sum, t) => sum + t.amount, 0);
+            
+            let budgetHealth = 'Good';
+            let budgetHealthDesc = 'Spending within limits';
+            
+            if (savingsRate < 0) {
+                budgetHealth = 'Critical';
+                budgetHealthDesc = 'Spending exceeds income';
+            } else if (savingsRate < 10) {
+                budgetHealth = 'Warning';
+                budgetHealthDesc = 'Low savings rate';
+            } else if (savingsRate > 30) {
+                budgetHealth = 'Excellent';
+                budgetHealthDesc = 'Great savings habits';
+            }
+            
+            document.getElementById('budget-health').textContent = budgetHealth;
+            document.getElementById('budget-health-desc').textContent = budgetHealthDesc;
+            
+            // Financial goal
+            let financialGoal = 'On Track';
+            let financialGoalDesc = 'Maintaining positive savings';
+            
+            if (netSavings < 0) {
+                financialGoal = 'Needs Attention';
+                financialGoalDesc = 'Negative cash flow';
+            } else if (savingsRate > 20) {
+                financialGoal = 'Excellent';
+                financialGoalDesc = 'Exceeding savings targets';
+            } else if (savingsRate < 5) {
+                financialGoal = 'At Risk';
+                financialGoalDesc = 'Very low savings rate';
+            }
+            
+            document.getElementById('financial-goal').textContent = financialGoal;
+            document.getElementById('financial-goal-desc').textContent = financialGoalDesc;
+            
+            // Alerts
+            let alerts = 'None';
+            let alertsDesc = 'All metrics normal';
+            
+            if (netSavings < 0) {
+                alerts = 'High';
+                alertsDesc = 'Negative cash flow detected';
+            } else if (savingsRate < 5) {
+                alerts = 'Medium';
+                alertsDesc = 'Low savings rate warning';
+            } else if (currentMonthExpenses > totalIncome * 0.8) {
+                alerts = 'Medium';
+                alertsDesc = 'High monthly spending';
+            }
+            
+            document.getElementById('financial-alerts').textContent = alerts;
+            document.getElementById('financial-alerts-desc').textContent = alertsDesc;
         }
 
         // Render monthly trend chart
