@@ -5456,61 +5456,46 @@
                 const budgetBars = document.querySelectorAll('.category-bar');
                 
                 console.log('=== DRAG AND DROP DEBUG ===');
-                console.log('Budget list element:', document.getElementById('budget-list'));
-                console.log('Budget list HTML:', document.getElementById('budget-list').innerHTML.substring(0, 200) + '...');
                 console.log('Found drag handles:', dragHandles.length);
                 console.log('Found budget bars:', budgetBars.length);
-                console.log('Drag handles:', dragHandles);
-                console.log('Budget bars:', budgetBars);
                 
-                // Check if drag handles have draggable attribute
-                dragHandles.forEach((handle, index) => {
-                    console.log(`Handle ${index}:`, handle);
-                    console.log(`Handle ${index} draggable:`, handle.draggable);
-                    console.log(`Handle ${index} parent:`, handle.closest('.category-bar'));
-                });
-                
-                // Remove any existing listeners first
+                // Clear all existing listeners first to prevent duplicates
                 dragHandles.forEach(handle => {
-                    handle.removeEventListener('dragstart', handleDragStart);
+                    const newHandle = handle.cloneNode(true);
+                    handle.parentNode.replaceChild(newHandle, handle);
                 });
                 
-                budgetBars.forEach(bar => {
-                    bar.removeEventListener('dragover', handleDragOver);
-                    bar.removeEventListener('drop', handleDrop);
+                // Get fresh references after cloning
+                const freshDragHandles = document.querySelectorAll('.drag-handle');
+                const freshBudgetBars = document.querySelectorAll('.category-bar');
+                
+                console.log('Fresh drag handles:', freshDragHandles.length);
+                console.log('Fresh budget bars:', freshBudgetBars.length);
+                
+                // Add event listeners to fresh elements
+                freshDragHandles.forEach((handle, index) => {
+                    console.log(`Adding dragstart to handle ${index}`);
+                    handle.addEventListener('dragstart', function(e) {
+                        console.log('🎯 Dragstart event fired on handle:', e.target);
+                        handleDragStart(e);
+                    });
                 });
                 
-                // Add event listeners with error handling
-                try {
-                    // Add dragstart to handles
-                    dragHandles.forEach((handle, index) => {
-                        console.log(`Adding dragstart to handle ${index}`);
-                        handle.addEventListener('dragstart', function(e) {
-                            console.log('Dragstart event fired on handle:', e.target);
-                            handleDragStart(e);
-                        });
+                freshBudgetBars.forEach((bar, index) => {
+                    console.log(`Adding dragover/drop to bar ${index}`);
+                    bar.addEventListener('dragover', function(e) {
+                        console.log('🎯 Dragover event fired on bar:', e.target);
+                        handleDragOver(e);
                     });
-                    
-                    // Add dragover and drop to budget bars
-                    budgetBars.forEach((bar, index) => {
-                        console.log(`Adding dragover/drop to bar ${index}`);
-                        bar.addEventListener('dragover', function(e) {
-                            console.log('Dragover event fired on bar:', e.target);
-                            handleDragOver(e);
-                        });
-                        bar.addEventListener('drop', function(e) {
-                            console.log('Drop event fired on bar:', e.target);
-                            handleDrop(e);
-                        });
+                    bar.addEventListener('drop', function(e) {
+                        console.log('🎯 Drop event fired on bar:', e.target);
+                        handleDrop(e);
                     });
-                    
-                    console.log('✅ Event listeners added successfully');
-                } catch (error) {
-                    console.error('❌ Error adding event listeners:', error);
-                }
+                });
                 
+                console.log('✅ Event listeners added successfully');
                 console.log('=== END DEBUG ===');
-            }, 200);
+            }, 300);
 
             // Render budget chart
             renderBudgetChart(categorySpending);
