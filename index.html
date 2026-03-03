@@ -5311,15 +5311,40 @@
         // Initialize drag and drop functionality
         let draggedElement = null;
         let draggedBudgetId = null;
+        let draggedIndex = null;
+        let placeholderElement = null;
+
+        // Create placeholder element
+        function createPlaceholder() {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'category-bar drag-placeholder';
+            placeholder.style.cssText = 'margin-bottom: 15px; padding: 20px; border: 2px dashed rgba(52, 152, 219, 0.5); background: rgba(52, 152, 219, 0.1); text-align: center; color: rgba(255, 255, 255, 0.5); border-radius: 8px;';
+            placeholder.innerHTML = '<span>Drop budget here</span>';
+            return placeholder;
+        }
 
         // Handle drag start
         function handleDragStart(e) {
-            draggedElement = e.target.closest('.category-bar');
-            draggedBudgetId = e.target.closest('.category-bar').dataset.budgetId;
+            const dragHandle = e.target;
+            draggedElement = dragHandle.closest('.category-bar');
+            draggedBudgetId = draggedElement.dataset.budgetId;
+            
+            // Find current index
+            const budgetList = document.getElementById('budget-list');
+            const allBudgets = [...budgetList.children];
+            draggedIndex = allBudgets.findIndex(b => b.dataset.budgetId === draggedBudgetId);
+            
+            // Add dragging class
             draggedElement.classList.add('dragging');
+            
+            // Set drag data
             e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', draggedElement.innerHTML);
-            console.log('Drag started for budget:', draggedBudgetId);
+            e.dataTransfer.setData('text/plain', draggedBudgetId);
+            
+            // Create placeholder
+            placeholderElement = createPlaceholder();
+            
+            console.log('Drag started:', draggedBudgetId, 'at index:', draggedIndex);
         }
 
         // Handle drag over
@@ -5329,27 +5354,38 @@
             e.dataTransfer.dropEffect = 'move';
             
             const targetBar = e.target.closest('.category-bar');
-            if (targetBar && targetBar !== draggedElement) {
-                const budgetList = document.getElementById('budget-list');
-                const allBudgets = [...budgetList.children];
-                const draggedIndex = allBudgets.findIndex(b => b.dataset.budgetId === draggedBudgetId);
-                const targetIndex = allBudgets.findIndex(b => b.dataset.budgetId === targetBar.dataset.budgetId);
+            const budgetList = document.getElementById('budget-list');
+            
+            if (targetBar && targetBar !== draggedElement && targetBar !== placeholderElement) {
+                // Remove existing placeholder
+                const existingPlaceholder = budgetList.querySelector('.drag-placeholder');
+                if (existingPlaceholder) {
+                    existingPlaceholder.remove();
+                }
                 
-                // Calculate the position based on mouse location
+                // Calculate drop position
                 const rect = targetBar.getBoundingClientRect();
                 const midpoint = rect.top + rect.height / 2;
-                const shouldInsertBefore = e.clientY < midpoint;
+                const mouseY = e.clientY;
                 
-                if (draggedIndex < targetIndex) {
-                    // Dragging down - insert before if above midpoint, after if below
-                    if (shouldInsertBefore) {
-                        budgetList.insertBefore(draggedElement, targetBar);
-                    } else {
-                        budgetList.insertBefore(draggedElement, targetBar.nextSibling);
-                    }
+                if (mouseY < midpoint) {
+                    // Insert before target
+                    budgetList.insertBefore(placeholderElement, targetBar);
                 } else {
-                    // Dragging up - always insert before
-                    budgetList.insertBefore(draggedElement, targetBar);
+                    // Insert after target
+                    budgetList.insertBefore(placeholderElement, targetBar.nextSibling);
+                }
+            }
+        }
+
+        // Handle drag leave
+        function handleDragLeave(e) {
+            // Only remove placeholder if leaving the budget list entirely
+            const budgetList = document.getElementById('budget-list');
+            if (!budgetList.contains(e.relatedTarget)) {
+                const placeholder = budgetList.querySelector('.drag-placeholder');
+                if (placeholder) {
+                    placeholder.remove();
                 }
             }
         }
@@ -5359,47 +5395,60 @@
             e.preventDefault();
             e.stopPropagation();
             
-            console.log('Drop event fired');
-            
-            // Get the current order from the DOM
             const budgetList = document.getElementById('budget-list');
-            const allBudgets = [...budgetList.children];
-            const newOrder = [];
+            const placeholder = budgetList.querySelector('.drag-placeholder');
             
-            allBudgets.forEach(element => {
-                const budgetId = element.dataset.budgetId;
-                const budget = budgets.find(b => b.id === budgetId);
-                if (budget) {
-                    newOrder.push(budget);
-                }
-            });
-            
-            // Update the budgets array with the new order
-            budgets.length = 0; // Clear the array
-            budgets.push(...newOrder);
-            
-            console.log('New budget order:', newOrder.map(b => b.category));
-            
-            // Update database with new order
-            budgets.forEach((budget, index) => {
-                budgetsRef.doc(budget.id).update({ order: index });
-            });
-            
-            // Clean up
-            if (draggedElement) {
-                draggedElement.classList.remove('dragging');
+            if (placeholder && draggedElement) {
+                // Replace placeholder with dragged element
+                budgetList.insertBefore(draggedElement, placeholder);
+                placeholder.remove();
+                
+                // Get new order from DOM
+                const allBudgets = [...budgetList.children];
+                const newOrder = [];
+                
+                allBudgets.forEach(element => {
+                    const budgetId = element.dataset.budgetId;
+                    const budget = budgets.find(b => b.id === budgetId);
+                    if (budget) {
+                        newOrder.push(budget);
+                    }
+                });
+                
+                // Update budgets array
+                budgets.length = 0;
+                budgets.push(...newOrder);
+                
+                console.log('New order:', newOrder.map(b => b.category));
+                
+                // Update database
+                budgets.forEach((budget, index) => {
+                    budgetsRef.doc(budget.id).update({ order: index });
+                });
             }
-            draggedElement = null;
-            draggedBudgetId = null;
         }
 
         // Handle drag end
         function handleDragEnd(e) {
+            // Clean up
             if (draggedElement) {
                 draggedElement.classList.remove('dragging');
             }
+            
+            // Remove placeholder
+            const budgetList = document.getElementById('budget-list');
+            const placeholder = budgetList.querySelector('.drag-placeholder');
+            if (placeholder) {
+                placeholder.remove();
+            }
+            
+            // Reset state
             draggedElement = null;
             draggedBudgetId = null;
+            draggedIndex = null;
+            placeholderElement = null;
+            
+            console.log('Drag ended, cleanup complete');
         }
 
         // Render budget
@@ -5494,8 +5543,25 @@
                 const budgetBars = document.querySelectorAll('.category-bar');
                 const budgetList = document.getElementById('budget-list');
                 
+                console.log('Setting up drag and drop...');
                 console.log('Found drag handles:', dragHandles.length);
                 console.log('Found budget bars:', budgetBars.length);
+                
+                // Clear existing listeners to avoid duplicates
+                dragHandles.forEach(handle => {
+                    handle.removeEventListener('dragstart', handleDragStart);
+                    handle.removeEventListener('dragend', handleDragEnd);
+                });
+                
+                budgetBars.forEach(bar => {
+                    bar.removeEventListener('dragover', handleDragOver);
+                    bar.removeEventListener('dragleave', handleDragLeave);
+                    bar.removeEventListener('drop', handleDrop);
+                });
+                
+                budgetList.removeEventListener('dragover', handleDragOver);
+                budgetList.removeEventListener('dragleave', handleDragLeave);
+                budgetList.removeEventListener('drop', handleDrop);
                 
                 // Add event listeners to drag handles
                 dragHandles.forEach(handle => {
@@ -5503,15 +5569,19 @@
                     handle.addEventListener('dragend', handleDragEnd);
                 });
                 
-                // Add dragover and drop listeners to budget bars and container
+                // Add dragover, dragleave, and drop listeners to budget bars
                 budgetBars.forEach(bar => {
                     bar.addEventListener('dragover', handleDragOver);
+                    bar.addEventListener('dragleave', handleDragLeave);
                     bar.addEventListener('drop', handleDrop);
                 });
                 
-                // Add dragover listener to the container
+                // Add listeners to the container
                 budgetList.addEventListener('dragover', handleDragOver);
+                budgetList.addEventListener('dragleave', handleDragLeave);
                 budgetList.addEventListener('drop', handleDrop);
+                
+                console.log('Drag and drop setup complete');
             }, 100);
 
             // Render budget chart
