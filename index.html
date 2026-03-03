@@ -1357,21 +1357,38 @@
             align-items: center;
         }
 
-        .rearrange-btn {
-            background: rgba(52, 152, 219, 0.2);
-            color: #3498db;
-            border: 1px solid rgba(52, 152, 219, 0.3);
+        .drag-handle {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+            border: 1px solid rgba(108, 117, 125, 0.3);
             border-radius: 4px;
-            cursor: pointer;
+            cursor: grab;
+            padding: 4px 6px;
+            margin-right: 8px;
+            font-size: 12px;
+            user-select: none;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        .rearrange-btn:hover {
-            background: rgba(52, 152, 219, 0.3);
-            transform: translateY(-1px);
+        .drag-handle:hover {
+            background: rgba(108, 117, 125, 0.3);
+            transform: scale(1.1);
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .category-bar[draggable="true"] {
+            cursor: grab;
+            transition: all 0.3s ease;
+        }
+
+        .category-bar.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
 
         .bar-bg {
@@ -5357,12 +5374,11 @@
                 const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
                 
                 return `
-                    <div class="category-bar" style="margin-bottom: 15px;">
+                    <div class="category-bar" style="margin-bottom: 15px;" draggable="true" data-budget-id="${budget.id}">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <span class="category-name">${formatCategory(budget.category)}</span>
                             <div class="budget-actions">
-                                <button class="rearrange-btn" onclick="moveBudgetUp('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem; margin-right: 5px;" title="Move Up">↑</button>
-                                <button class="rearrange-btn" onclick="moveBudgetDown('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem; margin-right: 5px;" title="Move Down">↓</button>
+                                <div class="drag-handle" title="Drag to reorder">⋮⋮</div>
                                 <button class="edit-btn" onclick="editBudget('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem; margin-right: 5px;">✎</button>
                                 <button class="delete-btn" onclick="deleteBudget('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem;">×</button>
                             </div>
@@ -5377,6 +5393,17 @@
                     </div>
                 `;
             }).join('');
+
+            // Add drag and drop event listeners
+            setTimeout(() => {
+                const budgetBars = document.querySelectorAll('.category-bar[draggable="true"]');
+                budgetBars.forEach(bar => {
+                    bar.addEventListener('dragstart', handleDragStart);
+                    bar.addEventListener('dragover', handleDragOver);
+                    bar.addEventListener('drop', handleDrop);
+                    bar.addEventListener('dragend', handleDragEnd);
+                });
+            }, 100);
 
             // Render budget chart
             renderBudgetChart(categorySpending);
