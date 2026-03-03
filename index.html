@@ -4073,8 +4073,11 @@
                                 <option value="">All Time</option>
                                 <option value="today">Today</option>
                                 <option value="week">This Week</option>
-                                <option value="month">This Month</option>
+                                <option value="month" selected>This Month</option>
                                 <option value="year">This Year</option>
+                                <optgroup label="Select Month">
+                                    <!-- Month options will be populated dynamically -->
+                                </optgroup>
                             </select>
                         </div>
                     </div>
@@ -4846,7 +4849,10 @@
                 if (tab.dataset.section === 'analysis') renderAnalysis();
                 if (tab.dataset.section === 'budget') renderBudget();
                 if (tab.dataset.section === 'investments') renderInvestments();
-                if (tab.dataset.section === 'history') updateHistoryStatistics();
+                if (tab.dataset.section === 'history') {
+                    populateMonthOptions();
+                    updateHistoryStatistics();
+                }
             });
         });
 
@@ -6571,6 +6577,13 @@
                 console.log('Synced transactions:', transactions);
                 render();
                 debugTransactions();
+                
+                // Update month options if history page is active
+                const historySection = document.getElementById('history-section');
+                if (historySection && historySection.classList.contains('active')) {
+                    populateMonthOptions();
+                    filterTransactions();
+                }
             }).catch(error => {
                 console.error('Error syncing transactions:', error);
             });
@@ -6763,12 +6776,20 @@
             }
             
             if (dateFilter) {
-                const dateText = {
-                    'today': 'Today',
-                    'week': 'This Week',
-                    'month': 'This Month',
-                    'year': 'This Year'
-                }[dateFilter];
+                let dateText;
+                if (dateFilter.startsWith('month-')) {
+                    // Handle month-specific options (format: month-YYYY-MM)
+                    const [, year, month] = dateFilter.split('-');
+                    const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                    dateText = monthName;
+                } else {
+                    dateText = {
+                        'today': 'Today',
+                        'week': 'This Week',
+                        'month': 'This Month',
+                        'year': 'This Year'
+                    }[dateFilter];
+                }
                 filterText = filterText === 'All Transactions' ? dateText : `${dateText} • ${filterText}`;
             }
             
@@ -6777,6 +6798,42 @@
             }
             
             filterInfo.textContent = `${filterText} (${count})`;
+        }
+
+        // Populate month options in date filter
+        function populateMonthOptions() {
+            const dateFilter = document.getElementById('date-filter');
+            if (!dateFilter) return;
+            
+            // Get all unique months from transactions
+            const monthSet = new Set();
+            transactions.forEach(t => {
+                if (t.date) {
+                    const date = new Date(t.date);
+                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    monthSet.add(monthKey);
+                }
+            });
+            
+            // Convert to array and sort in descending order (most recent first)
+            const months = Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+            
+            // Find the optgroup
+            const optgroup = dateFilter.querySelector('optgroup[label="Select Month"]');
+            if (!optgroup) return;
+            
+            // Clear existing options
+            optgroup.innerHTML = '';
+            
+            // Add month options
+            months.forEach(monthKey => {
+                const [year, month] = monthKey.split('-');
+                const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                const option = document.createElement('option');
+                option.value = `month-${monthKey}`;
+                option.textContent = monthName;
+                optgroup.appendChild(option);
+            });
         }
 
         // Update history statistics
@@ -6890,6 +6947,13 @@
                         case 'year':
                             matchesDate = transactionDate.getFullYear() === today.getFullYear();
                             break;
+                        default:
+                            // Handle month-specific options (format: month-YYYY-MM)
+                            if (dateFilter.startsWith('month-')) {
+                                const [, targetYear, targetMonth] = dateFilter.split('-');
+                                matchesDate = transactionDate.getFullYear() === parseInt(targetYear) && 
+                                            transactionDate.getMonth() === parseInt(targetMonth) - 1;
+                            }
                     }
                 }
                 
