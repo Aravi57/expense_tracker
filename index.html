@@ -2712,6 +2712,22 @@
             box-sizing: border-box;
         }
 
+        /* Responsive styling for iPad/tablet views */
+        @media (max-width: 1024px) {
+            .form-group input[type="date"] {
+                padding: 12px;
+                font-size: 0.85rem;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-group input[type="date"] {
+                padding: 10px;
+                font-size: 0.8rem;
+            }
+        }
+
         .form-group input::placeholder,
         .form-group textarea::placeholder {
             text-align: left; /* Left align placeholder text */
