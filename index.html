@@ -1436,6 +1436,41 @@
             margin: 0;
         }
 
+        .date-navigation {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+
+        .filter-select {
+            flex: 1;
+        }
+
         .transaction-list-enhanced {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
@@ -4378,12 +4413,21 @@
                             </select>
                         </div>
                         <div class="filter-item">
-                            <label class="filter-label">From Date</label>
-                            <input type="date" id="from-date" onchange="filterTransactions()" class="filter-input">
-                        </div>
-                        <div class="filter-item">
-                            <label class="filter-label">To Date</label>
-                            <input type="date" id="to-date" onchange="filterTransactions()" class="filter-input">
+                            <label class="filter-label">Date Range</label>
+                            <div class="date-navigation">
+                                <button class="nav-btn" onclick="navigateMonth(-1)" title="Previous Month">‹</button>
+                                <select id="date-filter" onchange="filterTransactions()" class="filter-select">
+                                    <option value="">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month" selected>This Month</option>
+                                    <option value="year">This Year</option>
+                                    <optgroup label="Select Month">
+                                        <!-- Month options will be populated dynamically -->
+                                    </optgroup>
+                                </select>
+                                <button class="nav-btn" onclick="navigateMonth(1)" title="Next Month">›</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -5161,6 +5205,7 @@
                 if (tab.dataset.section === 'budget') renderBudget();
                 if (tab.dataset.section === 'investments') renderInvestments();
                 if (tab.dataset.section === 'history') {
+                    populateMonthOptions();
                     updateHistoryStatistics();
                 }
             });
@@ -6891,6 +6936,7 @@
                 // Update month options if history page is active
                 const historySection = document.getElementById('history-section');
                 if (historySection && historySection.classList.contains('active')) {
+                    populateMonthOptions();
                     filterTransactions();
                 }
             }).catch(error => {
@@ -7070,8 +7116,7 @@
             
             const typeFilter = document.getElementById('type-filter').value;
             const categoryFilter = document.getElementById('category-filter').value;
-            const fromDate = document.getElementById('from-date').value;
-            const toDate = document.getElementById('to-date').value;
+            const dateFilter = document.getElementById('date-filter').value;
             const searchTerm = document.getElementById('search-input').value;
             
             let filterText = 'All Transactions';
@@ -7085,18 +7130,20 @@
                 filterText = filterText === 'All Transactions' ? categoryText : `${categoryText} • ${filterText}`;
             }
             
-            if (fromDate || toDate) {
-                let dateText = '';
-                if (fromDate && toDate) {
-                    const from = new Date(fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    const to = new Date(toDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    dateText = `${from} - ${to}`;
-                } else if (fromDate) {
-                    const from = new Date(fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    dateText = `From ${from}`;
-                } else if (toDate) {
-                    const to = new Date(toDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    dateText = `To ${to}`;
+            if (dateFilter) {
+                let dateText;
+                if (dateFilter.startsWith('month-')) {
+                    // Handle month-specific options (format: month-YYYY-MM)
+                    const [, year, month] = dateFilter.split('-');
+                    const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                    dateText = monthName;
+                } else {
+                    dateText = {
+                        'today': 'Today',
+                        'week': 'This Week',
+                        'month': 'This Month',
+                        'year': 'This Year'
+                    }[dateFilter];
                 }
                 filterText = filterText === 'All Transactions' ? dateText : `${dateText} • ${filterText}`;
             }
@@ -7144,17 +7191,120 @@
             });
         }
 
+        // Navigate months
+        function navigateMonth(direction) {
+            const dateFilter = document.getElementById('date-filter');
+            if (!dateFilter) return;
+            
+            // Get all unique months from transactions
+            const monthSet = new Set();
+            transactions.forEach(t => {
+                if (t.date) {
+                    const date = new Date(t.date);
+                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    monthSet.add(monthKey);
+                }
+            });
+            
+            // Convert to array and sort in descending order (most recent first)
+            const months = Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+            
+            if (months.length === 0) return;
+            
+            // Find current selection
+            let currentIndex = -1;
+            const currentValue = dateFilter.value;
+            
+            if (currentValue && currentValue.startsWith('month-')) {
+                const currentMonthKey = currentValue.replace('month-', '');
+                currentIndex = months.indexOf(currentMonthKey);
+            } else if (currentValue === 'month') {
+                // Find current month in the list
+                const currentMonth = new Date().toISOString().slice(0, 7);
+                currentIndex = months.indexOf(currentMonth);
+            }
+            
+            // Calculate new index
+            let newIndex = currentIndex;
+            if (currentIndex >= 0) {
+                newIndex = currentIndex + direction;
+                // Wrap around if needed
+                if (newIndex < 0) newIndex = months.length - 1;
+                if (newIndex >= months.length) newIndex = 0;
+            } else {
+                // Default to current month if no selection
+                const currentMonth = new Date().toISOString().slice(0, 7);
+                newIndex = months.indexOf(currentMonth);
+                if (newIndex < 0) newIndex = 0;
+            }
+            
+            // Set the new selection
+            if (newIndex >= 0 && newIndex < months.length) {
+                const selectedMonth = months[newIndex];
+                const [year, month] = selectedMonth.split('-');
+                const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                
+                // Update or add the month option
+                let monthOption = dateFilter.querySelector(`option[value="month-${selectedMonth}"]`);
+                if (!monthOption) {
+                    const optgroup = dateFilter.querySelector('optgroup[label="Select Month"]');
+                    monthOption = document.createElement('option');
+                    monthOption.value = `month-${selectedMonth}`;
+                    monthOption.textContent = monthName;
+                    optgroup.appendChild(monthOption);
+                }
+                
+                dateFilter.value = `month-${selectedMonth}`;
+                filterTransactions();
+            }
+        }
+
         // Clear all filters
         function clearAllFilters() {
             document.getElementById('search-input').value = '';
             document.getElementById('type-filter').value = '';
             document.getElementById('category-filter').value = '';
             document.getElementById('subcategory-filter').value = '';
-            document.getElementById('from-date').value = '';
-            document.getElementById('to-date').value = '';
+            document.getElementById('date-filter').value = 'month';
             
             updateFilterSubcategories();
             filterTransactions();
+        }
+
+        // Populate month options in date filter
+        function populateMonthOptions() {
+            const dateFilter = document.getElementById('date-filter');
+            if (!dateFilter) return;
+            
+            // Get all unique months from transactions
+            const monthSet = new Set();
+            transactions.forEach(t => {
+                if (t.date) {
+                    const date = new Date(t.date);
+                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    monthSet.add(monthKey);
+                }
+            });
+            
+            // Convert to array and sort in descending order (most recent first)
+            const months = Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+            
+            // Find optgroup
+            const optgroup = dateFilter.querySelector('optgroup[label="Select Month"]');
+            if (!optgroup) return;
+            
+            // Clear existing options
+            optgroup.innerHTML = '';
+            
+            // Add month options
+            months.forEach(monthKey => {
+                const [year, month] = monthKey.split('-');
+                const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                const option = document.createElement('option');
+                option.value = `month-${monthKey}`;
+                option.textContent = monthName;
+                optgroup.appendChild(option);
+            });
         }
 
         // Update history statistics
@@ -7236,8 +7386,7 @@
             const typeFilter = document.getElementById('type-filter').value;
             const categoryFilter = document.getElementById('category-filter').value;
             const subcategoryFilter = document.getElementById('subcategory-filter').value;
-            const fromDate = document.getElementById('from-date').value;
-            const toDate = document.getElementById('to-date').value;
+            const dateFilter = document.getElementById('date-filter').value;
             
             let filteredTransactions = transactions.filter(t => {
                 const matchesSearch = !searchTerm || 
@@ -7248,21 +7397,34 @@
                 const matchesCategory = !categoryFilter || t.category.startsWith(categoryFilter);
                 const matchesSubcategory = !subcategoryFilter || t.category === subcategoryFilter;
                 
-                // Date filtering with From and To dates
+                // Date filtering
                 let matchesDate = true;
-                if (fromDate || toDate) {
+                if (dateFilter) {
                     const transactionDate = new Date(t.date);
+                    const today = new Date();
                     
-                    if (fromDate) {
-                        const from = new Date(fromDate);
-                        matchesDate = matchesDate && transactionDate >= from;
-                    }
-                    
-                    if (toDate) {
-                        const to = new Date(toDate);
-                        // Set to end of day for inclusive filtering
-                        to.setHours(23, 59, 59, 999);
-                        matchesDate = matchesDate && transactionDate <= to;
+                    switch(dateFilter) {
+                        case 'today':
+                            matchesDate = transactionDate.toDateString() === today.toDateString();
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            matchesDate = transactionDate >= weekAgo;
+                            break;
+                        case 'month':
+                            matchesDate = transactionDate.getMonth() === today.getMonth() && 
+                                        transactionDate.getFullYear() === today.getFullYear();
+                            break;
+                        case 'year':
+                            matchesDate = transactionDate.getFullYear() === today.getFullYear();
+                            break;
+                        default:
+                            // Handle month-specific options (format: month-YYYY-MM)
+                            if (dateFilter.startsWith('month-')) {
+                                const [, targetYear, targetMonth] = dateFilter.split('-');
+                                matchesDate = transactionDate.getFullYear() === parseInt(targetYear) && 
+                                            transactionDate.getMonth() === parseInt(targetMonth) - 1;
+                            }
                     }
                 }
                 
