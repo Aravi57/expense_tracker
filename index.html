@@ -1290,6 +1290,12 @@
             color: #2ecc71;
         }
 
+        .type-btn.active.transfer-type {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
         .btn {
             width: 100%;
             padding: 14px;
@@ -3845,6 +3851,7 @@
                 <div class="type-toggle">
                     <button type="button" class="type-btn expense-type active" data-type="expense">Expense</button>
                     <button type="button" class="type-btn income-type" data-type="income">Income</button>
+                    <button type="button" class="type-btn transfer-type" data-type="transfer">Transfer</button>
                 </div>
                 <div class="form-group">
                     <label for="description">Description</label>
@@ -3855,12 +3862,18 @@
                     <input type="number" id="amount" placeholder="0.00" step="0.01" min="0.01" required>
                 </div>
                 <div class="form-group">
-                    <label for="account">Account</label>
+                    <label for="account" id="account-label">Account</label>
                     <select id="account">
                         <option value="">Select Account</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="to-account-group" style="display: none;">
+                    <label for="to-account">To Account</label>
+                    <select id="to-account">
+                        <option value="">Select Account</option>
+                    </select>
+                </div>
+                <div class="form-group" id="category-group">
                     <label for="category">Category</label>
                     <select id="category" onchange="updateSubcategories()">
                         <option value="">Select Category</option>
@@ -3883,6 +3896,7 @@
                     <select id="subcategory">
                         <option value="">Select Subcategory</option>
                     </select>
+                </div>
                 </div>
                 <div class="form-group">
                     <label for="date">Date</label>
@@ -4393,6 +4407,30 @@
                 document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentType = btn.dataset.type;
+                
+                // Handle transfer type specific UI
+                const toAccountGroup = document.getElementById('to-account-group');
+                const categoryGroup = document.getElementById('category-group');
+                const accountLabel = document.getElementById('account-label');
+                const submitBtn = document.getElementById('transaction-submit-btn');
+                
+                if (currentType === 'transfer') {
+                    // Show transfer-specific fields
+                    toAccountGroup.style.display = 'block';
+                    categoryGroup.style.display = 'none';
+                    accountLabel.textContent = 'From Account';
+                    submitBtn.textContent = 'Transfer Money';
+                    
+                    // Populate to-account dropdown
+                    populateToAccountDropdown();
+                } else {
+                    // Show regular transaction fields
+                    toAccountGroup.style.display = 'none';
+                    categoryGroup.style.display = 'block';
+                    accountLabel.textContent = 'Account';
+                    submitBtn.textContent = 'Add Transaction';
+                }
+                
                 updateCategoriesByType();
             });
         });
@@ -4584,6 +4622,64 @@
                 return;
             }
             
+            // Handle transfer transactions
+            if (currentType === 'transfer') {
+                const fromAccount = document.getElementById('account').value;
+                const toAccount = document.getElementById('to-account').value;
+                const amount = parseFloat(document.getElementById('amount').value);
+                const description = document.getElementById('description').value;
+                const date = document.getElementById('date').value;
+                
+                if (!fromAccount || !toAccount) {
+                    alert('Please select both from and to accounts');
+                    return;
+                }
+                
+                if (fromAccount === toAccount) {
+                    alert('From and to accounts cannot be the same');
+                    return;
+                }
+                
+                // Create transfer transaction
+                const transferData = {
+                    type: 'transfer',
+                    description: description,
+                    amount: amount,
+                    category: 'transfer',
+                    account: fromAccount,
+                    toAccount: toAccount,
+                    date: date,
+                    userId: currentUser.id,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Add transfer to database
+                const docRef = await transactionsRef.add(transferData);
+                
+                // Update account balances
+                await updateAccountBalance(fromAccount, amount, 'expense'); // Reduce from account
+                await updateAccountBalance(toAccount, amount, 'income');    // Add to account
+                
+                // Immediately add to local array for instant UI update
+                const newTransfer = { id: docRef.id, ...transferData };
+                transactions.unshift(newTransfer);
+                
+                // Update UI immediately
+                render();
+                
+                // Update history page statistics immediately if on history page
+                const historySection = document.getElementById('history-section');
+                if (historySection && historySection.classList.contains('active')) {
+                    filterTransactions();
+                }
+                
+                form.reset();
+                dateInput.valueAsDate = new Date();
+                closeTransactionModal();
+                return;
+            }
+            
+            // Handle regular transactions (income/expense)
             const category = document.getElementById('category').value;
             const subcategory = document.getElementById('subcategory').value;
             
@@ -5349,6 +5445,17 @@
             
             if (editAccountSelect) {
                 editAccountSelect.innerHTML = '<option value="">Select Account</option>' + accountOptions;
+            }
+        }
+
+        // Populate to-account dropdown for transfers
+        function populateToAccountDropdown() {
+            const toAccountSelect = document.getElementById('to-account');
+            if (toAccountSelect) {
+                const accountOptions = accounts.map(a => 
+                    `<option value="${a.id}">${escapeHtml(a.name)} (${formatCurrency(a.balance)})</option>`
+                ).join('');
+                toAccountSelect.innerHTML = '<option value="">Select Account</option>' + accountOptions;
             }
         }
 
