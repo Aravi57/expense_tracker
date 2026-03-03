@@ -1357,6 +1357,23 @@
             align-items: center;
         }
 
+        .rearrange-btn {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rearrange-btn:hover {
+            background: rgba(52, 152, 219, 0.3);
+            transform: translateY(-1px);
+        }
+
         .bar-bg {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 5px;
@@ -5053,6 +5070,38 @@
             await budgetsRef.doc(id).delete();
         }
 
+        // Move budget up in the list
+        function moveBudgetUp(id) {
+            const index = budgets.findIndex(b => b.id === id);
+            if (index > 0) {
+                // Swap with the item above
+                [budgets[index], budgets[index - 1]] = [budgets[index - 1], budgets[index]];
+                
+                // Update in database
+                budgetsRef.doc(id).update({ order: index - 1 });
+                budgetsRef.doc(budgets[index - 1].id).update({ order: index });
+                
+                // Re-render
+                renderBudget();
+            }
+        }
+
+        // Move budget down in the list
+        function moveBudgetDown(id) {
+            const index = budgets.findIndex(b => b.id === id);
+            if (index < budgets.length - 1) {
+                // Swap with the item below
+                [budgets[index], budgets[index + 1]] = [budgets[index + 1], budgets[index]];
+                
+                // Update in database
+                budgetsRef.doc(id).update({ order: index + 1 });
+                budgetsRef.doc(budgets[index + 1].id).update({ order: index });
+                
+                // Re-render
+                renderBudget();
+            }
+        }
+
         // Delete investment
         window.deleteInvestment = async function(id) {
             // Check if user is logged in
@@ -5312,6 +5361,8 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <span class="category-name">${formatCategory(budget.category)}</span>
                             <div class="budget-actions">
+                                <button class="rearrange-btn" onclick="moveBudgetUp('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem; margin-right: 5px;" title="Move Up">↑</button>
+                                <button class="rearrange-btn" onclick="moveBudgetDown('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem; margin-right: 5px;" title="Move Down">↓</button>
                                 <button class="edit-btn" onclick="editBudget('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem; margin-right: 5px;">✎</button>
                                 <button class="delete-btn" onclick="deleteBudget('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem;">×</button>
                             </div>
