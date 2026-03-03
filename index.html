@@ -5319,6 +5319,7 @@
             draggedElement.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/html', draggedElement.innerHTML);
+            console.log('Drag started for budget:', draggedBudgetId);
         }
 
         // Handle drag over
@@ -5327,28 +5328,28 @@
             e.stopPropagation();
             e.dataTransfer.dropEffect = 'move';
             
-            const afterElement = e.target.closest('.category-bar');
-            if (afterElement && afterElement !== draggedElement) {
+            const targetBar = e.target.closest('.category-bar');
+            if (targetBar && targetBar !== draggedElement) {
                 const budgetList = document.getElementById('budget-list');
                 const allBudgets = [...budgetList.children];
                 const draggedIndex = allBudgets.findIndex(b => b.dataset.budgetId === draggedBudgetId);
-                const afterIndex = allBudgets.findIndex(b => b.dataset.budgetId === afterElement.dataset.budgetId);
+                const targetIndex = allBudgets.findIndex(b => b.dataset.budgetId === targetBar.dataset.budgetId);
                 
                 // Calculate the position based on mouse location
-                const rect = afterElement.getBoundingClientRect();
+                const rect = targetBar.getBoundingClientRect();
                 const midpoint = rect.top + rect.height / 2;
                 const shouldInsertBefore = e.clientY < midpoint;
                 
-                if (draggedIndex < afterIndex) {
+                if (draggedIndex < targetIndex) {
                     // Dragging down - insert before if above midpoint, after if below
                     if (shouldInsertBefore) {
-                        budgetList.insertBefore(draggedElement, afterElement);
+                        budgetList.insertBefore(draggedElement, targetBar);
                     } else {
-                        budgetList.insertBefore(draggedElement, afterElement.nextSibling);
+                        budgetList.insertBefore(draggedElement, targetBar.nextSibling);
                     }
                 } else {
                     // Dragging up - always insert before
-                    budgetList.insertBefore(draggedElement, afterElement);
+                    budgetList.insertBefore(draggedElement, targetBar);
                 }
             }
         }
@@ -5357,6 +5358,8 @@
         function handleDrop(e) {
             e.preventDefault();
             e.stopPropagation();
+            
+            console.log('Drop event fired');
             
             // Get the current order from the DOM
             const budgetList = document.getElementById('budget-list');
@@ -5374,6 +5377,8 @@
             // Update the budgets array with the new order
             budgets.length = 0; // Clear the array
             budgets.push(...newOrder);
+            
+            console.log('New budget order:', newOrder.map(b => b.category));
             
             // Update database with new order
             budgets.forEach((budget, index) => {
@@ -5463,11 +5468,11 @@
                 const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
                 
                 return `
-                    <div class="category-bar" style="margin-bottom: 15px;" draggable="true" data-budget-id="${budget.id}">
+                    <div class="category-bar" style="margin-bottom: 15px;" data-budget-id="${budget.id}">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <span class="category-name">${formatCategory(budget.category)}</span>
                             <div class="budget-actions">
-                                <div class="drag-handle" title="Drag to reorder">⋮⋮</div>
+                                <div class="drag-handle" draggable="true" title="Drag to reorder">⋮⋮</div>
                                 <button class="edit-btn" onclick="editBudget('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem; margin-right: 5px;">✎</button>
                                 <button class="delete-btn" onclick="deleteBudget('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem;">×</button>
                             </div>
@@ -5485,15 +5490,23 @@
 
             // Add drag and drop event listeners
             setTimeout(() => {
-                const budgetBars = document.querySelectorAll('.category-bar[draggable="true"]');
+                const dragHandles = document.querySelectorAll('.drag-handle');
+                const budgetBars = document.querySelectorAll('.category-bar');
                 const budgetList = document.getElementById('budget-list');
                 
-                // Add event listeners to budget bars
+                console.log('Found drag handles:', dragHandles.length);
+                console.log('Found budget bars:', budgetBars.length);
+                
+                // Add event listeners to drag handles
+                dragHandles.forEach(handle => {
+                    handle.addEventListener('dragstart', handleDragStart);
+                    handle.addEventListener('dragend', handleDragEnd);
+                });
+                
+                // Add dragover and drop listeners to budget bars and container
                 budgetBars.forEach(bar => {
-                    bar.addEventListener('dragstart', handleDragStart);
                     bar.addEventListener('dragover', handleDragOver);
                     bar.addEventListener('drop', handleDrop);
-                    bar.addEventListener('dragend', handleDragEnd);
                 });
                 
                 // Add dragover listener to the container
