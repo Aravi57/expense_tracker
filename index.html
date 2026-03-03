@@ -6758,8 +6758,49 @@
 
             const max = Math.max(...Object.values(categoryTotals));
             const colors = {
-                food: '#e74c3c', transport: '#3498db', utilities: '#9b59b6',
-                entertainment: '#e67e22', shopping: '#1abc9c', health: '#2ecc71', other: '#95a5a6'
+                home: '#e74c3c',
+                subscription: '#3498db',
+                shopping: '#9b59b6',
+                food: '#e67e22',
+                transport: '#1abc9c',
+                grocery: '#2ecc71',
+                snacks: '#f39c12',
+                health: '#e67e22',
+                investment: '#9b59b6',
+                emi: '#34495e',
+                salary: '#16a085',
+                other: '#95a5a6',
+                // Fallback colors for any missing categories
+                'home-rent': '#e74c3c',
+                'home-eb': '#c0392b',
+                'home-other': '#ec7063',
+                'subscription-mobile': '#3498db',
+                'subscription-wifi': '#2980b9',
+                'subscription-other': '#5dade2',
+                'shopping-shopping': '#9b59b6',
+                'shopping-other': '#af7ac5',
+                'food-food': '#e67e22',
+                'food-other': '#dc7633',
+                'transport-fuel': '#1abc9c',
+                'transport-service': '#16a085',
+                'transport-other': '#48c9b0',
+                'grocery-nuts': '#2ecc71',
+                'grocery-nonveg': '#27ae60',
+                'grocery-other': '#52be80',
+                'snacks-snacks': '#f39c12',
+                'snacks-other': '#f1c40f',
+                'health-badminton': '#e67e22',
+                'health-grooming': '#d68910',
+                'health-other': '#ca6f1e',
+                'investment-ppf': '#9b59b6',
+                'investment-mf': '#8e44ad',
+                'investment-lic': '#a569bd',
+                'investment-other': '#bb8fce',
+                'emi-emi': '#34495e',
+                'emi-other': '#5d6d7e',
+                'salary-salary': '#16a085',
+                'salary-other': '#138d75',
+                'other-other': '#95a5a6'
             };
 
             chart.innerHTML = Object.entries(categoryTotals)
@@ -7087,8 +7128,49 @@
             });
 
             const colors = {
-                food: '#e74c3c', transport: '#3498db', utilities: '#9b59b6',
-                entertainment: '#e67e22', shopping: '#1abc9c', health: '#2ecc71', other: '#95a5a6'
+                home: '#e74c3c',
+                subscription: '#3498db',
+                shopping: '#9b59b6',
+                food: '#e67e22',
+                transport: '#1abc9c',
+                grocery: '#2ecc71',
+                snacks: '#f39c12',
+                health: '#e67e22',
+                investment: '#9b59b6',
+                emi: '#34495e',
+                salary: '#16a085',
+                other: '#95a5a6',
+                // Fallback colors for any missing categories
+                'home-rent': '#e74c3c',
+                'home-eb': '#c0392b',
+                'home-other': '#ec7063',
+                'subscription-mobile': '#3498db',
+                'subscription-wifi': '#2980b9',
+                'subscription-other': '#5dade2',
+                'shopping-shopping': '#9b59b6',
+                'shopping-other': '#af7ac5',
+                'food-food': '#e67e22',
+                'food-other': '#dc7633',
+                'transport-fuel': '#1abc9c',
+                'transport-service': '#16a085',
+                'transport-other': '#48c9b0',
+                'grocery-nuts': '#2ecc71',
+                'grocery-nonveg': '#27ae60',
+                'grocery-other': '#52be80',
+                'snacks-snacks': '#f39c12',
+                'snacks-other': '#f1c40f',
+                'health-badminton': '#e67e22',
+                'health-grooming': '#d68910',
+                'health-other': '#ca6f1e',
+                'investment-ppf': '#9b59b6',
+                'investment-mf': '#8e44ad',
+                'investment-lic': '#a569bd',
+                'investment-other': '#bb8fce',
+                'emi-emi': '#34495e',
+                'emi-other': '#5d6d7e',
+                'salary-salary': '#16a085',
+                'salary-other': '#138d75',
+                'other-other': '#95a5a6'
             };
 
             charts.categoryPie = new Chart(ctx, {
