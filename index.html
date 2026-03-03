@@ -5308,6 +5308,80 @@
             }
         }
 
+        // Initialize drag and drop functionality
+        let draggedElement = null;
+        let draggedBudgetId = null;
+
+        // Handle drag start
+        function handleDragStart(e) {
+            draggedElement = e.target.closest('.category-bar');
+            draggedBudgetId = e.target.closest('.category-bar').dataset.budgetId;
+            draggedElement.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', draggedElement.innerHTML);
+        }
+
+        // Handle drag over
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+            
+            const afterElement = e.target.closest('.category-bar');
+            if (afterElement && afterElement !== draggedElement) {
+                const budgetList = document.getElementById('budget-list');
+                const allBudgets = [...budgetList.children];
+                const draggedIndex = allBudgets.findIndex(b => b.dataset.budgetId === draggedBudgetId);
+                const afterIndex = allBudgets.findIndex(b => b.dataset.budgetId === afterElement.dataset.budgetId);
+                
+                if (draggedIndex < afterIndex) {
+                    budgetList.insertBefore(draggedElement, afterElement);
+                }
+            }
+        }
+
+        // Handle drop
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const dropTarget = e.target.closest('.category-bar');
+            if (dropTarget && dropTarget !== draggedElement) {
+                const budgetList = document.getElementById('budget-list');
+                const allBudgets = [...budgetList.children];
+                const draggedIndex = allBudgets.findIndex(b => b.dataset.budgetId === draggedBudgetId);
+                const dropIndex = allBudgets.findIndex(b => b.dataset.budgetId === dropTarget.dataset.budgetId);
+                
+                // Reorder the budgets array
+                const [draggedBudget] = budgets.splice(draggedIndex, 1);
+                budgets.splice(dropIndex, 0, draggedBudget);
+                
+                // Update database with new order
+                budgets.forEach((budget, index) => {
+                    budgetsRef.doc(budget.id).update({ order: index });
+                });
+                
+                // Re-render budgets
+                renderBudget();
+            }
+            
+            // Clean up
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+            }
+            draggedElement = null;
+            draggedBudgetId = null;
+        }
+
+        // Handle drag end
+        function handleDragEnd(e) {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+            }
+            draggedElement = null;
+            draggedBudgetId = null;
+        }
+
         // Render budget
         function renderBudget() {
             const overview = document.getElementById('budget-overview');
@@ -5397,12 +5471,19 @@
             // Add drag and drop event listeners
             setTimeout(() => {
                 const budgetBars = document.querySelectorAll('.category-bar[draggable="true"]');
+                const budgetList = document.getElementById('budget-list');
+                
+                // Add event listeners to budget bars
                 budgetBars.forEach(bar => {
                     bar.addEventListener('dragstart', handleDragStart);
                     bar.addEventListener('dragover', handleDragOver);
                     bar.addEventListener('drop', handleDrop);
                     bar.addEventListener('dragend', handleDragEnd);
                 });
+                
+                // Add dragover listener to the container
+                budgetList.addEventListener('dragover', handleDragOver);
+                budgetList.addEventListener('drop', handleDrop);
             }, 100);
 
             // Render budget chart
