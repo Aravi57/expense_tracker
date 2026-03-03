@@ -1181,6 +1181,121 @@
             transform: translateY(-2px);
         }
 
+        /* Enhanced History Card Styles */
+        .enhanced-history-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.income {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.2) 0%, rgba(46, 204, 113, 0.1) 100%);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .stat-icon.expense {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2) 0%, rgba(231, 76, 60, 0.1) 100%);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .stat-icon.balance {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(102, 126, 234, 0.1) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-icon.count {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.2) 0%, rgba(155, 89, 182, 0.1) 100%);
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-content .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .stat-content .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .stat-content .stat-value.positive {
+            color: #2ecc71;
+        }
+
+        .stat-content .stat-value.negative {
+            color: #e74c3c;
+        }
+
+        .stat-content .stat-change {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            display: inline-block;
+        }
+
+        .stat-content .stat-change.positive {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .stat-content .stat-change.negative {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
         .history-filters {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
@@ -3866,7 +3981,7 @@
         <!-- History Section -->
         <div id="history-section" class="section">
             <!-- Main History Card -->
-            <div class="card">
+            <div class="card enhanced-history-card">
                 <div class="history-header">
                     <div class="history-title">
                         <h3>Transaction History</h3>
@@ -3877,6 +3992,42 @@
                         <button class="btn-icon" onclick="forceSyncTransactions()" title="Sync">🔄</button>
                         <button class="btn-icon" onclick="exportToCSV()" title="Export CSV">📊</button>
                         <button class="btn-icon" onclick="exportToPDF()" title="Export PDF">📄</button>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Statistics Section -->
+                <div class="history-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon income">💰</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Income</div>
+                            <div class="stat-value positive" id="history-total-income">₹0</div>
+                            <div class="stat-change" id="history-income-change">+0%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon expense">💸</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Expenses</div>
+                            <div class="stat-value negative" id="history-total-expenses">₹0</div>
+                            <div class="stat-change" id="history-expense-change">+0%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon balance">📊</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Net Balance</div>
+                            <div class="stat-value" id="history-net-balance">₹0</div>
+                            <div class="stat-change" id="history-balance-change">+0%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon count">📝</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Transactions</div>
+                            <div class="stat-value" id="history-transaction-count">0</div>
+                            <div class="stat-change" id="history-count-change">+0%</div>
+                        </div>
                     </div>
                 </div>
                 
@@ -4695,6 +4846,7 @@
                 if (tab.dataset.section === 'analysis') renderAnalysis();
                 if (tab.dataset.section === 'budget') renderBudget();
                 if (tab.dataset.section === 'investments') renderInvestments();
+                if (tab.dataset.section === 'history') updateHistoryStatistics();
             });
         });
 
@@ -6627,6 +6779,79 @@
             filterInfo.textContent = `${filterText} (${count})`;
         }
 
+        // Update history statistics
+        function updateHistoryStatistics(filteredTransactions = transactions) {
+            const income = filteredTransactions.filter(t => t.type === 'income');
+            const expenses = filteredTransactions.filter(t => t.type === 'expense');
+            
+            const totalIncome = income.reduce((sum, t) => sum + t.amount, 0);
+            const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
+            const netBalance = totalIncome - totalExpenses;
+            const transactionCount = filteredTransactions.length;
+            
+            // Calculate trends (comparing with previous period)
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const previousMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
+            
+            const currentMonthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+            const previousMonthTransactions = transactions.filter(t => t.date.startsWith(previousMonth));
+            
+            const currentMonthIncome = currentMonthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const previousMonthIncome = previousMonthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const incomeChange = previousMonthIncome > 0 ? ((currentMonthIncome - previousMonthIncome) / previousMonthIncome * 100) : 0;
+            
+            const currentMonthExpenses = currentMonthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const previousMonthExpenses = previousMonthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const expenseChange = previousMonthExpenses > 0 ? ((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses * 100) : 0;
+            
+            const currentMonthBalance = currentMonthIncome - currentMonthExpenses;
+            const previousMonthBalance = previousMonthIncome - previousMonthExpenses;
+            const balanceChange = previousMonthBalance !== 0 ? ((currentMonthBalance - previousMonthBalance) / Math.abs(previousMonthBalance) * 100) : 0;
+            
+            const countChange = previousMonthTransactions.length > 0 ? ((currentMonthTransactions.length - previousMonthTransactions.length) / previousMonthTransactions.length * 100) : 0;
+            
+            // Update DOM elements
+            const totalIncomeElement = document.getElementById('history-total-income');
+            if (totalIncomeElement) {
+                totalIncomeElement.textContent = formatCurrency(totalIncome);
+                totalIncomeElement.className = 'stat-value positive';
+            }
+            
+            const totalExpensesElement = document.getElementById('history-total-expenses');
+            if (totalExpensesElement) {
+                totalExpensesElement.textContent = formatCurrency(totalExpenses);
+                totalExpensesElement.className = 'stat-value negative';
+            }
+            
+            const netBalanceElement = document.getElementById('history-net-balance');
+            if (netBalanceElement) {
+                netBalanceElement.textContent = formatCurrency(netBalance);
+                netBalanceElement.className = 'stat-value ' + (netBalance >= 0 ? 'positive' : 'negative');
+            }
+            
+            const transactionCountElement = document.getElementById('history-transaction-count');
+            if (transactionCountElement) {
+                transactionCountElement.textContent = transactionCount;
+                transactionCountElement.className = 'stat-value';
+            }
+            
+            // Update trend indicators
+            updateHistoryTrend('history-income-change', incomeChange);
+            updateHistoryTrend('history-expense-change', expenseChange);
+            updateHistoryTrend('history-balance-change', balanceChange);
+            updateHistoryTrend('history-count-change', countChange);
+        }
+
+        // Update history trend display
+        function updateHistoryTrend(elementId, trend) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                const sign = trend >= 0 ? '+' : '';
+                element.textContent = sign + trend.toFixed(1) + '%';
+                element.className = 'stat-change ' + (trend >= 0 ? 'positive' : 'negative');
+            }
+        }
+
         // Filter transactions
         function filterTransactions() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
@@ -6704,6 +6929,9 @@
             `;
 
             fullList.innerHTML = filteredTransactions.map(renderTransaction).join('');
+            
+            // Update history statistics
+            updateHistoryStatistics(filteredTransactions);
         }
 
         // Render Analysis
