@@ -7196,18 +7196,37 @@
             const dateFilter = document.getElementById('date-filter');
             if (!dateFilter) return;
             
-            // Get all unique months from transactions
-            const monthSet = new Set();
+            // Find the earliest and latest transaction dates
+            let earliestDate = null;
+            let latestDate = null;
+            
             transactions.forEach(t => {
                 if (t.date) {
                     const date = new Date(t.date);
-                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                    monthSet.add(monthKey);
+                    if (!earliestDate || date < earliestDate) earliestDate = date;
+                    if (!latestDate || date > latestDate) latestDate = date;
                 }
             });
             
-            // Convert to array and sort in descending order (most recent first)
-            const months = Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+            // If no transactions, use current month and extend range
+            if (!earliestDate || !latestDate) {
+                earliestDate = new Date();
+                latestDate = new Date();
+            }
+            
+            // Generate all months from earliest to latest
+            const months = [];
+            const current = new Date(earliestDate.getFullYear(), earliestDate.getMonth(), 1);
+            const end = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
+            
+            while (current <= end) {
+                const monthKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+                months.push(monthKey);
+                current.setMonth(current.getMonth() + 1);
+            }
+            
+            // Sort in descending order (most recent first)
+            months.sort((a, b) => b.localeCompare(a));
             
             if (months.length === 0) return;
             
@@ -7276,18 +7295,37 @@
             const dateFilter = document.getElementById('date-filter');
             if (!dateFilter) return;
             
-            // Get all unique months from transactions
-            const monthSet = new Set();
+            // Find the earliest and latest transaction dates
+            let earliestDate = null;
+            let latestDate = null;
+            
             transactions.forEach(t => {
                 if (t.date) {
                     const date = new Date(t.date);
-                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                    monthSet.add(monthKey);
+                    if (!earliestDate || date < earliestDate) earliestDate = date;
+                    if (!latestDate || date > latestDate) latestDate = date;
                 }
             });
             
-            // Convert to array and sort in descending order (most recent first)
-            const months = Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+            // If no transactions, use current month
+            if (!earliestDate || !latestDate) {
+                earliestDate = new Date();
+                latestDate = new Date();
+            }
+            
+            // Generate all months from earliest to latest
+            const months = [];
+            const current = new Date(earliestDate.getFullYear(), earliestDate.getMonth(), 1);
+            const end = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
+            
+            while (current <= end) {
+                const monthKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+                months.push(monthKey);
+                current.setMonth(current.getMonth() + 1);
+            }
+            
+            // Sort in descending order (most recent first)
+            months.sort((a, b) => b.localeCompare(a));
             
             // Find optgroup
             const optgroup = dateFilter.querySelector('optgroup[label="Select Month"]');
