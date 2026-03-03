@@ -6695,6 +6695,11 @@
             const currentType = document.querySelector('.type-btn.active').dataset.type;
             const currentValue = categorySelect.value;
             
+            // Skip category population for transfer type
+            if (currentType === 'transfer') {
+                return;
+            }
+            
             // Clear current options
             categorySelect.innerHTML = '<option value="">Select Category</option>';
             
