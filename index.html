@@ -1404,6 +1404,38 @@
             color: white;
         }
 
+        .filter-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .filter-input::-webkit-calendar-picker-indicator {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .filter-input::-webkit-inner-spin-button,
+        .filter-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
         .transaction-list-enhanced {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
@@ -4346,17 +4378,12 @@
                             </select>
                         </div>
                         <div class="filter-item">
-                            <label class="filter-label">Date Range</label>
-                            <select id="date-filter" onchange="filterTransactions()" class="filter-select">
-                                <option value="">All Time</option>
-                                <option value="today">Today</option>
-                                <option value="week">This Week</option>
-                                <option value="month" selected>This Month</option>
-                                <option value="year">This Year</option>
-                                <optgroup label="Select Month">
-                                    <!-- Month options will be populated dynamically -->
-                                </optgroup>
-                            </select>
+                            <label class="filter-label">From Date</label>
+                            <input type="date" id="from-date" onchange="filterTransactions()" class="filter-input">
+                        </div>
+                        <div class="filter-item">
+                            <label class="filter-label">To Date</label>
+                            <input type="date" id="to-date" onchange="filterTransactions()" class="filter-input">
                         </div>
                     </div>
                 </div>
@@ -5134,7 +5161,6 @@
                 if (tab.dataset.section === 'budget') renderBudget();
                 if (tab.dataset.section === 'investments') renderInvestments();
                 if (tab.dataset.section === 'history') {
-                    populateMonthOptions();
                     updateHistoryStatistics();
                 }
             });
@@ -6865,7 +6891,6 @@
                 // Update month options if history page is active
                 const historySection = document.getElementById('history-section');
                 if (historySection && historySection.classList.contains('active')) {
-                    populateMonthOptions();
                     filterTransactions();
                 }
             }).catch(error => {
@@ -7045,7 +7070,8 @@
             
             const typeFilter = document.getElementById('type-filter').value;
             const categoryFilter = document.getElementById('category-filter').value;
-            const dateFilter = document.getElementById('date-filter').value;
+            const fromDate = document.getElementById('from-date').value;
+            const toDate = document.getElementById('to-date').value;
             const searchTerm = document.getElementById('search-input').value;
             
             let filterText = 'All Transactions';
@@ -7059,20 +7085,18 @@
                 filterText = filterText === 'All Transactions' ? categoryText : `${categoryText} • ${filterText}`;
             }
             
-            if (dateFilter) {
-                let dateText;
-                if (dateFilter.startsWith('month-')) {
-                    // Handle month-specific options (format: month-YYYY-MM)
-                    const [, year, month] = dateFilter.split('-');
-                    const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                    dateText = monthName;
-                } else {
-                    dateText = {
-                        'today': 'Today',
-                        'week': 'This Week',
-                        'month': 'This Month',
-                        'year': 'This Year'
-                    }[dateFilter];
+            if (fromDate || toDate) {
+                let dateText = '';
+                if (fromDate && toDate) {
+                    const from = new Date(fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const to = new Date(toDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    dateText = `${from} - ${to}`;
+                } else if (fromDate) {
+                    const from = new Date(fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    dateText = `From ${from}`;
+                } else if (toDate) {
+                    const to = new Date(toDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    dateText = `To ${to}`;
                 }
                 filterText = filterText === 'All Transactions' ? dateText : `${dateText} • ${filterText}`;
             }
@@ -7126,7 +7150,8 @@
             document.getElementById('type-filter').value = '';
             document.getElementById('category-filter').value = '';
             document.getElementById('subcategory-filter').value = '';
-            document.getElementById('date-filter').value = 'month'; // Reset to default
+            document.getElementById('from-date').value = '';
+            document.getElementById('to-date').value = '';
             
             updateFilterSubcategories();
             filterTransactions();
@@ -7211,7 +7236,8 @@
             const typeFilter = document.getElementById('type-filter').value;
             const categoryFilter = document.getElementById('category-filter').value;
             const subcategoryFilter = document.getElementById('subcategory-filter').value;
-            const dateFilter = document.getElementById('date-filter').value;
+            const fromDate = document.getElementById('from-date').value;
+            const toDate = document.getElementById('to-date').value;
             
             let filteredTransactions = transactions.filter(t => {
                 const matchesSearch = !searchTerm || 
@@ -7222,34 +7248,21 @@
                 const matchesCategory = !categoryFilter || t.category.startsWith(categoryFilter);
                 const matchesSubcategory = !subcategoryFilter || t.category === subcategoryFilter;
                 
-                // Date filtering
+                // Date filtering with From and To dates
                 let matchesDate = true;
-                if (dateFilter) {
+                if (fromDate || toDate) {
                     const transactionDate = new Date(t.date);
-                    const today = new Date();
                     
-                    switch(dateFilter) {
-                        case 'today':
-                            matchesDate = transactionDate.toDateString() === today.toDateString();
-                            break;
-                        case 'week':
-                            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                            matchesDate = transactionDate >= weekAgo;
-                            break;
-                        case 'month':
-                            matchesDate = transactionDate.getMonth() === today.getMonth() && 
-                                        transactionDate.getFullYear() === today.getFullYear();
-                            break;
-                        case 'year':
-                            matchesDate = transactionDate.getFullYear() === today.getFullYear();
-                            break;
-                        default:
-                            // Handle month-specific options (format: month-YYYY-MM)
-                            if (dateFilter.startsWith('month-')) {
-                                const [, targetYear, targetMonth] = dateFilter.split('-');
-                                matchesDate = transactionDate.getFullYear() === parseInt(targetYear) && 
-                                            transactionDate.getMonth() === parseInt(targetMonth) - 1;
-                            }
+                    if (fromDate) {
+                        const from = new Date(fromDate);
+                        matchesDate = matchesDate && transactionDate >= from;
+                    }
+                    
+                    if (toDate) {
+                        const to = new Date(toDate);
+                        // Set to end of day for inclusive filtering
+                        to.setHours(23, 59, 59, 999);
+                        matchesDate = matchesDate && transactionDate <= to;
                     }
                 }
                 
