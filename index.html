@@ -6200,6 +6200,63 @@
             });
         }
 
+        // Update balance breakdown card
+        function updateBalanceBreakdown() {
+            // Get current month's transactions
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const currentMonthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+            
+            // Calculate income and expenses for current month
+            const monthlyIncome = currentMonthTransactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const monthlyExpenses = currentMonthTransactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            // Calculate starting balance (balance at beginning of month)
+            let startingBalance = 0;
+            const previousTransactions = transactions.filter(t => !t.date.startsWith(currentMonth));
+            
+            // Calculate starting balance from previous transactions
+            previousTransactions.forEach(t => {
+                if (t.type === 'income') {
+                    startingBalance += t.amount;
+                } else if (t.type === 'expense') {
+                    startingBalance -= t.amount;
+                } else if (t.type === 'transfer') {
+                    // For transfers, check if this affects the balance calculation
+                    // Transfers move money between accounts, so they don't affect total balance
+                }
+            });
+            
+            // Calculate current balance
+            const currentBalance = startingBalance + monthlyIncome - monthlyExpenses;
+            
+            // Update the DOM elements
+            const startingBalanceElement = document.getElementById('starting-balance');
+            if (startingBalanceElement) {
+                startingBalanceElement.textContent = formatCurrency(startingBalance);
+            }
+            
+            const incomeBreakdownElement = document.getElementById('income-breakdown');
+            if (incomeBreakdownElement) {
+                incomeBreakdownElement.textContent = '+' + formatCurrency(monthlyIncome);
+            }
+            
+            const expenseBreakdownElement = document.getElementById('expense-breakdown');
+            if (expenseBreakdownElement) {
+                expenseBreakdownElement.textContent = '-' + formatCurrency(monthlyExpenses);
+            }
+            
+            const currentBalanceElement = document.getElementById('current-balance');
+            if (currentBalanceElement) {
+                currentBalanceElement.textContent = formatCurrency(currentBalance);
+                currentBalanceElement.className = 'balance-value ' + (currentBalance >= 0 ? 'positive' : 'negative');
+            }
+        }
+
         // Render transactions
         function render() {
             const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
@@ -6272,6 +6329,9 @@
             if (investmentRateElement) {
                 investmentRateElement.textContent = returnRate.toFixed(2) + '%';
             }
+
+            // Update balance breakdown card
+            updateBalanceBreakdown();
 
             // Render investment chart
             renderInvestmentChart(investmentTransactions);
