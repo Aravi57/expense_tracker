@@ -5399,7 +5399,16 @@
             const placeholder = budgetList.querySelector('.drag-placeholder');
             
             if (placeholder && draggedElement) {
-                // Replace placeholder with dragged element
+                console.log('Dropping at placeholder position');
+                console.log('Dragged element:', draggedElement);
+                console.log('Placeholder:', placeholder);
+                
+                // Remove dragged element from its current position first
+                if (draggedElement.parentNode) {
+                    draggedElement.parentNode.removeChild(draggedElement);
+                }
+                
+                // Insert dragged element at placeholder position
                 budgetList.insertBefore(draggedElement, placeholder);
                 placeholder.remove();
                 
@@ -5419,12 +5428,18 @@
                 budgets.length = 0;
                 budgets.push(...newOrder);
                 
-                console.log('New order:', newOrder.map(b => b.category));
+                console.log('New order after drop:', newOrder.map(b => b.category));
                 
                 // Update database
                 budgets.forEach((budget, index) => {
                     budgetsRef.doc(budget.id).update({ order: index });
                 });
+                
+                console.log('Database updated with new order');
+            } else {
+                console.log('Drop failed - no placeholder or dragged element');
+                console.log('Placeholder exists:', !!placeholder);
+                console.log('Dragged element exists:', !!draggedElement);
             }
         }
 
