@@ -7260,25 +7260,37 @@
             const transactionCount = filteredTransactions.length;
             
             // Calculate trends (comparing with previous period)
-            const currentMonth = new Date().toISOString().slice(0, 7);
-            const previousMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
+            let trendMonth = currentSelectedMonth;
+            let previousTrendMonth = null;
             
-            const currentMonthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
-            const previousMonthTransactions = transactions.filter(t => t.date.startsWith(previousMonth));
+            if (trendMonth) {
+                // Calculate previous month from selected month
+                const [year, month] = trendMonth.split('-');
+                const currentDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                previousTrendMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+            } else {
+                // Use current month if no specific month selected
+                trendMonth = new Date().toISOString().slice(0, 7);
+                previousTrendMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
+            }
             
-            const currentMonthIncome = currentMonthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-            const previousMonthIncome = previousMonthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-            const incomeChange = previousMonthIncome > 0 ? ((currentMonthIncome - previousMonthIncome) / previousMonthIncome * 100) : 0;
+            const trendMonthTransactions = trendMonth ? transactions.filter(t => t.date.startsWith(trendMonth)) : transactions;
+            const previousTrendMonthTransactions = previousTrendMonth ? transactions.filter(t => t.date.startsWith(previousTrendMonth)) : [];
             
-            const currentMonthExpenses = currentMonthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-            const previousMonthExpenses = previousMonthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-            const expenseChange = previousMonthExpenses > 0 ? ((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses * 100) : 0;
+            const trendMonthIncome = trendMonthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const previousTrendMonthIncome = previousTrendMonthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const incomeChange = previousTrendMonthIncome > 0 ? ((trendMonthIncome - previousTrendMonthIncome) / previousTrendMonthIncome * 100) : 0;
             
-            const currentMonthBalance = currentMonthIncome - currentMonthExpenses;
-            const previousMonthBalance = previousMonthIncome - previousMonthExpenses;
-            const balanceChange = previousMonthBalance !== 0 ? ((currentMonthBalance - previousMonthBalance) / Math.abs(previousMonthBalance) * 100) : 0;
+            const trendMonthExpenses = trendMonthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const previousTrendMonthExpenses = previousTrendMonthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const expenseChange = previousTrendMonthExpenses > 0 ? ((trendMonthExpenses - previousTrendMonthExpenses) / previousTrendMonthExpenses * 100) : 0;
             
-            const countChange = previousMonthTransactions.length > 0 ? ((currentMonthTransactions.length - previousMonthTransactions.length) / previousMonthTransactions.length * 100) : 0;
+            const trendMonthBalance = trendMonthIncome - trendMonthExpenses;
+            const previousTrendMonthBalance = previousTrendMonthIncome - previousTrendMonthExpenses;
+            const balanceChange = previousTrendMonthBalance !== 0 ? ((trendMonthBalance - previousTrendMonthBalance) / Math.abs(previousTrendMonthBalance) * 100) : 0;
+            
+            const countChange = previousTrendMonthTransactions.length > 0 ? ((trendMonthTransactions.length - previousTrendMonthTransactions.length) / previousTrendMonthTransactions.length * 100) : 0;
             
             // Update DOM elements
             const totalIncomeElement = document.getElementById('history-total-income');
