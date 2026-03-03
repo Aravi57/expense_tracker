@@ -5436,7 +5436,7 @@
                 return `
                     <div class="category-bar" style="margin-bottom: 15px;" data-budget-id="${budget.id}">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span class="category-name">${formatCategory(budget.category)}</span>
+                            <span class="category-name">${formatBudgetCategory(budget.category)}</span>
                             <div class="budget-actions">
                                 <div class="drag-handle" draggable="true" title="Drag to reorder">⋮⋮</div>
                                 <button class="edit-btn" onclick="editBudget('${budget.id}')" style="width: 24px; height: 24px; font-size: 0.8rem; margin-right: 5px;">✎</button>
@@ -6732,6 +6732,18 @@
                 'other-other': 'Other'
             };
             return cats[cat] || cat;
+        }
+
+        function formatBudgetCategory(cat) {
+            // Check if it's a subcategory (contains hyphen)
+            if (cat.includes('-')) {
+                // Get the subcategory part (after hyphen) and capitalize first letter
+                const subcategory = cat.split('-')[1];
+                return subcategory.charAt(0).toUpperCase() + subcategory.slice(1);
+            } else {
+                // For main categories, just capitalize first letter
+                return cat.charAt(0).toUpperCase() + cat.slice(1);
+            }
         }
 
         function formatDate(d) {
