@@ -5334,7 +5334,20 @@
                 const draggedIndex = allBudgets.findIndex(b => b.dataset.budgetId === draggedBudgetId);
                 const afterIndex = allBudgets.findIndex(b => b.dataset.budgetId === afterElement.dataset.budgetId);
                 
+                // Calculate the position based on mouse location
+                const rect = afterElement.getBoundingClientRect();
+                const midpoint = rect.top + rect.height / 2;
+                const shouldInsertBefore = e.clientY < midpoint;
+                
                 if (draggedIndex < afterIndex) {
+                    // Dragging down - insert before if above midpoint, after if below
+                    if (shouldInsertBefore) {
+                        budgetList.insertBefore(draggedElement, afterElement);
+                    } else {
+                        budgetList.insertBefore(draggedElement, afterElement.nextSibling);
+                    }
+                } else {
+                    // Dragging up - always insert before
                     budgetList.insertBefore(draggedElement, afterElement);
                 }
             }
@@ -5345,25 +5358,27 @@
             e.preventDefault();
             e.stopPropagation();
             
-            const dropTarget = e.target.closest('.category-bar');
-            if (dropTarget && dropTarget !== draggedElement) {
-                const budgetList = document.getElementById('budget-list');
-                const allBudgets = [...budgetList.children];
-                const draggedIndex = allBudgets.findIndex(b => b.dataset.budgetId === draggedBudgetId);
-                const dropIndex = allBudgets.findIndex(b => b.dataset.budgetId === dropTarget.dataset.budgetId);
-                
-                // Reorder the budgets array
-                const [draggedBudget] = budgets.splice(draggedIndex, 1);
-                budgets.splice(dropIndex, 0, draggedBudget);
-                
-                // Update database with new order
-                budgets.forEach((budget, index) => {
-                    budgetsRef.doc(budget.id).update({ order: index });
-                });
-                
-                // Re-render budgets
-                renderBudget();
-            }
+            // Get the current order from the DOM
+            const budgetList = document.getElementById('budget-list');
+            const allBudgets = [...budgetList.children];
+            const newOrder = [];
+            
+            allBudgets.forEach(element => {
+                const budgetId = element.dataset.budgetId;
+                const budget = budgets.find(b => b.id === budgetId);
+                if (budget) {
+                    newOrder.push(budget);
+                }
+            });
+            
+            // Update the budgets array with the new order
+            budgets.length = 0; // Clear the array
+            budgets.push(...newOrder);
+            
+            // Update database with new order
+            budgets.forEach((budget, index) => {
+                budgetsRef.doc(budget.id).update({ order: index });
+            });
             
             // Clean up
             if (draggedElement) {
