@@ -1296,6 +1296,275 @@
             color: #e74c3c;
         }
 
+        /* Enhanced History Page Layout */
+        .history-filters-enhanced {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-header h4 {
+            color: white;
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .btn-clear-filters {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-clear-filters:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .search-box-enhanced {
+            position: relative;
+        }
+
+        .search-box-enhanced input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box-enhanced input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-box-enhanced input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .filter-select option {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .transaction-list-enhanced {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .list-header h4 {
+            color: white;
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .list-info {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 15px;
+        }
+
+        .transaction-list-container {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .transaction-list-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .transaction-list-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .transaction-list-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .transaction-list-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Enhanced Transaction Items */
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .transaction-item.income {
+            border-left: 4px solid #2ecc71;
+        }
+
+        .transaction-item.expense {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .transaction-item.transfer {
+            border-left: 4px solid #667eea;
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-info .description {
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .transaction-info .meta {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+
+        .transaction-amount {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-right: 15px;
+        }
+
+        .transaction-amount.income {
+            color: #2ecc71;
+        }
+
+        .transaction-amount.expense {
+            color: #e74c3c;
+        }
+
+        .transaction-amount.transfer {
+            color: #667eea;
+        }
+
+        .transaction-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .transaction-item:hover .transaction-actions {
+            opacity: 1;
+        }
+
+        .edit-btn, .delete-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .edit-btn {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+        }
+
+        .edit-btn:hover {
+            background: rgba(52, 152, 219, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .delete-btn {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .delete-btn:hover {
+            background: rgba(231, 76, 60, 0.3);
+            transform: translateY(-2px);
+        }
+
         .history-filters {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
@@ -3985,7 +4254,7 @@
                 <div class="history-header">
                     <div class="history-title">
                         <h3>Transaction History</h3>
-                        <div class="history-subtitle" id="history-filter-info">All Transactions</div>
+                        <div class="history-subtitle" id="history-filter-info">This Month</div>
                     </div>
                     <div class="history-actions">
                         <button class="btn-icon" onclick="debugTransactions()" title="Debug">🔍</button>
@@ -4032,22 +4301,29 @@
                 </div>
                 
                 <!-- Enhanced Search and Filter Controls -->
-                <div class="history-filters">
-                    <div class="filter-row">
-                        <div class="search-box">
-                            <input type="text" id="search-input" placeholder="🔍 Search transactions..." onkeyup="filterTransactions()">
+                <div class="history-filters-enhanced">
+                    <div class="filter-header">
+                        <h4>Filter Transactions</h4>
+                        <button class="btn-clear-filters" onclick="clearAllFilters()">Clear All</button>
+                    </div>
+                    <div class="filter-grid">
+                        <div class="filter-item">
+                            <label class="filter-label">Search</label>
+                            <div class="search-box-enhanced">
+                                <input type="text" id="search-input" placeholder="🔍 Search transactions..." onkeyup="filterTransactions()">
+                            </div>
                         </div>
-                        <div class="filter-group">
-                            <select id="type-filter" onchange="filterTransactions()">
+                        <div class="filter-item">
+                            <label class="filter-label">Type</label>
+                            <select id="type-filter" onchange="filterTransactions()" class="filter-select">
                                 <option value="">All Types</option>
                                 <option value="income">💰 Income</option>
                                 <option value="expense">💸 Expense</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <select id="category-filter" onchange="updateFilterSubcategories()">
+                        <div class="filter-item">
+                            <label class="filter-label">Category</label>
+                            <select id="category-filter" onchange="updateFilterSubcategories()" class="filter-select">
                                 <option value="">All Categories</option>
                                 <option value="home">🏠 Home</option>
                                 <option value="subscription">📱 Subscription</option>
@@ -4063,13 +4339,15 @@
                                 <option value="other">📦 Other</option>
                             </select>
                         </div>
-                        <div class="filter-group">
-                            <select id="subcategory-filter" onchange="filterTransactions()">
+                        <div class="filter-item">
+                            <label class="filter-label">Subcategory</label>
+                            <select id="subcategory-filter" onchange="filterTransactions()" class="filter-select">
                                 <option value="">All Subcategories</option>
                             </select>
                         </div>
-                        <div class="filter-group">
-                            <select id="date-filter" onchange="filterTransactions()">
+                        <div class="filter-item">
+                            <label class="filter-label">Date Range</label>
+                            <select id="date-filter" onchange="filterTransactions()" class="filter-select">
                                 <option value="">All Time</option>
                                 <option value="today">Today</option>
                                 <option value="week">This Week</option>
@@ -4083,15 +4361,21 @@
                     </div>
                 </div>
                 
-                <!-- Transaction List -->
-                <div class="transaction-list-container">
-                    <ul class="transaction-list" id="transaction-list">
-                        <li class="empty-state">
-                            <div class="empty-icon">📝</div>
-                            <div class="empty-text">No Transactions Yet</div>
-                            <div class="empty-subtitle">Start by adding your first transaction</div>
-                        </li>
-                    </ul>
+                <!-- Enhanced Transaction List -->
+                <div class="transaction-list-enhanced">
+                    <div class="list-header">
+                        <h4>Transactions</h4>
+                        <div class="list-info" id="transaction-count-info">23 transactions</div>
+                    </div>
+                    <div class="transaction-list-container">
+                        <ul class="transaction-list" id="transaction-list">
+                            <li class="empty-state">
+                                <div class="empty-icon">📝</div>
+                                <div class="empty-text">No Transactions Found</div>
+                                <div class="empty-subtitle">Start by adding your first transaction</div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -6836,6 +7120,18 @@
             });
         }
 
+        // Clear all filters
+        function clearAllFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('type-filter').value = '';
+            document.getElementById('category-filter').value = '';
+            document.getElementById('subcategory-filter').value = '';
+            document.getElementById('date-filter').value = 'month'; // Reset to default
+            
+            updateFilterSubcategories();
+            filterTransactions();
+        }
+
         // Update history statistics
         function updateHistoryStatistics(filteredTransactions = transactions) {
             const income = filteredTransactions.filter(t => t.type === 'income');
@@ -6993,6 +7289,13 @@
             `;
 
             fullList.innerHTML = filteredTransactions.map(renderTransaction).join('');
+            
+            // Update transaction count info
+            const transactionCountInfo = document.getElementById('transaction-count-info');
+            if (transactionCountInfo) {
+                const count = filteredTransactions.length;
+                transactionCountInfo.textContent = `${count} transaction${count !== 1 ? 's' : ''}`;
+            }
             
             // Update history statistics
             updateHistoryStatistics(filteredTransactions);
