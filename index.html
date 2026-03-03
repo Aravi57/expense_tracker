@@ -5455,23 +5455,62 @@
                 const dragHandles = document.querySelectorAll('.drag-handle');
                 const budgetBars = document.querySelectorAll('.category-bar');
                 
-                console.log('Setting up simple drag and drop...');
+                console.log('=== DRAG AND DROP DEBUG ===');
+                console.log('Budget list element:', document.getElementById('budget-list'));
+                console.log('Budget list HTML:', document.getElementById('budget-list').innerHTML.substring(0, 200) + '...');
                 console.log('Found drag handles:', dragHandles.length);
                 console.log('Found budget bars:', budgetBars.length);
+                console.log('Drag handles:', dragHandles);
+                console.log('Budget bars:', budgetBars);
                 
-                // Add dragstart to handles
+                // Check if drag handles have draggable attribute
+                dragHandles.forEach((handle, index) => {
+                    console.log(`Handle ${index}:`, handle);
+                    console.log(`Handle ${index} draggable:`, handle.draggable);
+                    console.log(`Handle ${index} parent:`, handle.closest('.category-bar'));
+                });
+                
+                // Remove any existing listeners first
                 dragHandles.forEach(handle => {
-                    handle.addEventListener('dragstart', handleDragStart);
+                    handle.removeEventListener('dragstart', handleDragStart);
                 });
                 
-                // Add dragover and drop to budget bars
                 budgetBars.forEach(bar => {
-                    bar.addEventListener('dragover', handleDragOver);
-                    bar.addEventListener('drop', handleDrop);
+                    bar.removeEventListener('dragover', handleDragOver);
+                    bar.removeEventListener('drop', handleDrop);
                 });
                 
-                console.log('Simple drag and drop setup complete');
-            }, 100);
+                // Add event listeners with error handling
+                try {
+                    // Add dragstart to handles
+                    dragHandles.forEach((handle, index) => {
+                        console.log(`Adding dragstart to handle ${index}`);
+                        handle.addEventListener('dragstart', function(e) {
+                            console.log('Dragstart event fired on handle:', e.target);
+                            handleDragStart(e);
+                        });
+                    });
+                    
+                    // Add dragover and drop to budget bars
+                    budgetBars.forEach((bar, index) => {
+                        console.log(`Adding dragover/drop to bar ${index}`);
+                        bar.addEventListener('dragover', function(e) {
+                            console.log('Dragover event fired on bar:', e.target);
+                            handleDragOver(e);
+                        });
+                        bar.addEventListener('drop', function(e) {
+                            console.log('Drop event fired on bar:', e.target);
+                            handleDrop(e);
+                        });
+                    });
+                    
+                    console.log('✅ Event listeners added successfully');
+                } catch (error) {
+                    console.error('❌ Error adding event listeners:', error);
+                }
+                
+                console.log('=== END DEBUG ===');
+            }, 200);
 
             // Render budget chart
             renderBudgetChart(categorySpending);
