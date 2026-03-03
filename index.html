@@ -5394,9 +5394,9 @@
             const accountsSnapshot = await accountsRef.where('userId', '==', currentUser.id).get();
             const userAccounts = accountsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
-            // Reset all account balances to initial balance (or 0 if no initial balance)
+            // Calculate balance from transactions for each account
             for (const account of userAccounts) {
-                let accountBalance = account.balance || 0;
+                let accountBalance = 0; // Start from 0
                 
                 // Calculate actual balance based on transactions
                 const accountTransactions = transactions.filter(t => t.account === account.id);
@@ -5406,10 +5406,19 @@
                         accountBalance -= transaction.amount;
                     } else if (transaction.type === 'income') {
                         accountBalance += transaction.amount;
+                    } else if (transaction.type === 'transfer') {
+                        // For transfers, check if this account is the source or destination
+                        if (transaction.account === account.id) {
+                            // This account is the source (from account)
+                            accountBalance -= transaction.amount;
+                        } else if (transaction.toAccount === account.id) {
+                            // This account is the destination (to account)
+                            accountBalance += transaction.amount;
+                        }
                     }
                 }
                 
-                // Update the account with calculated balance
+                // Update account with calculated balance
                 await accountsRef.doc(account.id).update({ balance: accountBalance });
                 console.log(`Recalculated balance for ${account.name}: ₹${accountBalance}`);
             }
