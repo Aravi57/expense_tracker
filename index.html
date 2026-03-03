@@ -3891,7 +3891,7 @@
                         <option value="other">Other</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="subcategory-group">
                     <label for="subcategory">Subcategory</label>
                     <select id="subcategory">
                         <option value="">Select Subcategory</option>
@@ -4411,6 +4411,7 @@
                 // Handle transfer type specific UI
                 const toAccountGroup = document.getElementById('to-account-group');
                 const categoryGroup = document.getElementById('category-group');
+                const subcategoryGroup = document.getElementById('subcategory-group');
                 const accountLabel = document.getElementById('account-label');
                 const submitBtn = document.getElementById('transaction-submit-btn');
                 
@@ -4418,6 +4419,7 @@
                     // Show transfer-specific fields
                     toAccountGroup.style.display = 'block';
                     categoryGroup.style.display = 'none';
+                    subcategoryGroup.style.display = 'none';
                     accountLabel.textContent = 'From Account';
                     submitBtn.textContent = 'Transfer Money';
                     
@@ -4427,6 +4429,7 @@
                     // Show regular transaction fields
                     toAccountGroup.style.display = 'none';
                     categoryGroup.style.display = 'block';
+                    subcategoryGroup.style.display = 'block';
                     accountLabel.textContent = 'Account';
                     submitBtn.textContent = 'Add Transaction';
                 }
