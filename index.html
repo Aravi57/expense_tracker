@@ -4505,21 +4505,24 @@
             );
             
             // Load user-specific budgets with error handling
-            budgetsRef.where('userId', '==', currentUser.id).onSnapshot(
+            budgetsRef.where('userId', '==', currentUser.id).orderBy('order', 'asc').onSnapshot(
                 snapshot => {
                     budgets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderBudget();
                 },
                 error => {
                     console.error('Budgets query error:', error);
-                    // Fallback: try without ordering
+                    // Fallback: try without ordering, then sort manually
                     budgetsRef.where('userId', '==', currentUser.id).onSnapshot(
                         snapshot => {
                             budgets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            // Sort manually by order field
+                            budgets.sort((a, b) => (a.order || 0) - (b.order || 0));
                             renderBudget();
                         },
                         fallbackError => {
-                            console.error('Fallback budgets query failed:', fallbackError);
+                            console.error('Budgets fallback query error:', fallbackError);
+                            alert('Error loading budgets. Please refresh the page.');
                         }
                     );
                 }
@@ -4677,6 +4680,7 @@
                 amount: parseFloat(document.getElementById('budget-amount').value),
                 period: document.getElementById('budget-period').value,
                 userId: currentUser.id, // Add userId to budget
+                order: budgets.length, // Add order field based on current count
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             e.target.reset();
