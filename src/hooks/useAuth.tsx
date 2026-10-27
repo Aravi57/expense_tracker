@@ -1,15 +1,17 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { toast } from 'sonner';
+import type { AccountType } from '../lib/types';
 import { supabase, usernameToEmail } from '../lib/supabase';
 import { queryClient } from '../api/client';
-import { processRecurring } from '../api/recurring';
 
 interface AuthState {
   session: Session | null;
   loading: boolean;
   username: string;
   fullname: string;
+  /** Account types left out of the Home screen's total balance (saved per user, so every device agrees) */
+  excludedTypes: AccountType[];
+  setExcludedTypes: (types: AccountType[]) => Promise<void>;
   signIn: (username: string, password: string) => Promise<void>;
   signUp: (fullname: string, username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -17,13 +19,10 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-// First sign-in on a device: make sure the user has categories and that any
-// recurring transactions that came due while they were away are created.
+// First sign-in on a device: make sure the user has categories
 async function prepareUser() {
   await supabase.rpc('et_seed_categories');
-  const created = await processRecurring().catch(() => 0);
   await queryClient.invalidateQueries();
-  if (created) toast.success(`Recorded ${created} recurring transaction${created === 1 ? '' : 's'}`);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -51,6 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     username: meta.username ?? '',
     fullname: meta.fullname ?? '',
+    excludedTypes: Array.isArray(meta.balance_excludes) ? meta.balance_excludes : [],
+    async setExcludedTypes(types) {
+      const { error } = await supabase.auth.updateUser({ data: { balance_excludes: types } });
+      if (error) throw new Error(error.message);
+    },
     async signIn(username, password) {
       const { error } = await supabase.auth.signInWithPassword({ email: usernameToEmail(username), password });
       if (error) throw new Error('Incorrect username or password');

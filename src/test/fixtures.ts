@@ -14,7 +14,7 @@ export function txn(over: Partial<Transaction>): Transaction {
   n += 1;
   return {
     id: `t${n}`, type: 'expense', amount: 100, description: `Txn ${n}`, notes: null, occurred_on: '2026-10-10',
-    category_id: null, account_id: null, to_account_id: null, recurring_id: null, investment_id: null,
+    category_id: null, account_id: null, to_account_id: null, investment_id: null,
     created_at: '2026-10-10T10:00:00Z', ...over,
   };
 }

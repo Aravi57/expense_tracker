@@ -10,14 +10,14 @@ import Login from './pages/Login';
 const loadDashboard = () => import('./pages/Dashboard');
 const loaders = [
   () => import('./pages/Transactions'), () => import('./pages/Budgets'), () => import('./pages/Investments'),
-  () => import('./pages/Analysis'), () => import('./pages/Recurring'), () => import('./pages/Settings'),
+  () => import('./pages/Analysis'), () => import('./pages/Templates'), () => import('./pages/Settings'),
 ] as const;
 const Dashboard = lazy(loadDashboard);
 const Transactions = lazy(loaders[0]);
 const Budgets = lazy(loaders[1]);
 const Investments = lazy(loaders[2]);
 const Analysis = lazy(loaders[3]);
-const RecurringPage = lazy(loaders[4]);
+const Templates = lazy(loaders[4]);
 const Settings = lazy(loaders[5]);
 
 export function prefetchHome() {
@@ -60,7 +60,8 @@ function SignedInApp() {
               <Route path="budgets" element={<Budgets />} />
               <Route path="investments" element={<Investments />} />
               <Route path="analysis" element={<Analysis />} />
-              <Route path="recurring" element={<RecurringPage />} />
+              <Route path="templates" element={<Templates />} />
+              <Route path="recurring" element={<Navigate to="/templates" replace />} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

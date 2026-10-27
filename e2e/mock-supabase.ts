@@ -1,7 +1,7 @@
-﻿// An in-memory stand-in for the Supabase project, used by the end-to-end tests.
+// An in-memory stand-in for the Supabase project, used by the end-to-end tests.
 // It answers the same HTTP calls supabase-js makes (auth, PostgREST tables and the
 // et_* functions) and mirrors the database behaviour in supabase/migrations:
-// per-user rows, computed balances, cascades, budgets, recurring catch-up and so on.
+// per-user rows, computed balances, cascades, budgets, templates and so on.
 // Nothing is ever sent to the real Supabase.
 
 import type { BrowserContext, Route } from '@playwright/test';
@@ -33,10 +33,10 @@ const DEFAULTS: Record<string, () => Row> = {
   et_accounts: () => ({ type: 'bank', opening_balance: 0, credit_limit: null, color: null, sort_order: 0, archived: false }),
   et_transactions: () => ({
     description: '', notes: null, occurred_on: today(), category_id: null, account_id: null,
-    to_account_id: null, recurring_id: null, investment_id: null,
+    to_account_id: null, investment_id: null,
   }),
   et_budgets: () => ({ period: 'monthly', sort_order: 0 }),
-  et_recurring: () => ({ description: '', category_id: null, account_id: null, to_account_id: null, end_date: null, active: true }),
+  et_templates: () => ({ amount: null, description: '', category_id: null, account_id: null, to_account_id: null, sort_order: 0, use_count: 0, last_used_at: null }),
   et_investments: () => ({ risk: 'medium', type: 'other', invested_amount: 0, current_value: 0, started_on: today(), notes: null }),
   et_investment_contributions: () => ({ contributed_on: today(), notes: null }),
 };
@@ -249,7 +249,7 @@ export class MockSupabase {
   }
 
   private check(table: string, row: Row, userId: string) {
-    if ('amount' in row && !(num(row.amount) > 0)) return { status: 400, body: { code: '23514', message: 'violates check constraint' } };
+    if ('amount' in row && row.amount != null && !(num(row.amount) > 0)) return { status: 400, body: { code: '23514', message: 'violates check constraint' } };
     if (row.credit_limit != null && !(num(row.credit_limit) > 0)) return { status: 400, body: { code: '23514', message: 'violates check constraint' } };
     if (table === 'et_transactions' && row.type === 'transfer' && row.category_id) return { status: 400, body: { code: '23514', message: 'violates check constraint' } };
     if (table === 'et_budgets') {
@@ -298,7 +298,7 @@ export class MockSupabase {
       for (const input of Array.isArray(body) ? body : [body]) {
         const now = new Date().toISOString();
         const row = { id: uuid(), created_at: now, updated_at: now, ...DEFAULTS[table](), ...input, user_id: user.id };
-        for (const k of ['amount', 'opening_balance', 'invested_amount', 'current_value']) if (k in row) row[k] = num(row[k]);
+        for (const k of ['amount', 'opening_balance', 'invested_amount', 'current_value']) if (k in row && row[k] != null) row[k] = num(row[k]);
         if (row.credit_limit != null) row.credit_limit = num(row.credit_limit);
         const err = this.check(table, row, user.id);
         if (err) return this.json(route, err.status, err.body);
@@ -314,7 +314,7 @@ export class MockSupabase {
       const rows = this.filter(mine(), params);
       for (const row of rows) {
         const next = { ...row, ...patch, updated_at: new Date().toISOString() };
-        for (const k of ['amount', 'opening_balance', 'invested_amount', 'current_value']) if (k in patch) next[k] = num(next[k]);
+        for (const k of ['amount', 'opening_balance', 'invested_amount', 'current_value']) if (k in patch && next[k] != null) next[k] = num(next[k]);
         if (next.credit_limit != null) next.credit_limit = num(next.credit_limit);
         const err = this.check(table, next, user.id);
         if (err) return this.json(route, err.status, err.body);
@@ -336,19 +336,18 @@ export class MockSupabase {
     this.tables[table] = this.tables[table].filter((r) => r !== row);
     const setNull = (t: string, col: string) => this.tables[t].forEach((r) => { if (r[col] === row.id) r[col] = null; });
     if (table === 'et_accounts') {
-      for (const t of ['et_transactions', 'et_recurring']) { setNull(t, 'account_id'); setNull(t, 'to_account_id'); }
+      for (const t of ['et_transactions', 'et_templates']) { setNull(t, 'account_id'); setNull(t, 'to_account_id'); }
     }
     if (table === 'et_categories') {
       this.tables.et_categories.filter((c) => c.parent_id === row.id).forEach((c) => this.remove('et_categories', c));
       this.tables.et_budgets = this.tables.et_budgets.filter((b) => b.category_id !== row.id);
       setNull('et_transactions', 'category_id');
-      setNull('et_recurring', 'category_id');
+      setNull('et_templates', 'category_id');
     }
     if (table === 'et_investments') {
       this.tables.et_investment_contributions = this.tables.et_investment_contributions.filter((c) => c.investment_id !== row.id);
       setNull('et_transactions', 'investment_id');
     }
-    if (table === 'et_recurring') setNull('et_transactions', 'recurring_id');
     if (table === 'et_investment_contributions') this.applyContribution(row, -1);
   }
 
@@ -444,31 +443,21 @@ export class MockSupabase {
           }).reduce((s, t) => s + t.amount, 0),
         })));
       }
-      case 'et_process_recurring': {
-        const runUntil = args.p_today ?? today();
-        let created = 0;
-        for (const r of this.rows('et_recurring', user.id).filter((x) => x.active && x.next_date <= runUntil)) {
-          while (r.next_date <= runUntil && (!r.end_date || r.next_date <= r.end_date)) {
-            const now = new Date().toISOString();
-            this.tables.et_transactions.push({
-              ...DEFAULTS.et_transactions(), id: uuid(), user_id: user.id, created_at: now, updated_at: now,
-              type: r.type, amount: r.amount, description: r.description, occurred_on: r.next_date,
-              category_id: r.type === 'transfer' ? null : r.category_id, account_id: r.account_id,
-              to_account_id: r.to_account_id, recurring_id: r.id,
-            });
-            created += 1;
-            const d = parseDate(r.next_date);
-            const step: Record<string, () => void> = {
-              daily: () => d.setDate(d.getDate() + 1), weekly: () => d.setDate(d.getDate() + 7),
-              monthly: () => d.setMonth(d.getMonth() + 1), quarterly: () => d.setMonth(d.getMonth() + 3),
-              yearly: () => d.setFullYear(d.getFullYear() + 1),
-            };
-            step[r.frequency]();
-            r.next_date = isoDate(d);
-          }
-          r.active = !r.end_date || r.next_date <= r.end_date;
-        }
-        return this.json(route, 200, created);
+      case 'et_use_template': {
+        const t = this.rows('et_templates', user.id).find((x) => x.id === args.p_template);
+        if (!t) return this.json(route, 400, { code: 'P0001', message: 'Template not found' });
+        const amount = args.p_amount ?? t.amount;
+        if (amount == null) return this.json(route, 400, { code: 'P0001', message: 'This template has no amount; enter one' });
+        const now = new Date().toISOString();
+        const id = uuid();
+        this.tables.et_transactions.push({
+          ...DEFAULTS.et_transactions(), id, user_id: user.id, created_at: now, updated_at: now,
+          type: t.type, amount: num(amount), description: t.description || t.name, occurred_on: args.p_date ?? today(),
+          category_id: t.type === 'transfer' ? null : t.category_id, account_id: t.account_id, to_account_id: t.to_account_id,
+        });
+        t.use_count += 1;
+        t.last_used_at = now;
+        return this.json(route, 200, id);
       }
     }
     throw new Error(`rpc ${fn}`);

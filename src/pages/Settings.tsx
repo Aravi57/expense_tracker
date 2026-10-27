@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { ChevronRight, Download, LogOut, Monitor, Moon, Plus, Sun, Tags, Trash2 } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { useAccounts } from '../api/accounts';
 import { deleteCategory, saveCategory, useCategoryIndex, type CategoryNode } from '../api/categories';
@@ -14,10 +14,28 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme, type ThemeChoice } from '../hooks/useTheme';
 import { downloadCsv } from '../lib/csv';
 import { supabase } from '../lib/supabase';
-import type { Category, CategoryKind } from '../lib/types';
+import { ACCOUNT_TYPES } from '../lib/format';
+import { ACCOUNT_ICONS } from '../components/AccountPicker';
+import type { AccountType, Category, CategoryKind } from '../lib/types';
 
 export default function Settings() {
-  const { username, fullname, signOut } = useAuth();
+  const { username, fullname, signOut, excludedTypes, setExcludedTypes } = useAuth();
+
+  // Tick boxes change instantly; they switch back if saving fails
+  const [excluded, setExcluded] = useState(excludedTypes);
+  useEffect(() => setExcluded(excludedTypes), [excludedTypes]);
+  const toggleType = async (type: AccountType, include: boolean) => {
+    const before = excluded;
+    const next = include ? excluded.filter((t) => t !== type) : [...excluded, type];
+    setExcluded(next);
+    try {
+      await setExcludedTypes(next);
+      toast.success(`${ACCOUNT_TYPES[type]} ${include ? 'now counts' : 'no longer counts'} toward the total balance`);
+    } catch (e) {
+      setExcluded(before);
+      toast.error((e as Error).message);
+    }
+  };
   const { theme, setTheme } = useTheme();
   const confirm = useConfirm();
   const idx = useCategoryIndex();
@@ -67,6 +85,27 @@ export default function Settings() {
             {theme === 'system' ? <Monitor className="h-3.5 w-3.5" /> : theme === 'light' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             {theme === 'system' ? 'Follows your device setting' : `Always ${theme}`}
           </p>
+        </Card>
+
+        <Card title="Total balance">
+          <p className="mb-3 text-sm text-muted">Choose which kinds of account count toward the total balance on Home.</p>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {(Object.keys(ACCOUNT_TYPES) as AccountType[]).map((t) => {
+              const Icon = ACCOUNT_ICONS[t];
+              const count = accounts.filter((a) => a.type === t && !a.archived).length;
+              return (
+                <li key={t}>
+                  <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-app px-3 py-2.5 transition hover:bg-[var(--surface-2)]">
+                    <input type="checkbox" checked={!excluded.includes(t)} onChange={(e) => toggleType(t, e.target.checked)}
+                      className="h-4 w-4 accent-[var(--color-brand-600)]" />
+                    <Icon className="h-4 w-4 text-muted" />
+                    <span className="flex-1 text-sm font-medium">{ACCOUNT_TYPES[t]}</span>
+                    <span className="text-xs text-muted">{count} account{count === 1 ? '' : 's'}</span>
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
         </Card>
 
         <Card title={<span className="flex items-center gap-2"><Tags className="h-4 w-4" /> Categories</span>}

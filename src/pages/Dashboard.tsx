@@ -1,23 +1,25 @@
 import clsx from 'clsx';
-import { ArrowDownRight, ArrowUpRight, CalendarClock, ChevronRight, CreditCard, List, PiggyBank, Plus, Wallet } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, ChevronRight, CreditCard, List, PiggyBank, Plus, Wallet, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useAccounts } from '../api/accounts';
 import { useBudgets } from '../api/budgets';
 import { useCategoryIndex } from '../api/categories';
-import { useRecurring } from '../api/recurring';
+import { useTemplates } from '../api/templates';
 import { useCategoryTotals, useSummary } from '../api/stats';
 import { useRecentTransactions } from '../api/transactions';
 import { AccountSheet } from '../components/AccountSheet';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PayCardSheet } from '../components/PayCardSheet';
+import { ScrollRow } from '../components/ScrollRow';
 import { available, isCard, owed, utilisation } from '../lib/credit';
 import { TransactionRow } from '../components/TransactionList';
 import { useTransactionSheet } from '../components/TransactionSheet';
 import { Button, Card, EmptyState, ProgressBar, Skeleton, Trend } from '../components/ui';
 import { useAuth } from '../hooks/useAuth';
 import { currentMonth, monthRange, previousRange } from '../lib/dates';
-import { ACCOUNT_TYPES, change, money, shortDate, FREQUENCIES } from '../lib/format';
+import { ACCOUNT_TYPES, change, money } from '../lib/format';
+import { TemplateTile, useApplyTemplate } from '../components/templates';
 import type { Account } from '../lib/types';
 
 const ACCOUNT_GRADIENTS = [
@@ -31,7 +33,7 @@ function greeting() {
 }
 
 export default function Dashboard() {
-  const { fullname, username } = useAuth();
+  const { fullname, username, excludedTypes } = useAuth();
   const openTransaction = useTransactionSheet();
   const range = monthRange(currentMonth());
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
@@ -40,21 +42,23 @@ export default function Dashboard() {
   const { data: categories = [] } = useCategoryTotals(range);
   const { data: recent, isLoading: recentLoading } = useRecentTransactions(6);
   const { data: budgets = [] } = useBudgets();
-  const { data: recurring = [] } = useRecurring();
+  const { data: templates = [] } = useTemplates();
+  const { apply: applyTemplate, prompt: templatePrompt } = useApplyTemplate();
   const idx = useCategoryIndex();
   const [accountSheet, setAccountSheet] = useState<{ account?: Account } | null>(null);
 
   const visibleAccounts = (accounts ?? []).filter((a) => !a.archived);
-  const totalBalance = visibleAccounts.reduce((s, a) => s + a.balance, 0);
+  // Account types the user chose to leave out of the total (Settings)
+  const counted = visibleAccounts.filter((a) => !excludedTypes.includes(a.type));
+  const totalBalance = counted.reduce((s, a) => s + a.balance, 0);
   const cards = visibleAccounts.filter(isCard);
-  const cardDues = cards.reduce((s, a) => s + owed(a), 0);
+  const cardDues = counted.filter(isCard).reduce((s, a) => s + owed(a), 0);
   const [payingCard, setPayingCard] = useState<Account | null>(null);
   const income = month?.income ?? 0;
   const expense = month?.expense ?? 0;
   const topCategories = categories.slice(0, 5);
   const maxCategory = topCategories[0]?.total ?? 0;
   const busiestBudgets = [...budgets].sort((a, b) => b.spent / b.amount - a.spent / a.amount).slice(0, 3);
-  const upcoming = recurring.filter((r) => r.active).slice(0, 3);
 
   return (
     <div className="space-y-5">
@@ -71,8 +75,11 @@ export default function Dashboard() {
           <p className="mt-1 text-4xl font-bold tracking-tight tabular-nums">{money(totalBalance)}</p>
         )}
         <p className="mt-1 text-xs text-white/60">
-          Across {visibleAccounts.length} account{visibleAccounts.length === 1 ? '' : 's'}
+          Across {counted.length} account{counted.length === 1 ? '' : 's'}
           {cardDues > 0 && ` · after ${money(cardDues)} owed on cards`}
+          {excludedTypes.length > 0 && (
+            <> · <Link to="/settings" className="underline decoration-white/40 underline-offset-2">not counting {excludedTypes.map((t) => ACCOUNT_TYPES[t].toLowerCase()).join(', ')}</Link></>
+          )}
         </p>
         <div className="mt-5 grid grid-cols-3 gap-3 rounded-2xl bg-white/10 p-3 backdrop-blur">
           <div>
@@ -96,7 +103,7 @@ export default function Dashboard() {
           <h2 className="font-semibold">Accounts</h2>
           <Button variant="ghost" size="sm" onClick={() => setAccountSheet({})}><Plus className="h-4 w-4" /> Add</Button>
         </div>
-        <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+        <ScrollRow label="Accounts" className="pb-1">
           {accountsLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-28 w-48 shrink-0 rounded-2xl" />)}
           {visibleAccounts.map((a, i) => (
             <button key={a.id} onClick={() => setAccountSheet({ account: a })}
@@ -122,7 +129,30 @@ export default function Dashboard() {
               <Plus className="h-6 w-6" /> Add account
             </button>
           )}
+        </ScrollRow>
+      </section>
+
+      {/* One-tap templates */}
+      <section>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 font-semibold"><Zap className="h-4 w-4 text-amber-500" /> Quick add</h2>
+          <Link to="/templates" className="flex items-center text-sm font-medium text-brand-600 dark:text-brand-400">
+            {templates.length ? 'All templates' : 'Create a template'} <ChevronRight className="h-4 w-4" />
+          </Link>
         </div>
+        {templates.length === 0 ? (
+          <p className="surface rounded-2xl px-4 py-3 text-sm text-muted">
+            Save things you add often, like tea, rent or salary, as templates and add them here with one tap.
+          </p>
+        ) : (
+          <ScrollRow label="Templates">
+            {templates.slice(0, 8).map((t) => (
+              <div key={t.id} className="w-56 shrink-0 snap-start">
+                <TemplateTile template={t} onApply={() => applyTemplate(t)} />
+              </div>
+            ))}
+          </ScrollRow>
+        )}
       </section>
 
       {cards.length > 0 && (
@@ -213,35 +243,11 @@ export default function Dashboard() {
           )}
         </Card>
 
-        {/* Upcoming recurring */}
-        <Card title="Upcoming" action={<Link to="/recurring" className="flex items-center text-sm font-medium text-brand-600 dark:text-brand-400">Recurring <ChevronRight className="h-4 w-4" /></Link>}>
-          {upcoming.length === 0 ? (
-            <EmptyState icon={<CalendarClock className="h-6 w-6" />} title="Nothing scheduled" text="Add rent, salary or subscriptions once and they’ll be recorded automatically."
-              action={<Link to="/recurring"><Button variant="secondary">Add recurring</Button></Link>} />
-          ) : (
-            <ul className="space-y-2">
-              {upcoming.map((r) => {
-                const root = idx.root(r.category_id);
-                return (
-                  <li key={r.id} className="flex items-center gap-3 rounded-xl px-1 py-1.5">
-                    <CategoryIcon icon={root?.icon} color={root?.color} transfer={r.type === 'transfer'} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{r.description}</p>
-                      <p className="text-xs text-muted">{FREQUENCIES[r.frequency]} · next {shortDate(r.next_date)}</p>
-                    </div>
-                    <span className={clsx('font-semibold tabular-nums', r.type === 'income' ? 'text-[var(--color-income)]' : r.type === 'expense' ? 'text-[var(--color-expense)]' : 'text-muted')}>
-                      {money(r.amount)}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </Card>
-      </div>
+     </div>
 
       {accountSheet && <AccountSheet account={accountSheet.account} onClose={() => setAccountSheet(null)} />}
       {payingCard && <PayCardSheet card={payingCard} onClose={() => setPayingCard(null)} />}
+      {templatePrompt}
       {visibleAccounts.length === 0 && !accountsLoading && (
         <p className="flex items-center justify-center gap-2 text-sm text-muted"><Wallet className="h-4 w-4" /> Add an account to see balances.</p>
       )}

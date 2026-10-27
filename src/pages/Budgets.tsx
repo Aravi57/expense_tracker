@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { ArrowDown, ArrowUp, ChevronDown, PiggyBank, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState, type FormEvent } from 'react';
 import { deleteBudget, reorderBudgets, saveBudget, useBudgets } from '../api/budgets';
-import { ensureSubcategory, useCategoryIndex } from '../api/categories';
+import { ensureCategory, useCategoryIndex } from '../api/categories';
 import { useDataMutation } from '../api/client';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { CategoryPicker } from '../components/CategoryPicker';
@@ -178,10 +178,11 @@ function BudgetSheet({ budget, initialCategory, nextOrder, onClose }: {
   const save = useDataMutation(saveBudget, { success: budget ? 'Budget updated' : 'Budget created' });
   const remove = useDataMutation(deleteBudget, { success: 'Budget deleted' });
 
-  // Picking a subcategory called "Other" lets the user name a more specific one instead
+  // Picking "Other" (a main category or a subcategory) lets the user name a more specific one instead
   const selected = categoryId ? idx.byId.get(categoryId) : undefined;
   const parent = selected?.parent_id ? idx.byId.get(selected.parent_id) : undefined;
-  const isOther = !!parent && selected?.name === 'Other';
+  const isOther = selected?.name === 'Other';
+  const namingMain = isOther && !parent;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -194,7 +195,7 @@ function BudgetSheet({ budget, initialCategory, nextOrder, onClose }: {
     if (isOther && name) {
       setBusy(true);
       try {
-        target = await ensureSubcategory(parent!, name, idx.all);
+        target = await ensureCategory(parent ?? null, name, 'expense', idx.all);
       } catch (err) {
         setBusy(false);
         return setError((err as Error).message);
@@ -226,8 +227,11 @@ function BudgetSheet({ budget, initialCategory, nextOrder, onClose }: {
           <CategoryPicker kind="expense" value={categoryId} onChange={setCategoryId} />
         </div>
         {isOther && (
-          <Field label="Subcategory name" hint={`Optional. Creates a new subcategory under ${parent!.name} (also used when adding transactions). Leave empty to keep “Other”.`}>
-            <Input value={customName} onChange={(e) => setCustomName(e.target.value)} maxLength={40} placeholder="e.g. Maintenance" autoFocus />
+          <Field label={namingMain ? 'Category name' : 'Subcategory name'}
+            hint={namingMain
+              ? 'Optional. Creates a new main category (also used when adding transactions; set its icon in Settings). Leave empty to keep “Other”.'
+              : `Optional. Creates a new subcategory under ${parent!.name} (also used when adding transactions). Leave empty to keep “Other”.`}>
+            <Input value={customName} onChange={(e) => setCustomName(e.target.value)} maxLength={40} placeholder={namingMain ? 'e.g. Pets' : 'e.g. Maintenance'} autoFocus />
           </Field>
         )}
         <Field label="Limit (₹)">

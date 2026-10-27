@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { addAccount, addTransaction, expect, goTo, openAddTransaction, PASSWORD, test, USERNAME } from './fixtures';
 import { isoDate } from './mock-supabase';
 
@@ -56,7 +57,7 @@ test.describe('Home', () => {
   test('starts empty with helpful prompts', async ({ app }) => {
     await expect(app.getByText('No transactions yet')).toBeVisible();
     await expect(app.getByText('No budgets yet')).toBeVisible();
-    await expect(app.getByText('Nothing scheduled')).toBeVisible();
+    await expect(app.getByText(/Save things you add often/)).toBeVisible();
     await expect(app.getByText('Total balance')).toBeVisible();
   });
 
@@ -425,44 +426,142 @@ test.describe('Naming an "Other" subcategory in a budget', () => {
   });
 });
 
-test.describe('Recurring', () => {
-  test('a rule that is already due is recorded immediately, and can be paused', async ({ app, mock }) => {
-    await goTo(app, 'Recurring');
-    await app.getByRole('button', { name: 'New', exact: true }).click();
-    const sheet = app.getByRole('dialog');
-    await sheet.getByLabel('Name').fill('Netflix');
-    await sheet.getByLabel('Amount (₹)').fill('649');
-    await sheet.getByRole('button', { name: 'Other', exact: true }).click();
-    await expect(sheet.getByText('The first one is due now')).toBeVisible();
-    await sheet.getByRole('button', { name: 'Save' }).click();
-    await expect(app.getByText('Recurring added')).toBeVisible();
-    await expect(app.getByRole('button', { name: /Netflix.*Monthly · next/ })).toBeVisible();
-    await expect(app.getByText('₹649').first()).toBeVisible();
+test.describe('Templates', () => {
+  async function newTemplate(page: Page, t: { name: string; amount?: string; type?: 'Income'; category?: string; account?: string }) {
+    await page.getByRole('button', { name: 'New template' }).click();
+    const sheet = page.getByRole('dialog');
+    if (t.type) await sheet.getByRole('radio', { name: t.type }).click();
+    await sheet.getByLabel('Name').fill(t.name);
+    if (t.amount) await sheet.getByLabel('Amount (₹)').fill(t.amount);
+    if (t.category) await sheet.getByRole('button', { name: t.category, exact: true }).click();
+    if (t.account) await sheet.getByRole('radiogroup').getByRole('radio', { name: t.account, exact: true }).click();
+    await sheet.getByRole('button', { name: 'Save template' }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
+  }
 
-    const txns = mock.rows('et_transactions', mock.users[0].id);
-    expect(txns).toHaveLength(1);
-    expect(txns[0]).toMatchObject({ description: 'Netflix', amount: 649, occurred_on: todayIso });
+  test('one tap adds the transaction today, and Undo removes it', async ({ app, mock }) => {
+    await addAccount(app, 'HDFC', '5000');
+    await goTo(app, 'Templates');
+    await expect(app.getByText('No templates yet')).toBeVisible();
+    await newTemplate(app, { name: 'Tea', amount: '20', category: 'Food', account: 'HDFC' });
+    await expect(app.getByText('Template saved')).toBeVisible();
 
-    await app.getByRole('button', { name: 'Pause' }).click();
-    await expect(app.getByText('Paused', { exact: true })).toBeVisible();
-    await expect(app.getByRole('button', { name: /Netflix.*paused/ })).toBeVisible();
+    await app.getByRole('button', { name: 'Add Tea' }).click();
+    await expect(app.getByText('Added Tea · ₹20')).toBeVisible();
+    const user = mock.users[0].id;
+    expect(mock.rows('et_transactions', user)).toHaveLength(1);
+    expect(mock.rows('et_transactions', user)[0]).toMatchObject({ type: 'expense', amount: 20, description: 'Tea', occurred_on: todayIso });
+    expect(mock.rows('et_templates', user)[0].use_count).toBe(1);
+
+    await app.getByRole('button', { name: 'Undo' }).click();
+    await expect.poll(() => mock.rows('et_transactions', user).length).toBe(0);
   });
 
-  test('catches up on missed occurrences when the app opens', async ({ page, mock, errors }) => {
-    void errors;
-    const user = mock.users[0];
-    const d = new Date();
-    d.setDate(d.getDate() - 15);
-    mock.tables.et_recurring.push({
-      id: crypto.randomUUID(), user_id: user.id, type: 'expense', amount: 50, description: 'Daily milk', frequency: 'weekly',
-      next_date: isoDate(d), end_date: null, active: true, category_id: null, account_id: null, to_account_id: null,
-    });
-    await page.goto('./');
-    await page.getByLabel('Username').fill(USERNAME);
-    await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
-    await page.getByRole('button', { name: 'Sign in' }).click();
-    await expect(page.getByText('Recorded 3 recurring transactions')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Daily milk/ })).toHaveCount(3);
+  test('a template without an amount asks for one', async ({ app, mock }) => {
+    await goTo(app, 'Templates');
+    await newTemplate(app, { name: 'Petrol', category: 'Transport' });
+    await expect(app.getByRole('button', { name: 'Add Petrol' })).toContainText('Enter amount');
+    await app.getByRole('button', { name: 'Add Petrol' }).click();
+    const sheet = app.getByRole('dialog');
+    await sheet.getByLabel('Amount (₹)').fill('1500');
+    await sheet.getByRole('button', { name: 'Add ₹1,500' }).click();
+    await expect(app.getByText('Added Petrol · ₹1,500')).toBeVisible();
+    expect(mock.rows('et_transactions', mock.users[0].id)[0]).toMatchObject({ amount: 1500, description: 'Petrol' });
+  });
+
+  test('shows on Home for quick add, and fills the add form', async ({ app, mock }) => {
+    await goTo(app, 'Templates');
+    await newTemplate(app, { name: 'Salary', amount: '60000', type: 'Income', category: 'Salary' });
+    await goTo(app, 'Home');
+    await expect(app.getByRole('heading', { name: 'Quick add' })).toBeVisible();
+    await app.getByRole('button', { name: 'Add Salary' }).click();
+    await expect(app.getByText('Added Salary · ₹60,000')).toBeVisible();
+    expect(mock.rows('et_transactions', mock.users[0].id)[0]).toMatchObject({ type: 'income', amount: 60000 });
+
+    // In the add form, a template only fills the fields
+    await openAddTransaction(app);
+    const sheet = app.getByRole('dialog');
+    await sheet.getByRole('button', { name: 'Salary', exact: true }).first().click();
+    await expect(sheet.getByRole('radio', { name: 'Income' })).toHaveAttribute('aria-checked', 'true');
+    await expect(sheet.getByPlaceholder('0', { exact: true })).toHaveValue('60000');
+    await expect(sheet.getByLabel('Description')).toHaveValue('Salary');
+    expect(mock.rows('et_transactions', mock.users[0].id)).toHaveLength(1);
+  });
+
+  test('edits and deletes a template', async ({ app, mock }) => {
+    await goTo(app, 'Templates');
+    await newTemplate(app, { name: 'Coffee', amount: '150', category: 'Food' });
+    await app.getByRole('button', { name: 'Edit Coffee template' }).click();
+    await app.getByRole('dialog').getByLabel('Amount (₹)').fill('180');
+    await app.getByRole('dialog').getByRole('button', { name: 'Save template' }).click();
+    await expect(app.getByRole('button', { name: 'Add Coffee' })).toContainText('₹180');
+    await app.getByRole('button', { name: 'Edit Coffee template' }).click();
+    await app.getByRole('dialog').getByRole('button', { name: 'Delete template' }).click();
+    await app.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(app.getByText('No templates yet')).toBeVisible();
+    expect(mock.rows('et_templates', mock.users[0].id)).toHaveLength(0);
+  });
+
+  test('old Recurring links open Templates', async ({ app }) => {
+    await app.goto('./#/recurring');
+    await expect(app.getByRole('heading', { name: 'Templates', level: 1 })).toBeVisible();
+  });
+});
+
+test.describe('Total balance by account type', () => {
+  test('leaves unticked account types out of the total', async ({ app, mock }) => {
+    await addAccount(app, 'HDFC', '10000');
+    await addAccount(app, 'Zerodha', '50000', 'Investment');
+    await expect(app.getByText('₹60,000')).toBeVisible();
+
+    await goTo(app, 'Settings');
+    const investment = app.getByRole('checkbox').nth(4); // bank, cash, credit, wallet, investment, other
+    await expect(investment).toBeChecked();
+    await investment.uncheck();
+    await expect(app.getByText('Investment no longer counts toward the total balance')).toBeVisible();
+    expect(mock.users[0].meta.balance_excludes).toEqual(['investment']);
+
+    await goTo(app, 'Home');
+    await expect(app.getByText('₹10,000').first()).toBeVisible();
+    await expect(app.getByText(/Across 1 account/)).toBeVisible();
+    await expect(app.getByRole('link', { name: 'not counting investment' })).toBeVisible();
+    // The account card itself is still shown
+    await expect(app.getByRole('button', { name: /^Zerodha.*₹50,000/ })).toBeVisible();
+  });
+});
+
+test.describe('Account cards row', () => {
+  test('shows scroll arrows when the cards do not fit', async ({ app }) => {
+    for (const name of ['One', 'Two', 'Three', 'Four', 'Five', 'Six']) await addAccount(app, name, '100');
+    // Adding through the "Add account" card scrolls to the end of the row; start from the beginning
+    await app.getByRole('region', { name: 'Accounts' }).evaluate((el) => el.scrollTo({ left: 0, behavior: 'instant' }));
+    const right = app.getByRole('button', { name: 'Scroll Accounts right' });
+    await expect(right).toBeVisible();
+    await expect(app.getByRole('button', { name: 'Scroll Accounts left' })).toBeHidden();
+    // The arrow is on screen and the page itself doesn't scroll sideways
+    await expect(right).toBeInViewport();
+    expect(await app.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await right.click();
+    await expect(app.getByRole('button', { name: 'Scroll Accounts left' })).toBeVisible();
+  });
+});
+
+test.describe('Naming a new main category from "Other" in a budget', () => {
+  test('creates the main category and budgets it', async ({ app, mock }) => {
+    await goTo(app, 'Budgets');
+    await app.getByRole('button', { name: 'New budget' }).click();
+    const sheet = app.getByRole('dialog');
+    await sheet.getByRole('button', { name: 'Other', exact: true }).first().click();
+    await sheet.getByLabel('Category name').fill('Pets');
+    await sheet.getByLabel('Limit (₹)').fill('2000');
+    await sheet.getByRole('button', { name: 'Save budget' }).click();
+    await expect(app.getByRole('button', { name: 'Edit Pets budget' })).toContainText('₹0 of ₹2,000');
+    const pets = mock.rows('et_categories', mock.users[0].id).find((c) => c.name === 'Pets');
+    expect(pets).toMatchObject({ parent_id: null, kind: 'expense' });
+
+    // It's a main category for transactions too
+    await openAddTransaction(app);
+    await expect(app.getByRole('dialog').getByRole('button', { name: 'Pets', exact: true })).toBeVisible();
   });
 });
 
@@ -572,7 +671,7 @@ test.describe('Navigation', () => {
   test('every screen opens without errors', async ({ app }) => {
     for (const [name, heading] of [
       ['Transactions', 'Activity'], ['Budgets', 'Budgets'], ['Investments', 'Investments'],
-      ['Analysis', 'Analysis'], ['Recurring', 'Recurring'], ['Settings', 'Settings'], ['Home', 'E2E Tester'],
+      ['Analysis', 'Analysis'], ['Templates', 'Templates'], ['Settings', 'Settings'], ['Home', 'E2E Tester'],
     ]) {
       await goTo(app, name);
       await expect(app.getByRole('heading', { name: heading, level: 1 })).toBeVisible();

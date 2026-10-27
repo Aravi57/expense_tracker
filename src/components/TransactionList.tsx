@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import { Repeat } from 'lucide-react';
 import { useMemo } from 'react';
 import { useAccounts } from '../api/accounts';
 import { useCategoryIndex } from '../api/categories';
@@ -26,10 +25,7 @@ export function TransactionRow({ t }: { t: Transaction }) {
         className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition hover:bg-[var(--surface-2)]">
         <CategoryIcon icon={root?.icon} color={root?.color} transfer={t.type === 'transfer'} />
         <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-1.5 truncate font-medium">
-            {t.description || 'Untitled'}
-            {t.recurring_id && <Repeat className="h-3.5 w-3.5 shrink-0 text-muted" aria-label="Recurring" />}
-          </span>
+          <span className="block truncate font-medium">{t.description || 'Untitled'}</span>
           <span className="block truncate text-sm text-muted">{detail}</span>
         </span>
         <span className={clsx('shrink-0 font-semibold tabular-nums',

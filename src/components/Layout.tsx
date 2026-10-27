@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import {
-  BarChart3, CalendarClock, Home, LineChart, List, MoreHorizontal, PiggyBank, Plus, Settings, Wallet,
+  BarChart3, Home, LineChart, List, MoreHorizontal, PiggyBank, Plus, Settings, Wallet, Zap,
 } from 'lucide-react';
 import { Suspense, useState, type ReactNode } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
@@ -15,7 +15,7 @@ const NAV = [
   { to: '/budgets', label: 'Budgets', icon: PiggyBank },
   { to: '/investments', label: 'Investments', icon: LineChart },
   { to: '/analysis', label: 'Analysis', icon: BarChart3 },
-  { to: '/recurring', label: 'Recurring', icon: CalendarClock },
+  { to: '/templates', label: 'Templates', icon: Zap },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -64,7 +64,8 @@ export function Layout() {
         <p className="px-3 text-xs text-muted">Signed in as <span className="font-medium text-[var(--text)]">{username}</span></p>
       </aside>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-5 sm:px-6 lg:pb-10 lg:pt-8">
+      {/* min-w-0 lets wide rows (account cards) scroll instead of stretching the page */}
+      <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 pb-28 pt-5 sm:px-6 lg:pb-10 lg:pt-8">
         <Suspense fallback={<PageFallback />}>
           <Outlet />
         </Suspense>

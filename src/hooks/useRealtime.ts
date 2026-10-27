@@ -4,11 +4,11 @@ import { refreshAll } from '../api/client';
 
 const TABLES = [
   'et_transactions', 'et_accounts', 'et_categories', 'et_budgets',
-  'et_recurring', 'et_investments', 'et_investment_contributions',
+  'et_templates', 'et_investments', 'et_investment_contributions',
 ];
 
 // Refresh on-screen data when this user's rows change on another device.
-// Bursts of changes (e.g. a recurring run) are batched into one refresh.
+// Bursts of changes (e.g. a top-up that adds two rows) are batched into one refresh.
 export function useRealtime(userId: string | undefined) {
   useEffect(() => {
     if (!userId) return;

@@ -65,18 +65,20 @@ export async function saveCategory(c: Partial<Category> & Pick<Category, 'name' 
   else unwrap(await supabase.from('et_categories').insert(row));
 }
 
-// Find a subcategory of `parent` by name (ignoring case), or create it; returns its id
-export async function ensureSubcategory(parent: Category, name: string, existing: Category[]) {
+// Find a category by name (ignoring case) under `parent` (null = a main category),
+// or create it; returns its id. New subcategories take their parent's icon and colour.
+export async function ensureCategory(parent: Category | null, name: string, kind: CategoryKind, existing: Category[]) {
   const clean = name.trim().replace(/\s+/g, ' ');
-  const match = existing.find((c) => c.parent_id === parent.id && c.name.toLowerCase() === clean.toLowerCase());
+  const parentId = parent?.id ?? null;
+  const siblings = existing.filter((c) => c.parent_id === parentId && c.kind === kind);
+  const match = siblings.find((c) => c.name.toLowerCase() === clean.toLowerCase());
   if (match) return match.id;
-  const siblings = existing.filter((c) => c.parent_id === parent.id);
   const row = unwrap(await supabase.from('et_categories').insert({
     name: clean,
-    kind: parent.kind,
-    parent_id: parent.id,
-    icon: parent.icon,
-    color: parent.color,
+    kind,
+    parent_id: parentId,
+    icon: parent?.icon ?? 'Tag',
+    color: parent?.color ?? '#64748b',
     sort_order: Math.max(0, ...siblings.map((c) => c.sort_order)) + 1,
   }).select('id').single()) as { id: string };
   return row.id;

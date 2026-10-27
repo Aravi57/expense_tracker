@@ -86,5 +86,5 @@ export async function deleteTransaction(id: string) {
 
 // Put a deleted transaction back exactly as it was (for "Undo")
 export async function restoreTransaction(t: Transaction) {
-  unwrap(await supabase.from('et_transactions').insert({ ...toRow(t), id: t.id, recurring_id: t.recurring_id, created_at: t.created_at }));
+  unwrap(await supabase.from('et_transactions').insert({ ...toRow(t), id: t.id, created_at: t.created_at }));
 }

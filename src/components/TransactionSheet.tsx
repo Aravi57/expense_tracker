@@ -1,12 +1,13 @@
 import { createContext, useCallback, useContext, useState, type FormEvent, type ReactNode } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAccounts } from '../api/accounts';
 import { useCategoryIndex } from '../api/categories';
 import { refreshAll, useDataMutation } from '../api/client';
 import { deleteTransaction, restoreTransaction, saveTransaction } from '../api/transactions';
 import { today } from '../lib/dates';
-import type { Transaction, TxnType } from '../lib/types';
+import type { Template, Transaction, TxnType } from '../lib/types';
+import { useTemplates } from '../api/templates';
 import { available, exceedsLimit, isCard } from '../lib/credit';
 import { money } from '../lib/format';
 import { AccountPicker } from './AccountPicker';
@@ -79,6 +80,18 @@ function TransactionForm({ transaction, type: initialType, onClose }: OpenOption
   const alreadyOnCard = editing && transaction?.type === 'expense' && transaction.account_id === accountId ? transaction.amount : 0;
   const overLimit = type === 'expense' && !!selectedAccount && exceedsLimit(selectedAccount, (Number(amount) || 0) - alreadyOnCard);
 
+  const { data: templates = [] } = useTemplates();
+  // Copy a template into the form (the user can still change anything before adding)
+  const fillFrom = (t: Template) => {
+    setType(t.type);
+    if (t.amount) setAmount(String(t.amount));
+    setDescription(t.description || t.name);
+    setCategoryId(t.type === 'transfer' ? null : t.category_id);
+    setAccountId(t.account_id ?? '');
+    setToAccountId(t.to_account_id ?? '');
+    setError('');
+  };
+
   const changeType = (t: TxnType) => {
     setType(t);
     // A category only fits its own kind
@@ -136,6 +149,19 @@ function TransactionForm({ transaction, type: initialType, onClose }: OpenOption
         </div>
       }>
       <form id="txn-form" onSubmit={submit} className="space-y-5">
+        {!editing && templates.length > 0 && (
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Fill from a template</span>
+            <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1">
+              {templates.map((t) => (
+                <button key={t.id} type="button" onClick={() => fillFrom(t)}
+                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-app px-3 py-1.5 text-sm transition hover:bg-[var(--surface-2)]">
+                  <Zap className="h-3.5 w-3.5 text-amber-500" /> {t.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <Segmented value={type} onChange={changeType} options={[
           { value: 'expense', label: 'Expense', activeClass: 'text-rose-600 dark:text-rose-400' },
           { value: 'income', label: 'Income', activeClass: 'text-emerald-600 dark:text-emerald-400' },

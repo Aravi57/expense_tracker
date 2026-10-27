@@ -53,7 +53,7 @@ export { expect };
 // The phone layout puts some screens under "More"
 export async function goTo(page: Page, name: string) {
   const isMobile = (page.viewportSize()?.width ?? 1280) < 1024;
-  if (isMobile && ['Analysis', 'Recurring', 'Settings'].includes(name)) {
+  if (isMobile && ['Analysis', 'Templates', 'Settings'].includes(name)) {
     await page.getByRole('button', { name: 'More' }).click();
     await page.getByRole('dialog').getByRole('link', { name }).click();
   } else {

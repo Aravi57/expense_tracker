@@ -55,14 +55,6 @@ export const INVESTMENT_TYPES: Record<string, string> = {
   other: 'Other',
 };
 
-export const FREQUENCIES: Record<string, string> = {
-  daily: 'Daily',
-  weekly: 'Weekly',
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  yearly: 'Yearly',
-};
-
 export const PERIODS: Record<string, string> = {
   weekly: 'Weekly',
   monthly: 'Monthly',

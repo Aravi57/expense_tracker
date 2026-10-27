@@ -73,7 +73,7 @@ describe('security', () => {
     const client = await pool.connect();
     try {
       await client.query('begin; set local role anon');
-      for (const t of ['et_transactions', 'et_accounts', 'et_categories', 'et_budgets', 'et_recurring', 'et_investments', 'et_investment_contributions', 'et_account_balances']) {
+      for (const t of ['et_transactions', 'et_accounts', 'et_categories', 'et_budgets', 'et_templates', 'et_investments', 'et_investment_contributions', 'et_account_balances']) {
         await assert.rejects(client.query(`select 1 from ${t} limit 1`), /permission denied/, t);
         await client.query('rollback; begin; set local role anon');
       }
@@ -235,44 +235,29 @@ describe('budgets', () => {
   }));
 });
 
-describe('recurring', () => {
-  it('catches up on every missed occurrence and moves the next date on', () => asUser(async (q) => {
+describe('templates', () => {
+  it('adds a transaction from a template and counts the use', () => asUser(async (q) => {
     const f = await fixtures(q);
-    const r = await one(q(`insert into et_recurring (type, amount, description, frequency, next_date, category_id, account_id)
-      values ('expense', 10, 'ZZ Sub fee', 'monthly', current_date - interval '65 days', $1, $2) returning id`, [f.parent, f.a]));
-    const created = (await one(q('select et_process_recurring(current_date) as n'))).n;
-    assert.equal(created, 3);
-    const txns = await q('select amount::numeric, category_id, account_id from et_transactions where recurring_id = $1', [r.id]);
-    assert.equal(txns.length, 3);
-    assert.ok(txns.every((t) => t.category_id === f.parent && t.account_id === f.a));
-    const next = await one(q('select next_date > current_date as future from et_recurring where id = $1', [r.id]));
-    assert.equal(next.future, true);
-    // Running again creates nothing new
-    assert.equal((await one(q('select et_process_recurring(current_date) as n'))).n, 0);
+    const t = await one(q(`insert into et_templates (name, type, amount, category_id, account_id) values ('ZZ Tea', 'expense', 20, $1, $2) returning id`, [f.child, f.a]));
+    const id = (await one(q(`select et_use_template($1, '2099-03-01') as id`, [t.id]))).id;
+    const txn = await one(q('select type, amount::numeric, description, occurred_on::text, category_id, account_id from et_transactions where id = $1', [id]));
+    assert.deepEqual({ ...txn, amount: Number(txn.amount) }, {
+      type: 'expense', amount: 20, description: 'ZZ Tea', occurred_on: '2099-03-01', category_id: f.child, account_id: f.a,
+    });
+    assert.equal((await one(q('select use_count from et_templates where id = $1', [t.id]))).use_count, 1);
   }));
 
-  it('stops at the end date and switches the rule off', () => asUser(async (q) => {
-    const r = await one(q(`insert into et_recurring (type, amount, description, frequency, next_date, end_date)
-      values ('expense', 5, 'ZZ Ending', 'weekly', current_date - 20, current_date - 10) returning id`));
-    assert.equal((await one(q('select et_process_recurring(current_date) as n'))).n, 2);
-    assert.equal((await one(q('select active from et_recurring where id = $1', [r.id]))).active, false);
+  it('needs an amount when the template has none, and uses the one given', () => asUser(async (q) => {
+    const t = await one(q(`insert into et_templates (name, type) values ('ZZ Petrol', 'expense') returning id`));
+    await assert.rejects(q(`select et_use_template($1, '2099-03-01')`, [t.id]), /no amount/);
+    const id = (await one(q(`select et_use_template($1, '2099-03-01', 1500) as id`, [t.id]))).id;
+    assert.equal(Number((await one(q('select amount from et_transactions where id = $1', [id]))).amount), 1500);
   }));
 
-  it('records transfers without a category and skips paused rules', () => asUser(async (q) => {
-    const f = await fixtures(q);
-    const t = await one(q(`insert into et_recurring (type, amount, description, frequency, next_date, account_id, to_account_id, category_id)
-      values ('transfer', 25, 'ZZ Save', 'monthly', current_date, $1, $2, $3) returning id`, [f.a, f.b, f.parent]));
-    await q(`insert into et_recurring (type, amount, description, frequency, next_date, active)
-      values ('expense', 1, 'ZZ Paused', 'daily', current_date - 5, false)`);
-    assert.equal((await one(q('select et_process_recurring(current_date) as n'))).n, 1);
-    const txn = await one(q('select type, category_id, to_account_id from et_transactions where recurring_id = $1', [t.id]));
-    assert.deepEqual(txn, { type: 'transfer', category_id: null, to_account_id: f.b });
-  }));
-
-  it('never runs more than a day ahead of the server clock', () => asUser(async (q) => {
-    await q(`insert into et_recurring (type, amount, description, frequency, next_date)
-      values ('expense', 1, 'ZZ Future', 'monthly', current_date + 30)`);
-    assert.equal((await one(q(`select et_process_recurring(current_date + 60) as n`))).n, 0);
+  it("can't use another user's template", () => asUser(async (q) => {
+    const t = await one(q(`insert into et_templates (name, type, amount) values ('ZZ Mine', 'expense', 5) returning id`));
+    await q.switchUser(OTHER_USER);
+    await assert.rejects(q(`select et_use_template($1, '2099-03-01')`, [t.id]), /not found/);
   }));
 });
 

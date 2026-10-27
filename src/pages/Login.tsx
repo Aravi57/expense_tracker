@@ -48,7 +48,7 @@ export default function Login({ onReady }: { onReady?: () => void }) {
         <div className="flex items-center gap-2 text-xl font-bold"><Wallet className="h-7 w-7" /> Expenses</div>
         <div>
           <h1 className="text-4xl font-bold leading-tight">Know where every rupee goes.</h1>
-          <p className="mt-4 max-w-md text-lg text-white/80">Spending, budgets, recurring bills and investments, in sync on all your devices.</p>
+          <p className="mt-4 max-w-md text-lg text-white/80">Spending, budgets, credit cards and investments, in sync on all your devices.</p>
         </div>
         <p className="text-sm text-white/60">Your data is private to your account.</p>
         <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />

@@ -4,7 +4,6 @@ export type TxnType = 'expense' | 'income' | 'transfer';
 export type CategoryKind = 'expense' | 'income';
 export type AccountType = 'bank' | 'cash' | 'credit' | 'wallet' | 'investment' | 'other';
 export type BudgetPeriod = 'weekly' | 'monthly' | 'yearly';
-export type Frequency = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
 export type Risk = 'low' | 'medium' | 'high';
 export type InvestmentType =
   | 'stocks' | 'mutual-fund' | 'ppf' | 'epf' | 'silver' | 'gold'
@@ -45,12 +44,11 @@ export interface Transaction {
   category_id: string | null;
   account_id: string | null;
   to_account_id: string | null;
-  recurring_id: string | null;
   investment_id: string | null;
   created_at: string;
 }
 
-export type TransactionInput = Omit<Transaction, 'id' | 'created_at' | 'recurring_id' | 'investment_id'> & {
+export type TransactionInput = Omit<Transaction, 'id' | 'created_at' | 'investment_id'> & {
   investment_id?: string | null;
 };
 
@@ -63,18 +61,19 @@ export interface Budget {
   spent: number;
 }
 
-export interface Recurring {
+/** A saved transaction you add with one tap. Without an amount, tapping asks for one. */
+export interface Template {
   id: string;
+  name: string;
   type: TxnType;
-  amount: number;
+  amount: number | null;
   description: string;
   category_id: string | null;
   account_id: string | null;
   to_account_id: string | null;
-  frequency: Frequency;
-  next_date: string;
-  end_date: string | null;
-  active: boolean;
+  sort_order: number;
+  use_count: number;
+  last_used_at: string | null;
 }
 
 export interface Investment {
