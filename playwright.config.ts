@@ -15,7 +15,7 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}/expense_tracker/`,
     channel: process.env.CI ? undefined : 'msedge',
-    trace: 'retain-on-failure',
+    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
     screenshot: 'only-on-failure',
     timezoneId: 'Asia/Kolkata',
     locale: 'en-IN',

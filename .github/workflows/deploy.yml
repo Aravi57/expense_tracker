@@ -34,7 +34,8 @@ jobs:
           CI: 'true'
           # The browser runs on India time; the test runner must agree on what "today" is
           TZ: Asia/Kolkata
-      - if: failure()
+      # Kept on every run so a test that only passed on retry can still be investigated
+      - if: always()
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report
