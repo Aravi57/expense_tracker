@@ -1,10 +1,10 @@
-const CACHE_NAME = 'expense-tracker-v1';
+const CACHE_NAME = 'expense-tracker-v2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
-  'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js',
+  '/supabase-db.js',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js',
   'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 

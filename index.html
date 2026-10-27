@@ -3711,6 +3711,27 @@
             margin-top: 5px;
         }
 
+        .auth-message {
+            display: none;
+            margin-bottom: 15px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .auth-message.error {
+            display: block;
+            background: rgba(231, 76, 60, 0.35);
+            border: 1px solid rgba(231, 76, 60, 0.7);
+        }
+
+        .auth-message.success {
+            display: block;
+            background: rgba(46, 204, 113, 0.3);
+            border: 1px solid rgba(46, 204, 113, 0.7);
+        }
+
         .auth-form .form-actions {
             display: flex;
             gap: 15px;
@@ -3808,9 +3829,9 @@
     </style>
 </head>
 <body>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <!-- Supabase SDK and the app's data layer -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js"></script>
+    <script src="supabase-db.js"></script>
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -3832,16 +3853,16 @@
                 
                 <div class="form-group">
                     <label for="login-username">Username</label>
-                    <input type="text" id="login-username" placeholder="Enter your username" required>
-                    <div class="validation-hint">Min 6 characters</div>
+                    <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username" autocapitalize="none" required>
                 </div>
                 
                 <div class="form-group">
                     <label for="login-password">Password</label>
                     <input type="password" id="login-password" placeholder="Enter your password" required>
-                    <div class="validation-hint">Min 6 chars, 1 capital, 1 number, 1 special</div>
                 </div>
-                
+
+                <div id="login-message" class="auth-message" role="alert"></div>
+
                 <div class="form-actions">
                     <button type="button" class="btn-primary" onclick="handleLogin()">
                         <span class="btn-icon">🔓</span>
@@ -3865,14 +3886,9 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="signup-email">Email</label>
-                    <input type="email" id="signup-email" placeholder="Enter your email address" required>
-                </div>
-                
-                <div class="form-group">
                     <label for="signup-username">Username</label>
-                    <input type="text" id="signup-username" placeholder="Choose a username" required>
-                    <div class="validation-hint">Min 6 characters</div>
+                    <input type="text" id="signup-username" placeholder="Choose a username" autocomplete="username" autocapitalize="none" required>
+                    <div class="validation-hint">Min 6 characters: letters, numbers, . _ -</div>
                 </div>
                 
                 <div class="form-group">
@@ -3886,7 +3902,9 @@
                     <input type="password" id="signup-confirm-password" placeholder="Confirm your password" required>
                     <div class="validation-hint">Must match password</div>
                 </div>
-                
+
+                <div id="signup-message" class="auth-message" role="alert"></div>
+
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" onclick="showLogin()">
                         <span class="btn-icon">🔙</span>
@@ -4908,18 +4926,13 @@
     </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPuOrb5GWvyYtDcCk-8y7UDaMnhqmci4k",
-            authDomain: "expese-tracker-604b4.firebaseapp.com",
-            projectId: "expese-tracker-604b4",
-            storageBucket: "expese-tracker-604b4.firebasestorage.app",
-            messagingSenderId: "727835142110",
-            appId: "1:727835142110:web:9cc2b0b0fb20e45d439f4f"
-        };
+        // Supabase Configuration
+        // The publishable (anon) key is meant to be public; row level security
+        // in supabase/schema.sql is what keeps each user's data private.
+        const SUPABASE_URL = 'https://kuwuqcctqcldbwblbnfs.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_fmU9yJOvlbguA4M2Z7_4MQ_oRtAux0E';
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // User Management System
         let currentUser = null;
@@ -4944,10 +4957,19 @@
             
             // Clear signup form
             document.getElementById('signup-fullname').value = '';
-            document.getElementById('signup-email').value = '';
             document.getElementById('signup-username').value = '';
             document.getElementById('signup-password').value = '';
             document.getElementById('signup-confirm-password').value = '';
+
+            showAuthMessage('login', '');
+            showAuthMessage('signup', '');
+        }
+
+        // Show a message inside the login or signup form (empty text hides it)
+        function showAuthMessage(form, text, kind = 'error') {
+            const box = document.getElementById(form + '-message');
+            box.textContent = text;
+            box.className = 'auth-message' + (text ? ' ' + kind : '');
         }
 
         function validatePassword(password) {
@@ -4963,187 +4985,162 @@
             };
         }
 
+        // Supabase Auth needs an email, so each username maps to a fixed address on the
+        // reserved .invalid domain, which can never receive mail. Users only see their username.
+        function usernameToEmail(username) {
+            return username.toLowerCase() + '@expense-tracker.invalid';
+        }
+
         async function handleLogin() {
             const username = document.getElementById('login-username').value.trim();
             const password = document.getElementById('login-password').value;
 
             // Validation
             if (!username || !password) {
-                alert('Please enter both username and password');
+                showAuthMessage('login', 'Please enter both username and password');
                 return;
             }
 
-            if (username.length < 6) {
-                alert('Username must be at least 6 characters long');
-                return;
-            }
-
-            const passwordValidation = validatePassword(password);
-            if (!passwordValidation.isValid) {
-                alert('Password must be at least 6 characters with 1 capital letter, 1 number, and 1 special character');
-                return;
-            }
-
+            showAuthMessage('login', '');
             try {
-                // Check if user exists in Firestore
-                const usersRef = db.collection('users');
-                const querySnapshot = await usersRef.where('username', '==', username).get();
-                
-                if (querySnapshot.empty) {
-                    alert('User not found. Please sign up first.');
+                // Supabase Auth checks the password against its stored hash
+                const { data, error } = await sb.auth.signInWithPassword({ email: usernameToEmail(username), password });
+                if (error) {
+                    showAuthMessage('login', 'Incorrect username or password');
                     return;
                 }
-
-                // Get user data
-                const userDoc = querySnapshot.docs[0];
-                const userData = userDoc.data();
-                
-                // Verify password (in production, use proper hashing)
-                if (userData.password === password) {
-                    currentUser = {
-                        id: userDoc.id,
-                        username: userData.username,
-                        createdAt: userData.createdAt
-                    };
-                    
-                    // Show main app
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('main-app').style.display = 'block';
-                    
-                    // Load user's data and set up listeners
-                    await loadUserData(currentUser.id);
-                    loadUserSpecificData(); // Set up user-specific data listeners
-                    initializeApp();
-                    
-                    console.log('User logged in:', currentUser.username);
-                } else {
-                    alert('Incorrect password');
-                }
+                enterApp(data.user);
             } catch (error) {
                 console.error('Login error:', error);
-                alert('Login failed. Please try again.');
+                showAuthMessage('login', 'Login failed. Please try again.');
             }
+        }
+
+        // Show the main app for a signed-in Supabase user
+        function enterApp(user) {
+            if (currentUser && currentUser.id === user.id) return;
+
+            const meta = user.user_metadata || {};
+            currentUser = {
+                id: user.id,
+                username: meta.username || user.email,
+                fullname: meta.fullname || '',
+                email: user.email,
+                createdAt: user.created_at
+            };
+
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+
+            loadUserSpecificData(); // Set up user-specific data listeners
+            db.startRealtime(currentUser.id); // Pick up changes made on other devices
+            initializeApp();
+
+            console.log('User logged in:', currentUser.username);
         }
 
         async function handleSignup() {
             const fullname = document.getElementById('signup-fullname').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
             const username = document.getElementById('signup-username').value.trim();
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
 
             // Validation
-            if (!fullname || !email || !username || !password || !confirmPassword) {
-                alert('Please fill in all fields');
+            if (!fullname || !username || !password || !confirmPassword) {
+                showAuthMessage('signup', 'Please fill in all fields');
                 return;
             }
 
             if (username.length < 6) {
-                alert('Username must be at least 6 characters long');
+                showAuthMessage('signup', 'Username must be at least 6 characters long');
+                return;
+            }
+
+            if (!/^[A-Za-z0-9._-]+$/.test(username)) {
+                showAuthMessage('signup', 'Username can only contain letters, numbers, dots, underscores and dashes');
                 return;
             }
 
             const passwordValidation = validatePassword(password);
             if (!passwordValidation.isValid) {
-                alert('Password must be at least 6 characters with 1 capital letter, 1 number, and 1 special character');
+                showAuthMessage('signup', 'Password must be at least 6 characters with 1 capital letter, 1 number, and 1 special character');
                 return;
             }
 
             if (password !== confirmPassword) {
-                alert('Passwords do not match');
+                showAuthMessage('signup', 'Passwords do not match');
                 return;
             }
 
-            // Email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                alert('Please enter a valid email address');
-                return;
-            }
-
+            showAuthMessage('signup', 'Creating your account...', 'success');
             try {
-                // Check if username already exists
-                const usersRef = db.collection('users');
-                const querySnapshot = await usersRef.where('username', '==', username).get();
-                
-                if (!querySnapshot.empty) {
-                    alert('Username already exists. Please choose a different username.');
+                // Supabase Auth stores the password hashed; name and username go in the user's profile metadata
+                const { data, error } = await sb.auth.signUp({
+                    email: usernameToEmail(username),
+                    password,
+                    options: { data: { fullname, username } }
+                });
+
+                if (error) {
+                    showAuthMessage('signup', /already registered/i.test(error.message)
+                        ? 'That username is taken. Please choose another.'
+                        : error.message);
                     return;
                 }
 
-                // Check if email already exists
-                const emailQuerySnapshot = await usersRef.where('email', '==', email).get();
-                
-                if (!emailQuerySnapshot.empty) {
-                    alert('Email already registered. Please use a different email address.');
-                    return;
+                if (data.session) {
+                    enterApp(data.user);
+                } else {
+                    // Supabase's "Confirm email" setting is on, so it is waiting for an email that can't arrive
+                    showAuthMessage('signup', 'Sign-up needs "Confirm email" turned off in Supabase (Authentication settings).');
                 }
 
-                // Create new user with additional details
-                const newUser = {
-                    fullname: fullname,
-                    email: email,
-                    username: username,
-                    password: password, // In production, hash this password
-                    createdAt: new Date().toISOString()
-                };
-
-                const docRef = await usersRef.add(newUser);
-                
-                alert('Account created successfully! Please login with your new credentials.');
-                showLogin();
-                
             } catch (error) {
                 console.error('Signup error:', error);
-                alert('Signup failed. Please try again.');
+                showAuthMessage('signup', 'Signup failed. Please try again.');
             }
         }
 
-        function handleLogout() {
+        async function handleLogout() {
             if (confirm('Are you sure you want to logout?')) {
+                // Stop syncing this user's data and end the Supabase session
+                db.reset();
+                await sb.auth.signOut();
+
                 // Hide main app and show login screen
                 document.getElementById('main-app').style.display = 'none';
                 document.getElementById('login-screen').style.display = 'flex';
                 showLogin();
-                
-                // Clear current user
-                currentUser = null;
-                
-                // Clear any cached data
-                console.log('User logged out');
-            }
-        }
 
-        async function loadUserData(userId) {
-            try {
-                // Load user-specific data
-                const userDoc = await db.collection('users').doc(userId).get();
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    console.log('Loaded user data:', userData);
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
+                // Clear current user and their data
+                currentUser = null;
+                transactions = [];
+                accounts = [];
+                budgets = [];
+                recurringTransactions = [];
+                investments = [];
+
+                console.log('User logged out');
             }
         }
 
         function initializeApp() {
             // This function will be called after successful login
             console.log('App initialized for user:', currentUser?.username);
-            // Load user-specific data and initialize the app
-            if (currentUser) {
-                loadUserData(currentUser.id);
-            }
         }
 
-        // Initialize Firebase
-        const db = firebase.firestore();
+        // Data layer (Supabase, see supabase-db.js)
+        const db = createSupabaseDb(sb);
         const transactionsRef = db.collection('transactions');
         const accountsRef = db.collection('accounts');
         const budgetsRef = db.collection('budgets');
         const recurringRef = db.collection('recurring');
         const investmentsRef = db.collection('investments');
-        const usersRef = db.collection('users');
+
+        // Stay signed in across visits, and finish sign-in from the email confirmation link
+        sb.auth.onAuthStateChange((event, session) => {
+            if (session && session.user) setTimeout(() => enterApp(session.user), 0);
+        });
 
         // State
         let transactions = [];
@@ -5461,7 +5458,7 @@
                     toAccount: toAccount,
                     date: date,
                     userId: currentUser.id,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: new Date().toISOString()
                 };
                 
                 // Add transfer to database
@@ -5505,7 +5502,7 @@
                 account: document.getElementById('account').value,
                 date: document.getElementById('date').value,
                 userId: currentUser.id, // Add userId to transaction
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: new Date().toISOString()
             };
 
             // Add regular transaction to database
@@ -5550,7 +5547,7 @@
                     type: document.getElementById('account-type').value,
                     balance: 0, // Start with 0 balance, will be calculated from transactions
                     userId: currentUser.id, // Add userId to account
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: new Date().toISOString()
                 };
                 
                 await accountsRef.add(accountData);
@@ -5589,7 +5586,7 @@
                 period: document.getElementById('budget-period').value,
                 userId: currentUser.id, // Add userId to budget
                 order: budgets.length, // Add order field based on current count
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: new Date().toISOString()
             });
             e.target.reset();
             closeBudgetModal();
@@ -5611,7 +5608,7 @@
                     date: document.getElementById('investment-date').value,
                     risk: document.getElementById('investment-risk').value,
                     description: document.getElementById('investment-description').value,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updatedAt: new Date().toISOString()
                 };
                 
                 await investmentsRef.doc(editId).update(updatedData);
@@ -5648,7 +5645,7 @@
                     risk: document.getElementById('investment-risk').value,
                     description: document.getElementById('investment-description').value,
                     userId: currentUser.id, // Add userId to investment
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: new Date().toISOString()
                 };
                 
                 const docRef = await investmentsRef.add(investmentData);
@@ -5706,9 +5703,9 @@
                     frequency: frequency,
                     date: startDate,
                     description: description,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    timestamp: new Date().toISOString()
                 },
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                updatedAt: new Date().toISOString()
             });
             
             // Add a transaction record for the top-up
@@ -5719,7 +5716,7 @@
                 category: 'investment',
                 subcategory: 'investment-other',
                 date: startDate,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: new Date().toISOString()
             });
             
             resetTopupForm();
@@ -6099,7 +6096,7 @@
                         amount: recurring.amount,
                         category: recurring.category,
                         date: recurring.nextDate,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        createdAt: new Date().toISOString()
                     });
 
                     // Calculate next date
