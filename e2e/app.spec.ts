@@ -369,6 +369,62 @@ test.describe('Budget groups', () => {
   });
 });
 
+test.describe('Naming an "Other" subcategory in a budget', () => {
+  async function startBudget(page: import('@playwright/test').Page, category: string) {
+    await goTo(page, 'Budgets');
+    await page.getByRole('button', { name: 'New budget' }).click();
+    const sheet = page.getByRole('dialog');
+    await sheet.getByRole('button', { name: category, exact: true }).click();
+    return sheet;
+  }
+
+  test('creates the named subcategory, budgets it, and offers it for transactions', async ({ app, mock }) => {
+    const sheet = await startBudget(app, 'Home');
+    await expect(sheet.getByLabel('Subcategory name')).toBeHidden();
+    await sheet.getByRole('button', { name: 'Other', exact: true }).last().click();
+    await sheet.getByLabel('Subcategory name').fill('Maintenance');
+    await sheet.getByLabel('Limit (₹)').fill('3000');
+    await sheet.getByRole('button', { name: 'Save budget' }).click();
+    await expect(app.getByText('Budget created')).toBeVisible();
+    await expect(app.getByRole('button', { name: 'Edit Home › Maintenance budget' })).toContainText('₹0 of ₹3,000');
+
+    const user = mock.users[0].id;
+    const home = mock.rows('et_categories', user).find((c) => c.name === 'Home' && !c.parent_id)!;
+    const sub = mock.rows('et_categories', user).find((c) => c.name === 'Maintenance')!;
+    expect(sub).toMatchObject({ parent_id: home.id, kind: 'expense', icon: home.icon });
+    expect(mock.rows('et_budgets', user)[0].category_id).toBe(sub.id);
+
+    // It's now a subcategory for transactions, and spending there counts toward the budget
+    await addTransaction(app, { amount: '1200', description: 'Plumber', category: 'Home', subcategory: 'Maintenance' });
+    await expect(app.getByRole('button', { name: 'Edit Home › Maintenance budget' })).toContainText('₹1,200 of ₹3,000');
+  });
+
+  test('reuses an existing subcategory with the same name instead of duplicating it', async ({ app, mock }) => {
+    const user = mock.users[0].id;
+    const sheet = await startBudget(app, 'Home');
+    const before = mock.rows('et_categories', user).length;
+    await sheet.getByRole('button', { name: 'Other', exact: true }).last().click();
+    await sheet.getByLabel('Subcategory name').fill('  rent ');
+    await sheet.getByLabel('Limit (₹)').fill('15000');
+    await sheet.getByRole('button', { name: 'Save budget' }).click();
+    await expect(app.getByRole('button', { name: 'Edit Home › Rent budget' })).toBeVisible();
+    expect(mock.rows('et_categories', user)).toHaveLength(before);
+  });
+
+  test('leaving the name empty keeps "Other"', async ({ app, mock }) => {
+    const user = mock.users[0].id;
+    const sheet = await startBudget(app, 'Home');
+    const before = mock.rows('et_categories', user).length;
+    await sheet.getByRole('button', { name: 'Other', exact: true }).last().click();
+    await sheet.getByLabel('Limit (₹)').fill('500');
+    await sheet.getByRole('button', { name: 'Save budget' }).click();
+    await expect(app.getByText('Budget created')).toBeVisible();
+    expect(mock.rows('et_categories', user)).toHaveLength(before);
+    // A lone "Other" subcategory is labelled with just its parent
+    await expect(app.getByRole('button', { name: 'Edit Home budget' })).toBeVisible();
+  });
+});
+
 test.describe('Recurring', () => {
   test('a rule that is already due is recorded immediately, and can be paused', async ({ app, mock }) => {
     await goTo(app, 'Recurring');

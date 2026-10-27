@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { ArrowDown, ArrowUp, ChevronDown, PiggyBank, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState, type FormEvent } from 'react';
 import { deleteBudget, reorderBudgets, saveBudget, useBudgets } from '../api/budgets';
-import { useCategoryIndex } from '../api/categories';
+import { ensureSubcategory, useCategoryIndex } from '../api/categories';
 import { useDataMutation } from '../api/client';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { CategoryPicker } from '../components/CategoryPicker';
@@ -168,19 +168,41 @@ function BudgetSheet({ budget, initialCategory, nextOrder, onClose }: {
   budget?: Budget; initialCategory?: string; nextOrder: number; onClose: () => void;
 }) {
   const confirm = useConfirm();
+  const idx = useCategoryIndex();
   const [categoryId, setCategoryId] = useState<string | null>(budget?.category_id ?? initialCategory ?? null);
   const [amount, setAmount] = useState(budget ? String(budget.amount) : '');
   const [period, setPeriod] = useState<BudgetPeriod>(budget?.period ?? 'monthly');
+  const [customName, setCustomName] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
   const save = useDataMutation(saveBudget, { success: budget ? 'Budget updated' : 'Budget created' });
   const remove = useDataMutation(deleteBudget, { success: 'Budget deleted' });
+
+  // Picking a subcategory called "Other" lets the user name a more specific one instead
+  const selected = categoryId ? idx.byId.get(categoryId) : undefined;
+  const parent = selected?.parent_id ? idx.byId.get(selected.parent_id) : undefined;
+  const isOther = !!parent && selected?.name === 'Other';
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!categoryId) return setError('Choose a category');
     if (!(Number(amount) > 0)) return setError('Enter an amount greater than 0');
-    if (!(await save.run({ id: budget?.id, category_id: categoryId, amount: Number(amount), period, sort_order: nextOrder }))) return;
-    onClose();
+    const name = customName.trim();
+    if (isOther && name.toLowerCase() === 'other') return setError('Leave the name empty to use “Other”, or type a different name');
+
+    let target = categoryId;
+    if (isOther && name) {
+      setBusy(true);
+      try {
+        target = await ensureSubcategory(parent!, name, idx.all);
+      } catch (err) {
+        setBusy(false);
+        return setError((err as Error).message);
+      }
+    }
+    const ok = await save.run({ id: budget?.id, category_id: target, amount: Number(amount), period, sort_order: nextOrder });
+    setBusy(false);
+    if (ok) onClose();
   };
 
   return (
@@ -195,7 +217,7 @@ function BudgetSheet({ budget, initialCategory, nextOrder, onClose }: {
               }
             }}><Trash2 className="h-4 w-4" /></Button>
           )}
-          <Button type="submit" form="budget-form" className="flex-1" loading={save.isPending}>Save budget</Button>
+          <Button type="submit" form="budget-form" className="flex-1" loading={busy || save.isPending}>Save budget</Button>
         </div>
       }>
       <form id="budget-form" onSubmit={submit} className="space-y-5">
@@ -203,6 +225,11 @@ function BudgetSheet({ budget, initialCategory, nextOrder, onClose }: {
           <span className="text-sm font-medium">Category</span>
           <CategoryPicker kind="expense" value={categoryId} onChange={setCategoryId} />
         </div>
+        {isOther && (
+          <Field label="Subcategory name" hint={`Optional. Creates a new subcategory under ${parent!.name} (also used when adding transactions). Leave empty to keep “Other”.`}>
+            <Input value={customName} onChange={(e) => setCustomName(e.target.value)} maxLength={40} placeholder="e.g. Maintenance" autoFocus />
+          </Field>
+        )}
         <Field label="Limit (₹)">
           <Input type="number" inputMode="decimal" min="1" step="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g. 5000" />
         </Field>
