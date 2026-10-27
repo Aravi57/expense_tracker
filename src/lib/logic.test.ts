@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { buildCategoryIndex } from '../api/categories';
 import { budget, catTotal, categories, txn } from '../test/fixtures';
-import { daysLeftInPeriod } from './budget';
+import { daysLeftInPeriod, groupBudgets, monthlyOverview } from './budget';
 import { downloadCsv } from './csv';
 import { buildInsights } from './insights';
 import { groupByDay, netOf } from './transactions';
@@ -46,6 +46,55 @@ describe('daysLeftInPeriod', () => {
   it('counts to the end of the month and year', () => {
     expect(daysLeftInPeriod('monthly', wed)).toBe(4); // 28–31 Oct
     expect(daysLeftInPeriod('yearly', new Date(2026, 11, 31, 10))).toBe(1);
+  });
+});
+
+describe('budget groups', () => {
+  const rootOf = (id: string) => buildCategoryIndex(categories).root(id)?.id;
+
+  it('puts subcategory budgets under their main category, keeping the chosen order', () => {
+    const groups = groupBudgets([
+      budget({ id: 'food', category_id: 'food', amount: 3000, spent: 500 }),
+      budget({ id: 'rent', category_id: 'home-rent', amount: 15000, spent: 15000 }),
+      budget({ id: 'other', category_id: 'home-other', amount: 2000, spent: 300 }),
+    ], rootOf);
+    expect(groups.map((g) => [g.rootId, g.budgets.map((b) => b.id)])).toEqual([['food', ['food']], ['home', ['rent', 'other']]]);
+  });
+
+  it('adds up subcategory budgets when there is no main-category budget', () => {
+    const [home] = groupBudgets([
+      budget({ id: 'rent', category_id: 'home-rent', amount: 15000, spent: 15000 }),
+      budget({ id: 'other', category_id: 'home-other', amount: 2000, spent: 300 }),
+    ], rootOf);
+    expect(home.total).toEqual({ amount: 17000, spent: 15300, period: 'monthly' });
+  });
+
+  it('uses the main-category budget as the total, since it already includes its subcategories', () => {
+    const [home] = groupBudgets([
+      budget({ id: 'rent', category_id: 'home-rent', amount: 15000, spent: 15000 }),
+      budget({ id: 'main', category_id: 'home', amount: 20000, spent: 15300 }),
+    ], rootOf);
+    expect(home.main?.id).toBe('main');
+    expect(home.budgets.map((b) => b.id)).toEqual(['main', 'rent']);
+    expect(home.total).toEqual({ amount: 20000, spent: 15300, period: 'monthly' });
+  });
+
+  it('has no single total when subcategory budgets reset on different schedules', () => {
+    const [home] = groupBudgets([
+      budget({ id: 'rent', category_id: 'home-rent', period: 'monthly' }),
+      budget({ id: 'other', category_id: 'home-other', period: 'weekly' }),
+    ], rootOf);
+    expect(home.total).toBeNull();
+  });
+
+  it('counts spending once in the monthly overview', () => {
+    const groups = groupBudgets([
+      budget({ id: 'main', category_id: 'home', amount: 20000, spent: 15300 }),
+      budget({ id: 'rent', category_id: 'home-rent', amount: 15000, spent: 15000 }),
+      budget({ id: 'food', category_id: 'food', amount: 3000, spent: 500 }),
+      budget({ id: 'wk', category_id: 'food', amount: 900, spent: 100, period: 'weekly' }),
+    ], rootOf);
+    expect(monthlyOverview(groups)).toEqual({ amount: 23000, spent: 15800 });
   });
 });
 

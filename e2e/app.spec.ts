@@ -286,7 +286,7 @@ test.describe('Budgets', () => {
     await expect(app.getByText('There is already a budget for that category and period')).toBeVisible();
     await app.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
 
-    const names = () => app.locator('main section p.font-semibold').allTextContents();
+    const names = () => app.locator('main section > button span.truncate.font-semibold').allTextContents();
     await expect.poll(names).toEqual(['Food', 'Transport']);
     await app.getByRole('button', { name: 'Move down' }).first().click();
     await expect.poll(names).toEqual(['Transport', 'Food']);
@@ -295,6 +295,77 @@ test.describe('Budgets', () => {
     await app.getByRole('dialog').getByRole('button', { name: 'Delete budget' }).click();
     await app.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
     await expect.poll(names).toEqual(['Food']);
+  });
+});
+
+test.describe('Budget groups', () => {
+  async function addBudget(page: import('@playwright/test').Page, category: string, sub: string | null, limit: string) {
+    await page.getByRole('button', { name: 'New budget' }).click();
+    const sheet = page.getByRole('dialog');
+    await sheet.getByRole('button', { name: category, exact: true }).click();
+    if (sub) await sheet.getByRole('button', { name: sub, exact: true }).last().click();
+    await sheet.getByLabel('Limit (₹)').fill(limit);
+    await sheet.getByRole('button', { name: 'Save budget' }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
+  }
+
+  test('subcategory budgets share one card that expands to show each', async ({ app }) => {
+    await addTransaction(app, { amount: '15000', description: 'Flat rent', category: 'Home', subcategory: 'Rent' });
+    await addTransaction(app, { amount: '1200', description: 'Electricity', category: 'Home', subcategory: 'EB' });
+    await goTo(app, 'Budgets');
+    await addBudget(app, 'Home', 'Rent', '15000');
+    await addBudget(app, 'Home', 'EB', '1000');
+    await addBudget(app, 'Food', null, '4000');
+
+    // One card for Home with the two budgets added together, one for Food
+    const home = app.getByRole('button', { name: 'Home budgets' });
+    await expect(home).toContainText('2 budgets');
+    await expect(home).toContainText('₹16,200 of ₹16,000');
+    await expect(home).toHaveAttribute('aria-expanded', 'false');
+    await expect(app.getByRole('button', { name: 'Edit Food budget' })).toBeVisible();
+    await expect(app.getByText('₹200 over')).toBeVisible();
+
+    // Expand to see each subcategory
+    await expect(app.getByRole('button', { name: 'Edit Rent budget' })).toBeHidden();
+    await home.click();
+    await expect(home).toHaveAttribute('aria-expanded', 'true');
+    await expect(app.getByRole('button', { name: 'Edit Rent budget' })).toContainText('₹15,000 / ₹15,000');
+    await expect(app.getByRole('button', { name: 'Edit EB budget' })).toContainText('₹1,200 / ₹1,000');
+
+    // Overview counts each rupee once: 15,000 + 1,000 + 4,000
+    await expect(app.getByText('₹20,000').first()).toBeVisible();
+
+    // Edit a subcategory budget from inside the group
+    await app.getByRole('button', { name: 'Edit EB budget' }).click();
+    await app.getByRole('dialog').getByLabel('Limit (₹)').fill('1500');
+    await app.getByRole('dialog').getByRole('button', { name: 'Save budget' }).click();
+    await expect(home).toContainText('₹16,200 of ₹16,500');
+
+    // Collapse again
+    await home.click();
+    await expect(app.getByRole('button', { name: 'Edit Rent budget' })).toBeHidden();
+  });
+
+  test('a main-category budget becomes the total and is not double counted', async ({ app }) => {
+    await addTransaction(app, { amount: '15000', description: 'Flat rent', category: 'Home', subcategory: 'Rent' });
+    await goTo(app, 'Budgets');
+    await addBudget(app, 'Home', 'Rent', '15000');
+    await addBudget(app, 'Home', null, '20000');
+    const home = app.getByRole('button', { name: 'Home budgets' });
+    await expect(home).toContainText('₹15,000 of ₹20,000');
+    await home.click();
+    await expect(app.getByRole('button', { name: 'Edit All of Home budget' })).toBeVisible();
+    // Overview uses the Home budget only, not Home + Rent
+    await expect(app.getByText('Monthly budget')).toBeVisible();
+    await expect(app.locator('section', { hasText: 'Monthly budget' }).getByText('₹20,000')).toBeVisible();
+
+    // "Add a budget in Home" starts with Home picked
+    await app.getByRole('button', { name: 'Add a budget in Home' }).click();
+    const sheet = app.getByRole('dialog');
+    await sheet.getByRole('button', { name: 'EB', exact: true }).click();
+    await sheet.getByLabel('Limit (₹)').fill('1000');
+    await sheet.getByRole('button', { name: 'Save budget' }).click();
+    await expect(home).toContainText('3 budgets');
   });
 });
 

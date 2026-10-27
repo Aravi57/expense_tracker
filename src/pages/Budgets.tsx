@@ -1,5 +1,6 @@
-import { ArrowDown, ArrowUp, PiggyBank, Plus, Trash2 } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import clsx from 'clsx';
+import { ArrowDown, ArrowUp, ChevronDown, PiggyBank, Plus, Trash2 } from 'lucide-react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { deleteBudget, reorderBudgets, saveBudget, useBudgets } from '../api/budgets';
 import { useCategoryIndex } from '../api/categories';
 import { useDataMutation } from '../api/client';
@@ -8,26 +9,35 @@ import { CategoryPicker } from '../components/CategoryPicker';
 import { useConfirm } from '../components/confirm';
 import { PageHeader } from '../components/Layout';
 import { Button, Card, EmptyState, Field, Input, ProgressBar, Segmented, Sheet, Skeleton } from '../components/ui';
-import { daysLeftInPeriod } from '../lib/budget';
+import { daysLeftInPeriod, groupBudgets, monthlyOverview } from '../lib/budget';
 import { money, PERIODS } from '../lib/format';
 import type { Budget, BudgetPeriod } from '../lib/types';
 
 export default function Budgets() {
   const { data: budgets = [], isLoading } = useBudgets();
   const idx = useCategoryIndex();
-  const [editing, setEditing] = useState<{ budget?: Budget } | null>(null);
+  const [editing, setEditing] = useState<{ budget?: Budget; categoryId?: string } | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const reorder = useDataMutation(reorderBudgets);
 
-  const monthly = budgets.filter((b) => b.period === 'monthly');
-  const totalBudget = monthly.reduce((s, b) => s + b.amount, 0);
-  const totalSpent = monthly.reduce((s, b) => s + b.spent, 0);
+  const groups = useMemo(() => groupBudgets(budgets, (id) => idx.root(id)?.id), [budgets, idx]);
+  const hasMonthly = budgets.some((b) => b.period === 'monthly');
+  const { amount: totalBudget, spent: totalSpent } = monthlyOverview(groups);
   const over = budgets.filter((b) => b.spent > b.amount);
 
+  // Groups move as a whole; their budgets keep their order inside the group
   const move = (i: number, by: number) => {
-    const ids = budgets.map((b) => b.id);
-    [ids[i], ids[i + by]] = [ids[i + by], ids[i]];
-    reorder.mutate(ids);
+    const order = [...groups];
+    [order[i], order[i + by]] = [order[i + by], order[i]];
+    reorder.mutate(order.flatMap((g) => g.budgets.map((b) => b.id)));
   };
+
+  const toggle = (rootId: string) => setExpanded((prev) => {
+    const next = new Set(prev);
+    if (next.has(rootId)) next.delete(rootId);
+    else next.add(rootId);
+    return next;
+  });
 
   return (
     <div>
@@ -42,7 +52,7 @@ export default function Budgets() {
         </Card>
       ) : (
         <div className="space-y-5">
-          {monthly.length > 0 && (
+          {hasMonthly && (
             <Card>
               <div className="grid gap-4 sm:grid-cols-3">
                 <div><p className="text-sm text-muted">Monthly budget</p><p className="text-2xl font-bold tabular-nums">{money(totalBudget)}</p></div>
@@ -63,33 +73,79 @@ export default function Budgets() {
             </div>
           )}
 
-          <div className="grid gap-3 md:grid-cols-2">
-            {budgets.map((b, i) => {
-              const root = idx.root(b.category_id);
-              const pct = (b.spent / b.amount) * 100;
-              const left = b.amount - b.spent;
+          <div className="grid items-start gap-3 md:grid-cols-2">
+            {groups.map((g, i) => {
+              const root = idx.byId.get(g.rootId);
+              const single = g.budgets.length === 1 ? g.budgets[0] : null;
+              const open = !single && expanded.has(g.rootId);
+              const t = g.total;
+              const left = t ? t.amount - t.spent : 0;
               return (
-                <Card key={b.id} className="cursor-pointer transition hover:border-brand-500/50">
-                  <div className="flex items-start gap-3" onClick={() => setEditing({ budget: b })}>
+                <Card key={g.rootId} className="transition hover:border-brand-500/50">
+                  <button type="button" className="flex w-full items-start gap-3 text-left"
+                    onClick={() => (single ? setEditing({ budget: single }) : toggle(g.rootId))}
+                    aria-expanded={single ? undefined : open}
+                    aria-label={single ? `Edit ${idx.label(single.category_id)} budget` : `${root?.name ?? 'Category'} budgets`}>
                     <CategoryIcon icon={root?.icon} color={root?.color} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="truncate font-semibold">{idx.label(b.category_id)}</p>
-                        <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-xs text-muted">{PERIODS[b.period]}</span>
-                      </div>
-                      <p className="mt-0.5 text-sm tabular-nums text-muted">{money(b.spent)} of {money(b.amount)}</p>
-                    </div>
-                  </div>
-                  <ProgressBar className="mt-3" value={pct} />
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="truncate font-semibold">{single ? idx.label(single.category_id) : root?.name}</span>
+                        <span className="flex shrink-0 items-center gap-1.5">
+                          {t && <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-xs text-muted">{PERIODS[t.period]}</span>}
+                          {!single && (
+                            <>
+                              <span className="rounded-full bg-brand-500/10 px-2 py-0.5 text-xs font-medium text-brand-600 dark:text-brand-400">{g.budgets.length} budgets</span>
+                              <ChevronDown className={clsx('h-4 w-4 text-muted transition', open && 'rotate-180')} />
+                            </>
+                          )}
+                        </span>
+                      </span>
+                      <span className="mt-0.5 block text-sm tabular-nums text-muted">
+                        {t ? `${money(t.spent)} of ${money(t.amount)}` : 'Different reset periods: tap to see each'}
+                      </span>
+                    </span>
+                  </button>
+                  {t && <ProgressBar className="mt-3" value={(t.spent / t.amount) * 100} />}
                   <div className="mt-2 flex items-center justify-between text-xs">
                     <span className={left < 0 ? 'font-medium text-rose-600 dark:text-rose-400' : 'text-muted'}>
-                      {left < 0 ? `${money(-left)} over` : `${money(left)} left · ${daysLeftInPeriod(b.period)} days to go`}
+                      {!t ? '' : left < 0 ? `${money(-left)} over` : `${money(left)} left · ${daysLeftInPeriod(t.period)} days to go`}
                     </span>
                     <span className="flex">
                       <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Move up" disabled={i === 0 || reorder.isPending} onClick={() => move(i, -1)}><ArrowUp className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Move down" disabled={i === budgets.length - 1 || reorder.isPending} onClick={() => move(i, 1)}><ArrowDown className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Move down" disabled={i === groups.length - 1 || reorder.isPending} onClick={() => move(i, 1)}><ArrowDown className="h-4 w-4" /></Button>
                     </span>
                   </div>
+
+                  {open && (
+                    <ul className="mt-3 space-y-1 border-t border-app pt-3">
+                      {g.budgets.map((b) => {
+                        const c = idx.byId.get(b.category_id);
+                        const name = b === g.main ? `All of ${root?.name ?? 'this category'}` : c?.name ?? 'Subcategory';
+                        return (
+                          <li key={b.id}>
+                            <button type="button" onClick={() => setEditing({ budget: b })} aria-label={`Edit ${name} budget`}
+                              className="w-full rounded-xl px-2 py-2 text-left transition hover:bg-[var(--surface-2)]">
+                              <span className="mb-1.5 flex items-center justify-between gap-2 text-sm">
+                                <span className="truncate font-medium">{name}
+                                  {t?.period !== b.period && <span className="ml-1.5 text-xs font-normal text-muted">({PERIODS[b.period].toLowerCase()})</span>}
+                                </span>
+                                <span className={clsx('shrink-0 tabular-nums', b.spent > b.amount ? 'text-rose-600 dark:text-rose-400' : 'text-muted')}>
+                                  {money(b.spent)} / {money(b.amount)}
+                                </span>
+                              </span>
+                              <ProgressBar className="h-1.5" value={(b.spent / b.amount) * 100} />
+                            </button>
+                          </li>
+                        );
+                      })}
+                      <li>
+                        <button type="button" onClick={() => setEditing({ categoryId: g.rootId })}
+                          className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-brand-600 dark:text-brand-400">
+                          <Plus className="h-4 w-4" /> Add a budget in {root?.name}
+                        </button>
+                      </li>
+                    </ul>
+                  )}
                 </Card>
               );
             })}
@@ -97,14 +153,22 @@ export default function Budgets() {
         </div>
       )}
 
-      {editing && <BudgetSheet budget={editing.budget} nextOrder={budgets.length} onClose={() => setEditing(null)} />}
+      {editing && <BudgetSheet budget={editing.budget} initialCategory={editing.categoryId} nextOrder={nextOrderFor(editing.categoryId)} onClose={() => setEditing(null)} />}
     </div>
   );
+
+  // A budget added from inside a group goes at the end of that group
+  function nextOrderFor(rootId?: string) {
+    const g = groups.find((x) => x.rootId === rootId);
+    return g ? Math.max(...g.budgets.map((b) => b.sort_order)) : budgets.length;
+  }
 }
 
-function BudgetSheet({ budget, nextOrder, onClose }: { budget?: Budget; nextOrder: number; onClose: () => void }) {
+function BudgetSheet({ budget, initialCategory, nextOrder, onClose }: {
+  budget?: Budget; initialCategory?: string; nextOrder: number; onClose: () => void;
+}) {
   const confirm = useConfirm();
-  const [categoryId, setCategoryId] = useState<string | null>(budget?.category_id ?? null);
+  const [categoryId, setCategoryId] = useState<string | null>(budget?.category_id ?? initialCategory ?? null);
   const [amount, setAmount] = useState(budget ? String(budget.amount) : '');
   const [period, setPeriod] = useState<BudgetPeriod>(budget?.period ?? 'monthly');
   const [error, setError] = useState('');
