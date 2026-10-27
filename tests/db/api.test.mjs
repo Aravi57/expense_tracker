@@ -163,6 +163,27 @@ describe('account balances', () => {
   }));
 });
 
+describe('credit cards', () => {
+  it('tracks what is owed and lowers it when the bill is paid from a bank account', () => asUser(async (q) => {
+    const bank = await one(q(`insert into et_accounts (name, type, opening_balance) values ('ZZ Bank', 'bank', 50000) returning id`));
+    const card = await one(q(`insert into et_accounts (name, type, opening_balance, credit_limit) values ('ZZ Card', 'credit', -1000, 25000) returning id`));
+    await q(`insert into et_transactions (type, amount, account_id, occurred_on) values ('expense', 4000, $1, '2099-01-02')`, [card.id]);
+    await q(`insert into et_transactions (type, amount, account_id, to_account_id, occurred_on) values ('transfer', 3000, $1, $2, '2099-01-20')`, [bank.id, card.id]);
+    const rows = await q('select id, credit_limit::numeric as lim, balance::numeric as bal from et_account_balances where id in ($1, $2)', [bank.id, card.id]);
+    const by = Object.fromEntries(rows.map((r) => [r.id, r]));
+    assert.equal(Number(by[card.id].bal), -1000 - 4000 + 3000); // ₹2,000 still owed
+    assert.equal(Number(by[card.id].lim), 25000);
+    assert.equal(Number(by[bank.id].bal), 47000);
+    // The card purchase is spending; paying the bill is not
+    const s = (await q(`select et_summary('2099-01-01', '2099-01-31') as s`))[0].s;
+    assert.equal(Number(s.expense), 4000);
+  }));
+
+  it('rejects a zero or negative credit limit', () => asUser(async (q) => {
+    await assert.rejects(q(`insert into et_accounts (name, type, credit_limit) values ('ZZ Bad', 'credit', 0)`), /check/);
+  }));
+});
+
 describe('reports', () => {
   it('summarises a period, including weekend spending and the largest expense', () => asUser(async (q) => {
     // 2099-01-03 is a Saturday, 2099-01-05 a Monday

@@ -189,6 +189,65 @@ test.describe('Transactions', () => {
   });
 });
 
+test.describe('Credit cards', () => {
+  test('adds a card with a limit, spends on it, and pays the bill from a bank account', async ({ app, mock }) => {
+    await addAccount(app, 'HDFC', '100000');
+    await addAccount(app, 'Millennia', '0', 'Credit card', '50000');
+    await expect(app.getByRole('button', { name: /^Millennia.*Owed.*₹0.*₹50,000 available/ })).toBeVisible();
+
+    // Pay for something with the card
+    await addTransaction(app, { amount: '12000', description: 'New phone', category: 'Shopping', account: 'Millennia' });
+    await expect(app.getByRole('button', { name: /^Millennia.*Owed.*₹12,000.*₹38,000 available/ })).toBeVisible();
+    await expect(app.getByText('₹38,000 available · 24% used')).toBeVisible();
+    await expect(app.getByText('after ₹12,000 owed on cards')).toBeVisible();
+    // The bank balance is untouched by card spending
+    await expect(app.getByRole('button', { name: /^HDFC.*₹1,00,000/ })).toBeVisible();
+
+    // Pay the full bill from HDFC
+    await app.getByRole('button', { name: 'Pay bill' }).click();
+    const pay = app.getByRole('dialog');
+    await expect(pay.getByRole('heading', { name: 'Pay Millennia' })).toBeVisible();
+    await expect(pay.getByLabel('Pay from')).toHaveValue(/.+/);
+    await expect(pay.getByLabel('Amount (₹)')).toHaveValue('12000');
+    await pay.getByRole('button', { name: 'Pay ₹12,000' }).click();
+    await expect(app.getByText('Paid Millennia')).toBeVisible();
+
+    await expect(app.getByRole('button', { name: /^Millennia.*Owed.*₹0.*₹50,000 available/ })).toBeVisible();
+    await expect(app.getByRole('button', { name: /^HDFC.*₹88,000/ })).toBeVisible();
+    // The phone counts as spending once; the bill payment is a transfer, not more spending
+    await expect(app.getByRole('button', { name: /Card bill: Millennia.*HDFC → Millennia/ })).toBeVisible();
+    const user = mock.users[0].id;
+    expect(mock.rows('et_transactions', user).map((t) => [t.type, t.amount])).toEqual([['expense', 12000], ['transfer', 12000]]);
+    await expect(app.getByText('No spending yet this month')).toBeHidden();
+    await expect(app.locator('section', { hasText: 'Spending this month' }).getByText('₹12,000').first()).toBeVisible();
+  });
+
+  test('warns when an expense goes over the credit limit', async ({ app }) => {
+    await addAccount(app, 'Coral', '9000', 'Credit card', '10000');
+    await openAddTransaction(app);
+    const sheet = app.getByRole('dialog');
+    await sheet.getByRole('radio', { name: 'Coral', exact: true }).click();
+    await expect(sheet.getByRole('radio', { name: 'Coral', exact: true })).toContainText('₹1,000 available');
+    await sheet.getByPlaceholder('0', { exact: true }).fill('800');
+    await expect(sheet.getByText(/over its credit limit/)).toBeHidden();
+    await sheet.getByPlaceholder('0', { exact: true }).fill('1500');
+    await expect(sheet.getByText('This takes Coral over its credit limit (₹1,000 available).')).toBeVisible();
+  });
+
+  test('editing a card shows what is owed and accepts a new limit', async ({ app, mock }) => {
+    await addAccount(app, 'Amex', '2500', 'Credit card', '20000');
+    await app.getByRole('button', { name: /^Amex/ }).click();
+    const sheet = app.getByRole('dialog');
+    await expect(sheet.getByText('₹17,500 available of ₹20,000')).toBeVisible();
+    await expect(sheet.getByLabel('Amount owed now (₹)')).toHaveValue('2500');
+    await sheet.getByLabel('Credit limit (₹)').fill('30000');
+    await sheet.getByRole('button', { name: 'Save' }).click();
+    await expect(app.getByRole('button', { name: /^Amex.*₹27,500 available/ })).toBeVisible();
+    const [card] = mock.rows('et_accounts', mock.users[0].id);
+    expect(card).toMatchObject({ type: 'credit', credit_limit: 30000, opening_balance: -2500 });
+  });
+});
+
 test.describe('Budgets', () => {
   test('creates a budget, tracks spending including subcategories, and warns when over', async ({ app }) => {
     await goTo(app, 'Budgets');

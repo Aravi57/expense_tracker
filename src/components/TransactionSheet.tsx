@@ -7,6 +7,9 @@ import { refreshAll, useDataMutation } from '../api/client';
 import { deleteTransaction, restoreTransaction, saveTransaction } from '../api/transactions';
 import { today } from '../lib/dates';
 import type { Transaction, TxnType } from '../lib/types';
+import { available, exceedsLimit, isCard } from '../lib/credit';
+import { money } from '../lib/format';
+import { AccountPicker } from './AccountPicker';
 import { useConfirm } from './confirm';
 import { CategoryPicker } from './CategoryPicker';
 import { Button, Field, Input, Segmented, Select, Sheet, Textarea } from './ui';
@@ -69,6 +72,12 @@ function TransactionForm({ transaction, type: initialType, onClose }: OpenOption
   const [notes, setNotes] = useState(transaction?.notes ?? '');
   const [showNotes, setShowNotes] = useState(!!transaction?.notes);
   const [error, setError] = useState('');
+
+  const selectedAccount = accounts.find((a) => a.id === accountId);
+  const toCard = isCard(accounts.find((a) => a.id === toAccountId) ?? { type: 'bank' });
+  // When editing, the transaction's current amount is already counted in the card's balance
+  const alreadyOnCard = editing && transaction?.type === 'expense' && transaction.account_id === accountId ? transaction.amount : 0;
+  const overLimit = type === 'expense' && !!selectedAccount && exceedsLimit(selectedAccount, (Number(amount) || 0) - alreadyOnCard);
 
   const changeType = (t: TxnType) => {
     setType(t);
@@ -155,31 +164,32 @@ function TransactionForm({ transaction, type: initialType, onClose }: OpenOption
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label={type === 'transfer' ? 'From account' : 'Account'}>
-            <Select value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-              <option value="">No account</option>
-              {activeAccounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-            </Select>
-          </Field>
-          {type === 'transfer' ? (
-            <Field label="To account">
+        {type === 'transfer' ? (
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="From account">
+              <Select value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+                <option value="">Choose…</option>
+                {activeAccounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </Select>
+            </Field>
+            <Field label="To account" hint={toCard ? 'Paying a card bill lowers what you owe on it.' : undefined}>
               <Select value={toAccountId} onChange={(e) => setToAccountId(e.target.value)}>
                 <option value="">Choose…</option>
                 {activeAccounts.filter((a) => a.id !== accountId).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </Select>
             </Field>
-          ) : (
-            <Field label="Date">
-              <Input type="date" value={date} max="2999-12-31" onChange={(e) => setDate(e.target.value)} required />
-            </Field>
-          )}
-        </div>
-        {type === 'transfer' && (
-          <Field label="Date">
-            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-          </Field>
+          </div>
+        ) : activeAccounts.length > 0 && (
+          <AccountPicker label={type === 'expense' ? 'Paid with' : 'Received in'} accounts={activeAccounts} value={accountId} onChange={setAccountId} />
         )}
+        {overLimit && (
+          <p className="rounded-xl bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+            This takes {selectedAccount?.name} over its credit limit ({money(available(selectedAccount!))} available).
+          </p>
+        )}
+        <Field label="Date">
+          <Input type="date" value={date} max="2999-12-31" onChange={(e) => setDate(e.target.value)} required />
+        </Field>
 
         {showNotes ? (
           <Field label="Notes">

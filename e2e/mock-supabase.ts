@@ -1,4 +1,4 @@
-// An in-memory stand-in for the Supabase project, used by the end-to-end tests.
+﻿// An in-memory stand-in for the Supabase project, used by the end-to-end tests.
 // It answers the same HTTP calls supabase-js makes (auth, PostgREST tables and the
 // et_* functions) and mirrors the database behaviour in supabase/migrations:
 // per-user rows, computed balances, cascades, budgets, recurring catch-up and so on.
@@ -30,7 +30,7 @@ const num = (v: unknown) => Number(v ?? 0);
 
 const DEFAULTS: Record<string, () => Row> = {
   et_categories: () => ({ parent_id: null, slug: null, icon: 'Tag', color: '#94a3b8', sort_order: 0 }),
-  et_accounts: () => ({ type: 'bank', opening_balance: 0, color: null, sort_order: 0, archived: false }),
+  et_accounts: () => ({ type: 'bank', opening_balance: 0, credit_limit: null, color: null, sort_order: 0, archived: false }),
   et_transactions: () => ({
     description: '', notes: null, occurred_on: today(), category_id: null, account_id: null,
     to_account_id: null, recurring_id: null, investment_id: null,
@@ -250,6 +250,7 @@ export class MockSupabase {
 
   private check(table: string, row: Row, userId: string) {
     if ('amount' in row && !(num(row.amount) > 0)) return { status: 400, body: { code: '23514', message: 'violates check constraint' } };
+    if (row.credit_limit != null && !(num(row.credit_limit) > 0)) return { status: 400, body: { code: '23514', message: 'violates check constraint' } };
     if (table === 'et_transactions' && row.type === 'transfer' && row.category_id) return { status: 400, body: { code: '23514', message: 'violates check constraint' } };
     if (table === 'et_budgets') {
       const dup = this.rows('et_budgets', userId).some((b) => b.id !== row.id && b.category_id === row.category_id && b.period === row.period);
@@ -298,6 +299,7 @@ export class MockSupabase {
         const now = new Date().toISOString();
         const row = { id: uuid(), created_at: now, updated_at: now, ...DEFAULTS[table](), ...input, user_id: user.id };
         for (const k of ['amount', 'opening_balance', 'invested_amount', 'current_value']) if (k in row) row[k] = num(row[k]);
+        if (row.credit_limit != null) row.credit_limit = num(row.credit_limit);
         const err = this.check(table, row, user.id);
         if (err) return this.json(route, err.status, err.body);
         this.tables[table].push(row);
@@ -313,6 +315,7 @@ export class MockSupabase {
       for (const row of rows) {
         const next = { ...row, ...patch, updated_at: new Date().toISOString() };
         for (const k of ['amount', 'opening_balance', 'invested_amount', 'current_value']) if (k in patch) next[k] = num(next[k]);
+        if (next.credit_limit != null) next.credit_limit = num(next.credit_limit);
         const err = this.check(table, next, user.id);
         if (err) return this.json(route, err.status, err.body);
         Object.assign(row, next);

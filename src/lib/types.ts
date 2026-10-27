@@ -26,9 +26,12 @@ export interface Account {
   name: string;
   type: AccountType;
   opening_balance: number;
+  /** Credit cards only; null when no limit was set */
+  credit_limit: number | null;
   color: string | null;
   sort_order: number;
   archived: boolean;
+  /** Negative while money is owed on a credit card */
   balance: number;
 }
 

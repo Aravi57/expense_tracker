@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ArrowDownRight, ArrowUpRight, CalendarClock, ChevronRight, List, PiggyBank, Plus, Wallet } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, CalendarClock, ChevronRight, CreditCard, List, PiggyBank, Plus, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useAccounts } from '../api/accounts';
@@ -10,6 +10,8 @@ import { useCategoryTotals, useSummary } from '../api/stats';
 import { useRecentTransactions } from '../api/transactions';
 import { AccountSheet } from '../components/AccountSheet';
 import { CategoryIcon } from '../components/CategoryIcon';
+import { PayCardSheet } from '../components/PayCardSheet';
+import { available, isCard, owed, utilisation } from '../lib/credit';
 import { TransactionRow } from '../components/TransactionList';
 import { useTransactionSheet } from '../components/TransactionSheet';
 import { Button, Card, EmptyState, ProgressBar, Skeleton, Trend } from '../components/ui';
@@ -44,6 +46,9 @@ export default function Dashboard() {
 
   const visibleAccounts = (accounts ?? []).filter((a) => !a.archived);
   const totalBalance = visibleAccounts.reduce((s, a) => s + a.balance, 0);
+  const cards = visibleAccounts.filter(isCard);
+  const cardDues = cards.reduce((s, a) => s + owed(a), 0);
+  const [payingCard, setPayingCard] = useState<Account | null>(null);
   const income = month?.income ?? 0;
   const expense = month?.expense ?? 0;
   const topCategories = categories.slice(0, 5);
@@ -65,7 +70,10 @@ export default function Dashboard() {
         {accountsLoading ? <Skeleton className="mt-2 h-10 w-48 bg-white/20" /> : (
           <p className="mt-1 text-4xl font-bold tracking-tight tabular-nums">{money(totalBalance)}</p>
         )}
-        <p className="mt-1 text-xs text-white/60">Across {visibleAccounts.length} account{visibleAccounts.length === 1 ? '' : 's'}</p>
+        <p className="mt-1 text-xs text-white/60">
+          Across {visibleAccounts.length} account{visibleAccounts.length === 1 ? '' : 's'}
+          {cardDues > 0 && ` · after ${money(cardDues)} owed on cards`}
+        </p>
         <div className="mt-5 grid grid-cols-3 gap-3 rounded-2xl bg-white/10 p-3 backdrop-blur">
           <div>
             <p className="flex items-center gap-1 text-xs text-white/70"><ArrowDownRight className="h-3.5 w-3.5" /> Income</p>
@@ -97,7 +105,15 @@ export default function Dashboard() {
                 <span className="truncate">{a.name}</span>
                 <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px]">{ACCOUNT_TYPES[a.type]}</span>
               </span>
-              <span className="text-xl font-bold tabular-nums">{money(a.balance)}</span>
+              {isCard(a) ? (
+                <span>
+                  <span className="block text-[11px] text-white/75">Owed</span>
+                  <span className="block text-xl font-bold leading-tight tabular-nums">{money(owed(a))}</span>
+                  {a.credit_limit && <span className="block text-[11px] text-white/75">{money(available(a))} available</span>}
+                </span>
+              ) : (
+                <span className="text-xl font-bold tabular-nums">{money(a.balance)}</span>
+              )}
             </button>
           ))}
           {!accountsLoading && (
@@ -108,6 +124,30 @@ export default function Dashboard() {
           )}
         </div>
       </section>
+
+      {cards.length > 0 && (
+        <Card title={<span className="flex items-center gap-2"><CreditCard className="h-4 w-4" /> Credit cards</span>}
+          action={<span className="text-sm tabular-nums text-muted">{money(cardDues)} owed</span>}>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {cards.map((c) => {
+              const used = utilisation(c);
+              return (
+                <li key={c.id} className="space-y-2">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="truncate font-medium">{c.name}</span>
+                    <span className="text-sm tabular-nums">{money(owed(c))}{c.credit_limit && <span className="text-muted"> / {money(c.credit_limit)}</span>}</span>
+                  </div>
+                  {used !== null && <ProgressBar value={used} />}
+                  <div className="flex items-center justify-between gap-2 text-xs text-muted">
+                    <span>{used === null ? 'No limit set' : `${money(available(c))} available · ${Math.round(used)}% used`}</span>
+                    {owed(c) > 0 && <Button size="sm" variant="secondary" onClick={() => setPayingCard(c)}>Pay bill</Button>}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         {/* Spending by category */}
@@ -201,6 +241,7 @@ export default function Dashboard() {
       </div>
 
       {accountSheet && <AccountSheet account={accountSheet.account} onClose={() => setAccountSheet(null)} />}
+      {payingCard && <PayCardSheet card={payingCard} onClose={() => setPayingCard(null)} />}
       {visibleAccounts.length === 0 && !accountsLoading && (
         <p className="flex items-center justify-center gap-2 text-sm text-muted"><Wallet className="h-4 w-4" /> Add an account to see balances.</p>
       )}

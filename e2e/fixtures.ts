@@ -80,19 +80,26 @@ export async function addTransaction(page: Page, t: {
   if (t.category) await sheet.getByRole('button', { name: t.category, exact: true }).click();
   // Subcategory chips come after the category grid (and may share a name, e.g. Food › Food)
   if (t.subcategory) await sheet.getByRole('button', { name: t.subcategory, exact: true }).last().click();
-  if (t.account) await sheet.getByLabel(t.type === 'Transfer' ? 'From account' : 'Account', { exact: true }).selectOption({ label: t.account });
+  if (t.account && t.type === 'Transfer') await sheet.getByLabel('From account').selectOption({ label: t.account });
+  else if (t.account) await sheet.getByRole('radiogroup').getByRole('radio', { name: t.account, exact: true }).click();
   if (t.toAccount) await sheet.getByLabel('To account').selectOption({ label: t.toAccount });
   if (t.date) await sheet.getByLabel('Date').fill(t.date);
   await sheet.getByRole('button', { name: 'Add', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
 }
 
-export async function addAccount(page: Page, name: string, balance: string, type = 'Bank account') {
+// For a credit card, `balance` is the amount owed and `limit` the credit limit
+export async function addAccount(page: Page, name: string, balance: string, type = 'Bank account', limit?: string) {
   await page.getByRole('button', { name: 'Add account' }).first().click();
   const sheet = page.getByRole('dialog');
   await sheet.getByLabel('Name').fill(name);
   await sheet.getByLabel('Type').selectOption({ label: type });
-  await sheet.getByLabel('Current balance (₹)').fill(balance);
+  if (type === 'Credit card') {
+    if (limit) await sheet.getByLabel('Credit limit (₹)').fill(limit);
+    await sheet.getByLabel('Amount owed now (₹)').fill(balance);
+  } else {
+    await sheet.getByLabel('Current balance (₹)').fill(balance);
+  }
   await sheet.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
 }
